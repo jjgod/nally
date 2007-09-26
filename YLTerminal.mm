@@ -133,8 +133,8 @@ static unsigned short gEmptyAttr;
 					for (x = 0; x < _column; x++) {
 						GRID(x, _cursorY).byte = '\0';
 						GRID(x, _cursorY).attr.v = gEmptyAttr;
-						_dirty[_cursorY * _column + x] = YES; 
 					}
+					[self setAllDirty];
 				} else {
 					_cursorY++;
 				}
@@ -173,8 +173,8 @@ static unsigned short gEmptyAttr;
 					for (x = 0; x < _column; x++) {
 						GRID(x, _cursorY).byte = '\0';
 						GRID(x, _cursorY).attr.v = gEmptyAttr;
-						_dirty[_cursorY * _column + x] = YES;
 					}
+					[self setAllDirty];
 				} else {
 					_cursorY--;
 				}

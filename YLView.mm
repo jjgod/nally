@@ -170,8 +170,6 @@ BOOL isSpecialSymbol(unichar ch) {
 	[gConfig->_colorTable[0][NUM_COLOR - 1] set];
 	[NSBezierPath fillRect: NSMakeRect(0, 0, gColumn * _fontWidth, _fontHeight)];
 	[_backedImage unlockFocus];
-	
-	[self setNeedsDisplay: YES];
 }
 
 
@@ -192,8 +190,6 @@ BOOL isSpecialSymbol(unichar ch) {
 	[gConfig->_colorTable[0][NUM_COLOR - 1] set];
 	[NSBezierPath fillRect: NSMakeRect(0, (gRow - 1) * _fontHeight, gColumn * _fontWidth, _fontHeight)];
 	[_backedImage unlockFocus];
-	
-	[self setNeedsDisplay: YES];
 }
 
 - (void) update {
@@ -503,6 +499,7 @@ BOOL isSpecialSymbol(unichar ch) {
 		} else {
 			[_timer invalidate];
 			_timer = nil;
+			[self setNeedsDisplay: YES];
 		}
 	}
 }
