@@ -13,7 +13,6 @@
 
 @interface YLController : NSObject {
 	IBOutlet id _telnetView;
-	NSTimer *_updateViewTimer;
 	YLTerminal *_terminal;
 }
 

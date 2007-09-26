@@ -331,6 +331,15 @@ static unsigned short gEmptyAttr;
 # pragma mark -
 # pragma mark 
 
+- (void) startConnection {
+	[_delegate setConnected: YES];
+}
+
+- (void) closeConnection {
+	[_delegate setConnected: NO];	
+}
+
+
 - (void) setAllDirty {
 	int i, end = _column * _row;
 	for (i = 0; i < end; i++)

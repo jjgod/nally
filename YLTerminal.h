@@ -9,8 +9,10 @@
 #import <Cocoa/Cocoa.h>
 #import <deque>
 #import "CommonType.h"
+#import "YLView.h"
 
 @interface YLTerminal : NSObject {	
+@public
 	unsigned int _row;
 	unsigned int _column;
 	unsigned int _cursorX;
@@ -35,7 +37,7 @@
 	std::deque<unsigned char> *_csBuf;
 	std::deque<int> *_csArg;
 	unsigned int _csTemp;
-	id _delegate;
+	YLView *_delegate;
 }
 
 - (void) feedData: (NSData *) data ;

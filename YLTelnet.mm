@@ -71,7 +71,9 @@ void dump_packet(unsigned char *s, int length) {
 		NSLog(@"cannot connect");
 		return NO;
 	}
-
+	
+	[_terminal startConnection];
+	
 	_server = [[NSFileHandle alloc] initWithFileDescriptor: sockfd closeOnDealloc: YES];
 
     [[NSNotificationCenter defaultCenter] addObserver: self
@@ -95,6 +97,7 @@ void dump_packet(unsigned char *s, int length) {
 
 	NSData *messageData = [[notify userInfo] objectForKey: NSFileHandleNotificationDataItem];
 	if ([messageData length] == 0) {
+		[_terminal closeConnection];
 		NSLog(@"Disconnect.");
 		return;
 	}

@@ -20,13 +20,25 @@
 	
 	YLTerminal *_dataSource;
 	YLTelnet *_telnet;
+	
+	BOOL _connected;
+	
+	NSTimer *_timer;
+	int _x;
+	int _y;
 }
 
+
+- (void) update;
 - (void) drawSpecialSymbol: (unichar) ch forRow: (int) r column: (int) c leftAttribute: (attribute) attr1 rightAttribute: (attribute) attr2 ;
+
 - (id)dataSource;
 - (void)setDataSource:(id)value;
 - (YLTelnet *)telnet;
 - (void)setTelnet:(YLTelnet *)value;
+- (BOOL)connected;
+- (void)setConnected:(BOOL)value;
+
 - (void) extendBottom ;
 - (void) extendTop ;
 - (void) clearScreen: (int) opt atRow: (int) r column: (int) c ;

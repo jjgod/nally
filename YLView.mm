@@ -63,7 +63,7 @@ BOOL isSpecialSymbol(unichar ch) {
 			gSingleAdvance[i] = CGSizeMake(_fontWidth * 1.0, 0.0);
 			gDoubleAdvance[i] = CGSizeMake(_fontWidth * 2.0, 0.0);
 		}
-		
+		[self setConnected: NO];
     }
     return self;
 }
@@ -99,6 +99,17 @@ BOOL isSpecialSymbol(unichar ch) {
 #pragma mark -
 #pragma mark Drawing
 
+- (void) tick: (NSTimer *) t {
+	[self update];
+	if (_x != _dataSource->_cursorX || _y != _dataSource->_cursorY) {
+		NSLog(@"%d %d -> %d %d", _x, _y, _dataSource->_cursorX, _dataSource->_cursorY);
+		[self setNeedsDisplayInRect: NSMakeRect(_x * _fontWidth, (gRow - 1 - _y) * _fontHeight, _fontWidth, _fontHeight)];
+		[self setNeedsDisplayInRect: NSMakeRect(_dataSource->_cursorX * _fontWidth, (gRow - 1 - _dataSource->_cursorY) * _fontHeight, _fontWidth, _fontHeight)];
+		_x = _dataSource->_cursorX;
+		_y = _dataSource->_cursorY;
+	}
+}
+
 - (NSRect) cellRectForRect: (NSRect) r {
 	int originx = r.origin.x / _fontWidth;
 	int originy = r.origin.y / _fontHeight;
@@ -108,11 +119,26 @@ BOOL isSpecialSymbol(unichar ch) {
 }
 
 - (void)drawRect:(NSRect)rect {
-	NSRect imgRect = rect;
-	imgRect.origin.y = (_fontHeight * gRow) - rect.origin.y - rect.size.height;
-	[_backedImage compositeToPoint: rect.origin
-						  fromRect: rect
-						 operation: NSCompositeCopy];
+	if (_connected) {
+		NSRect imgRect = rect;
+		imgRect.origin.y = (_fontHeight * gRow) - rect.origin.y - rect.size.height;
+		[_backedImage compositeToPoint: rect.origin
+							  fromRect: rect
+							 operation: NSCompositeCopy];
+		
+		/* Draw the cursor */
+		
+		[[NSColor whiteColor] set];
+		[NSBezierPath setDefaultLineWidth: 2.0];
+		NSLog(@"Draw: %d %d", _dataSource->_cursorX, _dataSource->_cursorY);
+		[NSBezierPath strokeLineFromPoint: NSMakePoint(_dataSource->_cursorX * _fontWidth, (gRow - 1 - _dataSource->_cursorY) * _fontHeight + 1) 
+								  toPoint: NSMakePoint((_dataSource->_cursorX + 1) * _fontWidth, (gRow - 1 - _dataSource->_cursorY) * _fontHeight + 1) ];
+		
+	} else {
+		[[gConfig colorAtIndex: NUM_COLOR - 1 hilite: 0] set];
+		[NSBezierPath fillRect: [self bounds]];
+	}
+	
 //	int x, y;
 //	[[NSColor whiteColor] set];
 //	for (y = 0; y < gRow; y++) 
@@ -174,7 +200,6 @@ BOOL isSpecialSymbol(unichar ch) {
 	int x, y;
 	[_backedImage lockFocus];
 	CGContextRef myCGContext = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
-	puts("update");
 	
 	/* Draw Background */
 	for (y = 0; y < gRow; y++) {
@@ -465,6 +490,22 @@ BOOL isSpecialSymbol(unichar ch) {
 
 #pragma mark -
 #pragma mark Accessor
+
+- (BOOL)connected {
+	return _connected;
+}
+
+- (void)setConnected:(BOOL)value {
+	if (value != _connected) {
+		_connected = value;	
+		if (_connected == YES) {
+			_timer = [NSTimer scheduledTimerWithTimeInterval: 0.1 target: self selector: @selector(tick:) userInfo: nil repeats: YES];
+		} else {
+			[_timer invalidate];
+			_timer = nil;
+		}
+	}
+}
 
 - (id)dataSource {
     return [[_dataSource retain] autorelease];
