@@ -3,7 +3,7 @@
 //  MacBlueTelnet
 //
 //  Created by Yung-Luen Lan on 2006/6/9.
-//  Copyright 2006 yllan. All rights reserved.
+//  Copyright 2006 yllan.org. All rights reserved.
 //
 
 #import <Cocoa/Cocoa.h>
@@ -11,8 +11,9 @@
 
 @class YLTerminal;
 @class YLTelnet;
+@class YLMarkedTextView;
 
-@interface YLView : NSView {	
+@interface YLView : NSView <NSTextInput> {	
 	int _fontWidth;
 	int _fontHeight;
 	
@@ -26,6 +27,12 @@
 	NSTimer *_timer;
 	int _x;
 	int _y;
+	
+	id _markedText;
+	NSRange _selectedRange;
+	NSRange _markedRange;
+	
+	IBOutlet YLMarkedTextView *_textField;
 }
 
 
@@ -45,4 +52,5 @@
 
 - (void) drawStringForRow: (int) r context: (CGContextRef) myCGContext ;
 - (void) updateBackgroundForRow: (int) r from: (int) start to: (int) end ;
+
 @end

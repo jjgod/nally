@@ -3,7 +3,7 @@
 //  MacBlueTelnet
 //
 //  Created by Yung-Luen Lan on 2006/9/10.
-//  Copyright 2006 yllan. All rights reserved.
+//  Copyright 2006 yllan.org. All rights reserved.
 //
 
 #import <Cocoa/Cocoa.h>
@@ -42,6 +42,8 @@
 
 - (void) feedData: (NSData *) data ;
 - (void) feedBytes: (const unsigned char *) bytes length: (int) len ;
+- (void) startConnection ;
+- (void) closeConnection ;
 
 - (BOOL) isDirtyAtRow: (int) r column:(int) c;
 - (attribute) attrAtRow: (int) r column: (int) c ;

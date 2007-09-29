@@ -3,7 +3,7 @@
 //  MacBlueTelnet
 //
 //  Created by Yung-Luen Lan on 2006/6/9.
-//  Copyright 2006 yllan. All rights reserved.
+//  Copyright 2006 yllan.org. All rights reserved.
 //
 
 #import "YLBitmapView.h"
