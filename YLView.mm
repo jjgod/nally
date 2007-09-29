@@ -103,11 +103,14 @@ BOOL isSpecialSymbol(unichar ch) {
 	if (c == NSDownArrowFunctionKey) arrow[2] = 'B';
 	if (c == NSRightArrowFunctionKey) arrow[2] = 'C';
 	if (c == NSLeftArrowFunctionKey) arrow[2] = 'D';
+
+	NSLog(@"m? %d", [self hasMarkedText]);
+	
 	if (![self hasMarkedText] && 
-		c == NSUpArrowFunctionKey ||
-		c == NSDownArrowFunctionKey ||
-		c == NSRightArrowFunctionKey || 
-		c == NSLeftArrowFunctionKey) {
+		(c == NSUpArrowFunctionKey ||
+		 c == NSDownArrowFunctionKey ||
+		 c == NSRightArrowFunctionKey || 
+		 c == NSLeftArrowFunctionKey)) {
 		[_telnet sendBytes: arrow length: 3];
 		return;
 	}
