@@ -22,7 +22,7 @@
 	[_telnetView setDataSource: _terminal];
 	[_telnetView setTelnet: telnet];
 	
-	[telnet connectToAddress: @"ptt.cc" port: 23];
+	[telnet connectToAddress: @"ptt2.cc" port: 23];
 
 }
 

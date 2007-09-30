@@ -618,8 +618,20 @@ BOOL isSpecialSymbol(unichar ch) {
 	[_textField setString: aString];
 	[_textField setSelectedRange: selRange];
 	[_textField setMarkedRange: _markedRange];
-	[_textField setFrameOrigin: NSMakePoint(_dataSource->_cursorX * _fontWidth, (gRow - 1 - _dataSource->_cursorY) * _fontHeight)];
 
+	NSPoint o = NSMakePoint(_dataSource->_cursorX * _fontWidth, (gRow - 1 - _dataSource->_cursorY) * _fontHeight + 5.0);
+	CGFloat dy;
+	if (o.x + [_textField frame].size.width > gColumn * _fontWidth) 
+		o.x = gColumn * _fontWidth - [_textField frame].size.width;
+	if (o.y + [_textField frame].size.height > gRow * _fontHeight) {
+		o.y = (gRow - _dataSource->_cursorY) * _fontHeight - 5.0 - [_textField frame].size.height;
+		dy = o.y + [_textField frame].size.height;
+	} else {
+		dy = o.y;
+	}
+	[_textField setFrameOrigin: o];
+	[_textField setDestination: [_textField convertPoint: NSMakePoint((_dataSource->_cursorX + 0.5) * _fontWidth, dy)
+												fromView: self]];
 	[_textField setHidden: NO];
 }
 
