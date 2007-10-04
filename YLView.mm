@@ -22,8 +22,8 @@ static CGSize *gDoubleAdvance;
 static NSCharacterSet *bopomofoCharSet = nil;
 
 BOOL isSpecialSymbol(unichar ch) {
-	if (ch == 0x25FC)  // ◼ BLACK SQUARE
-		return YES;
+//	if (ch == 0x25FC)  // ◼ BLACK SQUARE
+//		return YES;
 	if (ch >= 0x2581 && ch <= 0x2588) // BLOCK ▁▂▃▄▅▆▇█
 		return YES;
 	if (ch >= 0x2589 && ch <= 0x258F) // BLOCK ▉▊▋▌▍▎▏
@@ -92,7 +92,7 @@ BOOL isSpecialSymbol(unichar ch) {
 	unichar c = [[e characters] characterAtIndex: 0];
 	unsigned char arrow[3] = {0x1B, 0x4F, 0x00};
 	unsigned char buf[10];
-	NSLog(@"%02X %02X", [[e characters] characterAtIndex: 0], c);
+//	NSLog(@"%02X %02X", [[e characters] characterAtIndex: 0], c);
 
 	if ([e modifierFlags] & NSControlKeyMask) {
 		buf[0] = c;
@@ -103,8 +103,6 @@ BOOL isSpecialSymbol(unichar ch) {
 	if (c == NSDownArrowFunctionKey) arrow[2] = 'B';
 	if (c == NSRightArrowFunctionKey) arrow[2] = 'C';
 	if (c == NSLeftArrowFunctionKey) arrow[2] = 'D';
-
-	NSLog(@"m? %d", [self hasMarkedText]);
 	
 	if (![self hasMarkedText] && 
 		(c == NSUpArrowFunctionKey ||
@@ -524,7 +522,7 @@ BOOL isSpecialSymbol(unichar ch) {
 	if (value != _connected) {
 		_connected = value;	
 		if (_connected == YES) {
-			_timer = [NSTimer scheduledTimerWithTimeInterval: 0.1 target: self selector: @selector(tick:) userInfo: nil repeats: YES];
+			_timer = [NSTimer scheduledTimerWithTimeInterval: 2.0 target: self selector: @selector(tick:) userInfo: nil repeats: YES];
 		} else {
 			[_timer invalidate];
 			_timer = nil;
@@ -574,7 +572,6 @@ BOOL isSpecialSymbol(unichar ch) {
 			[data appendBytes: buf length: 1];
 		} else {
 			unichar big5 = U2B[ch];
-			NSLog(@"%04X %04X", ch, big5);
 			buf[0] = big5 >> 8;
 			buf[1] = big5 & 0xFF;
 			[data appendBytes: buf length: 2];

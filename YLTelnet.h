@@ -215,10 +215,13 @@ enum {
 /* return the last error message. */
 - (NSString *) lastError;
 
+- (YLTerminal *) terminal ;
 - (void) setTerminal: (YLTerminal *) _term;
 
 - (void) sendBytes: (unsigned char *) _msg length: (unsigned int) length;
 - (void) sendMessage: (NSData *) _msg;
 
+- (NSString *)serverAddress;
+- (void)setServerAddress:(NSString *)value;
 
 @end

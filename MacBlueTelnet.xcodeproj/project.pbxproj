@@ -13,7 +13,9 @@
 		856CDB260C9650550025C754 /* encoding.c in Sources */ = {isa = PBXBuildFile; fileRef = 856CDB250C9650550025C754 /* encoding.c */; };
 		8570AD5F0A3923A900838442 /* YLView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8570AD5E0A3923A900838442 /* YLView.mm */; };
 		858A54E60CAE78C8000E1AA7 /* YLMarkedTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 858A54E50CAE78C8000E1AA7 /* YLMarkedTextView.m */; };
-		85ABEB810C966FEF008227D6 /* YLController.m in Sources */ = {isa = PBXBuildFile; fileRef = 85ABEB800C966FEF008227D6 /* YLController.m */; };
+		85ABEB810C966FEF008227D6 /* YLController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 85ABEB800C966FEF008227D6 /* YLController.mm */; };
+		85AE9DA70CB1597A0045317F /* reload.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 85AE9DA60CB1597A0045317F /* reload.pdf */; };
+		85AE9DAE0CB15D220045317F /* bookmark.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 85AE9DAD0CB15D220045317F /* bookmark.pdf */; };
 		85D9B9D10C97DF70006C5E0F /* YLBitmapView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 85D9B9D00C97DF70006C5E0F /* YLBitmapView.mm */; };
 		85F7F2090B06EE36000C4CDF /* YLLGlobalConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 85F7F2080B06EE36000C4CDF /* YLLGlobalConfig.m */; };
 		8D11072A0486CEB800E47090 /* MainMenu.nib in Resources */ = {isa = PBXBuildFile; fileRef = 29B97318FDCFA39411CA2CEA /* MainMenu.nib */; };
@@ -43,7 +45,9 @@
 		858A54E40CAE78C8000E1AA7 /* YLMarkedTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLMarkedTextView.h; sourceTree = "<group>"; };
 		858A54E50CAE78C8000E1AA7 /* YLMarkedTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YLMarkedTextView.m; sourceTree = "<group>"; };
 		85ABEB7F0C966FEF008227D6 /* YLController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLController.h; sourceTree = "<group>"; };
-		85ABEB800C966FEF008227D6 /* YLController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YLController.m; sourceTree = "<group>"; };
+		85ABEB800C966FEF008227D6 /* YLController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = YLController.mm; sourceTree = "<group>"; };
+		85AE9DA60CB1597A0045317F /* reload.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = reload.pdf; sourceTree = "<group>"; };
+		85AE9DAD0CB15D220045317F /* bookmark.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = bookmark.pdf; sourceTree = "<group>"; };
 		85D9B9CF0C97DF70006C5E0F /* YLBitmapView.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = YLBitmapView.h; sourceTree = "<group>"; };
 		85D9B9D00C97DF70006C5E0F /* YLBitmapView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = YLBitmapView.mm; sourceTree = "<group>"; };
 		85F7F2070B06EE36000C4CDF /* YLLGlobalConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLLGlobalConfig.h; sourceTree = "<group>"; };
@@ -69,7 +73,7 @@
 			isa = PBXGroup;
 			children = (
 				85ABEB7F0C966FEF008227D6 /* YLController.h */,
-				85ABEB800C966FEF008227D6 /* YLController.m */,
+				85ABEB800C966FEF008227D6 /* YLController.mm */,
 				856CDB240C9650550025C754 /* encoding.h */,
 				856CDB250C9650550025C754 /* encoding.c */,
 				852E798A0C96E7A90027751F /* CommonType.h */,
@@ -131,6 +135,8 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				85AE9DAD0CB15D220045317F /* bookmark.pdf */,
+				85AE9DA60CB1597A0045317F /* reload.pdf */,
 				8D1107310486CEB800E47090 /* Info.plist */,
 				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
 				29B97318FDCFA39411CA2CEA /* MainMenu.nib */,
@@ -216,6 +222,8 @@
 			files = (
 				8D11072A0486CEB800E47090 /* MainMenu.nib in Resources */,
 				8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */,
+				85AE9DA70CB1597A0045317F /* reload.pdf in Resources */,
+				85AE9DAE0CB15D220045317F /* bookmark.pdf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -232,7 +240,7 @@
 				85145AAE0AB40192009FC710 /* YLTerminal.mm in Sources */,
 				85F7F2090B06EE36000C4CDF /* YLLGlobalConfig.m in Sources */,
 				856CDB260C9650550025C754 /* encoding.c in Sources */,
-				85ABEB810C966FEF008227D6 /* YLController.m in Sources */,
+				85ABEB810C966FEF008227D6 /* YLController.mm in Sources */,
 				85D9B9D10C97DF70006C5E0F /* YLBitmapView.mm in Sources */,
 				858A54E60CAE78C8000E1AA7 /* YLMarkedTextView.m in Sources */,
 			);

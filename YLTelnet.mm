@@ -49,10 +49,13 @@ void dump_packet(unsigned char *s, int length) {
 	unsigned char *addr_ptr = (unsigned char *)hostinfo->h_addr;
 	NSString *ip_address = [NSString stringWithFormat: @"%d.%d.%d.%d", addr_ptr[0], addr_ptr[1], addr_ptr[2], addr_ptr[3]];
 	
-	return [self connectToIP: ip_address port: port];
+	BOOL result = [self connectToIP: ip_address port: port];
+	[self setServerAddress: addr];
+	return result;
 }
 
 - (BOOL) connectToIP: (NSString *) ip port: (unsigned int) port {
+	[self setServerAddress: ip];
 	int sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	struct sockaddr_in serverAddress;
 	if (sockfd < 0) {
@@ -244,11 +247,26 @@ void dump_packet(unsigned char *s, int length) {
 	return @"I don't know what error.";
 }
 
+- (YLTerminal *) terminal {
+	return _terminal;
+}
+
 - (void) setTerminal: (YLTerminal *) _term {
 	if (_term != _terminal) {
 		[_terminal release];
 		_terminal = [_term retain];
 	}
+}
+
+- (NSString *)serverAddress {
+    return [[_serverAddress retain] autorelease];
+}
+
+- (void)setServerAddress:(NSString *)value {
+    if (_serverAddress != value) {
+        [_serverAddress release];
+        _serverAddress = [value copy];
+    }
 }
 
 @end

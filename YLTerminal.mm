@@ -325,6 +325,9 @@ static unsigned short gEmptyAttr;
 			}
 		}
 	}
+	[_delegate performSelector: @selector(update)
+					withObject: nil
+					afterDelay: 0.02];
 //	[_delegate update];
 }
 
