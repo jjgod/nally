@@ -115,8 +115,11 @@ static unsigned short gEmptyAttr;
 
 - (void) feedBytes: (const unsigned char *) bytes length: (int) len {
 	int i, x;
-//	NSLog(@"feed %d", len);
 	unsigned char c;
+	[_delegate performSelector: @selector(tick:)
+					withObject: nil
+					afterDelay: 0.02];
+	
 	for (i = 0; i < len; i++) {
 		c = bytes[i];
 		if (_state == TP_NORMAL) {
@@ -319,15 +322,15 @@ static unsigned short gEmptyAttr;
 					
 				} else if (c == 'u') {
 					
+				} else {
+					NSLog(@"unsupported control sequence: %c", c);
 				}
 				_csArg->clear();
 				_state = TP_NORMAL;
 			}
 		}
 	}
-	[_delegate performSelector: @selector(update)
-					withObject: nil
-					afterDelay: 0.02];
+
 //	[_delegate update];
 }
 
@@ -335,11 +338,11 @@ static unsigned short gEmptyAttr;
 # pragma mark 
 
 - (void) startConnection {
-	[_delegate setConnected: YES];
+	[_delegate setNeedsDisplay: YES];
 }
 
 - (void) closeConnection {
-	[_delegate setConnected: NO];	
+	[_delegate setNeedsDisplay: YES];
 }
 
 

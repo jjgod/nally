@@ -71,10 +71,12 @@ void dump_packet(unsigned char *s, int length) {
 	
 	if ( connect( sockfd, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) < 0 ) {
 		// set error code
+		[self setConnected: NO];
 		NSLog(@"cannot connect");
 		return NO;
 	}
 	
+	[self setConnected: YES];	
 	[_terminal startConnection];
 	
 	_server = [[NSFileHandle alloc] initWithFileDescriptor: sockfd closeOnDealloc: YES];
@@ -100,6 +102,7 @@ void dump_packet(unsigned char *s, int length) {
 
 	NSData *messageData = [[notify userInfo] objectForKey: NSFileHandleNotificationDataItem];
 	if ([messageData length] == 0) {
+		[self setConnected: NO];
 		[_terminal closeConnection];
 		NSLog(@"Disconnect.");
 		return;
@@ -266,6 +269,16 @@ void dump_packet(unsigned char *s, int length) {
     if (_serverAddress != value) {
         [_serverAddress release];
         _serverAddress = [value copy];
+    }
+}
+
+- (BOOL)connected {
+    return _connected;
+}
+
+- (void)setConnected:(BOOL)value {
+    if (_connected != value) {
+        _connected = value;
     }
 }
 

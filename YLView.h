@@ -53,4 +53,10 @@
 - (void) drawStringForRow: (int) r context: (CGContextRef) myCGContext ;
 - (void) updateBackgroundForRow: (int) r from: (int) start to: (int) end ;
 
+- (int)x;
+- (void)setX:(int)value;
+
+- (int)y;
+- (void)setY:(int)value;
+
 @end

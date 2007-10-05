@@ -145,7 +145,7 @@ BOOL isSpecialSymbol(unichar ch) {
 }
 
 - (void)drawRect:(NSRect)rect {
-	if (_connected) {
+	if ([_telnet connected]) {
 		NSRect imgRect = rect;
 		imgRect.origin.y = (_fontHeight * gRow) - rect.origin.y - rect.size.height;
 		[_backedImage compositeToPoint: rect.origin
@@ -514,6 +514,26 @@ BOOL isSpecialSymbol(unichar ch) {
 #pragma mark -
 #pragma mark Accessor
 
+- (int)x {
+    return _x;
+}
+
+- (void)setX:(int)value {
+    if (_x != value) {
+        _x = value;
+    }
+}
+
+- (int)y {
+    return _y;
+}
+
+- (void)setY:(int)value {
+    if (_y != value) {
+        _y = value;
+    }
+}
+
 - (BOOL)connected {
 	return _connected;
 }
@@ -522,10 +542,10 @@ BOOL isSpecialSymbol(unichar ch) {
 	if (value != _connected) {
 		_connected = value;	
 		if (_connected == YES) {
-			_timer = [NSTimer scheduledTimerWithTimeInterval: 2.0 target: self selector: @selector(tick:) userInfo: nil repeats: YES];
+//			_timer = [NSTimer scheduledTimerWithTimeInterval: 2.0 target: self selector: @selector(tick:) userInfo: nil repeats: YES];
 		} else {
-			[_timer invalidate];
-			_timer = nil;
+//			[_timer invalidate];
+//			_timer = nil;
 			[self setNeedsDisplay: YES];
 		}
 	}

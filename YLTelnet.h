@@ -188,6 +188,7 @@ enum {
 	BOOL _editing;
 	BOOL _activated;
 	BOOL _synch;
+	BOOL _connected;
 
 	unsigned char	  _typeOfOperation;
 	
@@ -223,5 +224,7 @@ enum {
 
 - (NSString *)serverAddress;
 - (void)setServerAddress:(NSString *)value;
+- (BOOL)connected;
+- (void)setConnected:(BOOL)value;
 
 @end
