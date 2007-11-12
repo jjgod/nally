@@ -160,6 +160,18 @@ BOOL isSpecialSymbol(unichar ch) {
 }
 
 #pragma mark -
+#pragma mark Actions
+
+- (void) copy: (id) sender {
+    if (_selectionLength == 0) return;
+    
+}
+
+- (void) paste: (id) sender {
+    
+}
+
+#pragma mark -
 #pragma mark Coordinate Mapping
 - (int) convertPointToIndex: (NSPoint) p {
     if (p.x >= gColumn * _fontWidth) p.x = gColumn * _fontWidth - 0.001;
