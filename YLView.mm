@@ -19,11 +19,25 @@ static int gColumn;
 static NSImage *gLeftImage;
 static CGSize *gSingleAdvance;
 static CGSize *gDoubleAdvance;
-static NSCharacterSet *bopomofoCharSet = nil;
+static NSCharacterSet *gBopomofoCharSet = nil;
+
+
+static NSRect gSymbolBlackSquareRect;
+static NSRect gSymbolBlackSquareRect1;
+static NSRect gSymbolBlackSquareRect2;
+static NSRect gSymbolLowerBlockRect[8];
+static NSRect gSymbolLowerBlockRect1[8];
+static NSRect gSymbolLowerBlockRect2[8];
+static NSRect gSymbolLeftBlockRect[7];
+static NSRect gSymbolLeftBlockRect1[7];
+static NSRect gSymbolLeftBlockRect2[7];
+static NSBezierPath *gSymbolTrianglePath[4];
+static NSBezierPath *gSymbolTrianglePath1[4];
+static NSBezierPath *gSymbolTrianglePath2[4];
 
 BOOL isSpecialSymbol(unichar ch) {
-//	if (ch == 0x25FC)  // ◼ BLACK SQUARE
-//		return YES;
+	if (ch == 0x25FC)  // ◼ BLACK SQUARE
+		return YES;
 	if (ch >= 0x2581 && ch <= 0x2588) // BLOCK ▁▂▃▄▅▆▇█
 		return YES;
 	if (ch >= 0x2589 && ch <= 0x258F) // BLOCK ▉▊▋▌▍▎▏
@@ -35,21 +49,85 @@ BOOL isSpecialSymbol(unichar ch) {
 
 @implementation YLView
 
+- (void) createSymbolPath {
+	int i = 0;
+	gSymbolBlackSquareRect = NSMakeRect(1.0, 1.0, _fontWidth * 2 - 2, _fontHeight - 2);
+	gSymbolBlackSquareRect1 = NSMakeRect(1.0, 1.0, _fontWidth - 1, _fontHeight - 2); 
+	gSymbolBlackSquareRect2 = NSMakeRect(_fontWidth, 1.0, _fontWidth - 1, _fontHeight - 2);
+	
+	for (i = 0; i < 8; i++) {
+		gSymbolLowerBlockRect[i] = NSMakeRect(0.0, 0.0, _fontWidth * 2, _fontHeight * (i + 1) / 8);
+        gSymbolLowerBlockRect1[i] = NSMakeRect(0.0, 0.0, _fontWidth, _fontHeight * (i + 1) / 8);
+        gSymbolLowerBlockRect2[i] = NSMakeRect(_fontWidth, 0.0, _fontWidth, _fontHeight * (i + 1) / 8);
+	}
+    
+    for (i = 0; i < 7; i++) {
+        gSymbolLeftBlockRect[i] = NSMakeRect(0.0, 0.0, _fontWidth * (7 - i) / 4, _fontHeight);
+        gSymbolLeftBlockRect1[i] = NSMakeRect(0.0, 0.0, (7 - i >= 4) ? _fontWidth : (_fontWidth * (7 - i) / 4), _fontHeight);
+        gSymbolLeftBlockRect2[i] = NSMakeRect(_fontWidth, 0.0, (7 - i <= 4) ? 0.0 : (_fontWidth * (3 - i) / 4), _fontHeight);
+    }
+    
+    NSPoint pts[6] = {
+        NSMakePoint(_fontWidth, 0.0),
+        NSMakePoint(0.0, 0.0),
+        NSMakePoint(0.0, _fontHeight),
+        NSMakePoint(_fontWidth, _fontHeight),
+        NSMakePoint(_fontWidth * 2, _fontHeight),
+        NSMakePoint(_fontWidth * 2, 0.0),
+    };
+    int triangleIndex[4][3] = { {1, 4, 5}, {1, 2, 5}, {1, 2, 4}, {2, 4, 5} };
+
+    int triangleIndex1[4][3] = { {0, 1, -1}, {0, 1, 2}, {1, 2, 3}, {2, 3, -1} };
+    int triangleIndex2[4][3] = { {4, 5, 0}, {5, 0, -1}, {3, 4, -1}, {3, 4, 5} };
+    
+    int base = 0;
+    for (base = 0; base < 4; base++) {
+        if (gSymbolTrianglePath[base]) 
+            [gSymbolTrianglePath[base] release];
+        gSymbolTrianglePath[base] = [[NSBezierPath alloc] init];
+        [gSymbolTrianglePath[base] moveToPoint: pts[triangleIndex[base][0]]];
+        for (i = 1; i < 3; i ++)
+            [gSymbolTrianglePath[base] lineToPoint: pts[triangleIndex[base][i]]];
+        [gSymbolTrianglePath[base] closePath];
+        
+        if (gSymbolTrianglePath1[base])
+            [gSymbolTrianglePath1[base] release];
+        gSymbolTrianglePath1[base] = [[NSBezierPath alloc] init];
+        [gSymbolTrianglePath1[base] moveToPoint: NSMakePoint(_fontWidth, _fontHeight / 2)];
+        for (i = 0; i < 3 && triangleIndex1[base][i] >= 0; i++)
+            [gSymbolTrianglePath1[base] lineToPoint: pts[triangleIndex1[base][i]]];
+        [gSymbolTrianglePath1[base] closePath];
+        
+        if (gSymbolTrianglePath2[base])
+            [gSymbolTrianglePath2[base] release];
+        gSymbolTrianglePath2[base] = [[NSBezierPath alloc] init];
+        [gSymbolTrianglePath2[base] moveToPoint: NSMakePoint(_fontWidth, _fontHeight / 2)];
+        for (i = 0; i < 3 && triangleIndex2[base][i] >= 0; i++)
+            [gSymbolTrianglePath2[base] lineToPoint: pts[triangleIndex2[base][i]]];
+        [gSymbolTrianglePath2[base] closePath];
+    }
+}
+
 - (id)initWithFrame:(NSRect)frame {
 	if (!gConfig) gConfig = [YLLGlobalConfig sharedInstance];
 	gColumn = [gConfig column];
 	gRow = [gConfig row];
-
-	if (!bopomofoCharSet) 
-		bopomofoCharSet = [[NSCharacterSet characterSetWithCharactersInString: 
+	if (!gBopomofoCharSet) 
+		gBopomofoCharSet = [[NSCharacterSet characterSetWithCharactersInString: 
 							[NSString stringWithUTF8String: "ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙㄧㄨㄩㄚㄛㄜㄝㄞㄟㄠㄡㄢㄣㄤㄥㄦ【】、"]] retain];
+	
+	
 	
 	frame.size = NSMakeSize(gColumn * [gConfig cellWidth], gRow * [gConfig cellHeight]);
     self = [super initWithFrame: frame];
     if (self) {
 		_fontWidth = [gConfig cellWidth];
 		_fontHeight = [gConfig cellHeight];
+        [self createSymbolPath];
 		
+        _selection.length = 0;
+        _selection.location = 0;
+        
 		_backedImage = [[NSImage alloc] initWithSize: frame.size];
 		[_backedImage setFlipped: NO];
 		[_backedImage lockFocus];
@@ -85,7 +163,17 @@ BOOL isSpecialSymbol(unichar ch) {
 #pragma mark -
 #pragma mark Event Handling
 - (void) mouseDown: (NSEvent *) e {
-	NSLog(@"%X %d %d", [_dataSource charAtRow: 1 column: 78], [_dataSource isDoubleByteAtRow: 1 column: 78], [_dataSource isDoubleByteAtRow: 1 column: 79]);
+    if (!_connected) return;
+    
+}
+
+- (void) mouseDragged: (NSEvent *) e {
+    if (!_connected) return;
+}
+
+- (void) mouseUp: (NSEvent *) e {
+    if (!_connected) return;
+    
 }
 
 - (void) keyDown: (NSEvent *) e {
@@ -456,40 +544,49 @@ BOOL isSpecialSymbol(unichar ch) {
 	[xform translateXBy: origin.x yBy: origin.y];
 	[xform concat];
 	
-	if (YES) {//colorIndex1 == colorIndex2 && attr1.f.bold == attr2.f.bold) {
+	if (colorIndex1 == colorIndex2 && attr1.f.bold == attr2.f.bold) {
 		NSColor *color = [gConfig colorAtIndex: colorIndex1 hilite: attr1.f.bold];
 		
 		if (ch == 0x25FC) { // ◼ BLACK SQUARE
-			
+			[color set];
+			[NSBezierPath fillRect: gSymbolBlackSquareRect];
 		} else if (ch >= 0x2581 && ch <= 0x2588) { // BLOCK ▁▂▃▄▅▆▇█
-			NSRect rect = NSMakeRect(0.0, 0.0, 2 * _fontWidth, _fontHeight * (ch - 0x2580) / 8);
 			[color set];
-			[NSBezierPath fillRect: rect];
+			[NSBezierPath fillRect: gSymbolLowerBlockRect[ch - 0x2581]];
 		} else if (ch >= 0x2589 && ch <= 0x258F) { // BLOCK ▉▊▋▌▍▎▏
-			NSRect rect = NSMakeRect(0.0, 0.0, 2 * _fontWidth * (0x2590 - ch) / 8, _fontHeight);
 			[color set];
-			[NSBezierPath fillRect: rect];		
+			[NSBezierPath fillRect: gSymbolLeftBlockRect[ch - 0x2589]];		
 		} else if (ch >= 0x25E2 && ch <= 0x25E5) { // TRIANGLE ◢◣◤◥
-			NSPoint pts[4] = {	
-				NSMakePoint(2 * _fontWidth, _fontHeight), 
-				NSMakePoint(2 * _fontWidth, 0.0), 
-				NSMakePoint(0.0, 0.0), 
-				NSMakePoint(0.0, _fontHeight)
-			};
-			int base = ch - 0x25E2;
-			NSBezierPath *bp = [[NSBezierPath alloc] init];
-			[bp moveToPoint: pts[base]];
-			int i;
-			for (i = 1; i < 3; i++)	
-				[bp lineToPoint: pts[(base + i) % 4]];
-			[bp closePath];
-			[color set];
-			[bp fill];
-			[bp release];
+            [color set];
+            [gSymbolTrianglePath[ch - 0x25E2] fill];
 		} else if (ch == 0x0) {
 		}
 	} else { // double color
-		
+		NSColor *color1 = [gConfig colorAtIndex: colorIndex1 hilite: attr1.f.bold];
+		NSColor *color2 = [gConfig colorAtIndex: colorIndex2 hilite: attr2.f.bold];
+		if (ch == 0x25FC) { // ◼ BLACK SQUARE
+			[color1 set];
+			[NSBezierPath fillRect: gSymbolBlackSquareRect1];
+			[color2 set];
+			[NSBezierPath fillRect: gSymbolBlackSquareRect2];
+		} else if (ch >= 0x2581 && ch <= 0x2588) { // BLOCK ▁▂▃▄▅▆▇█
+			[color1 set];
+			[NSBezierPath fillRect: gSymbolLowerBlockRect1[ch - 0x2581]];
+			[color2 set];
+            [NSBezierPath fillRect: gSymbolLowerBlockRect2[ch - 0x2581]];
+		} else if (ch >= 0x2589 && ch <= 0x258F) { // BLOCK ▉▊▋▌▍▎▏
+			[color1 set];
+			[NSBezierPath fillRect: gSymbolLeftBlockRect1[ch - 0x2589]];
+            if (ch <= 0x259B) {
+                [color2 set];
+                [NSBezierPath fillRect: gSymbolLeftBlockRect2[ch - 0x2589]];
+            }
+		} else if (ch >= 0x25E2 && ch <= 0x25E5) { // TRIANGLE ◢◣◤◥
+            [color1 set];
+            [gSymbolTrianglePath1[ch - 0x25E2] fill];
+            [color2 set];
+            [gSymbolTrianglePath2[ch - 0x25E2] fill];
+		}
 	}
 	[xform invert];
 	[xform concat];

@@ -33,6 +33,8 @@
 	NSRange _markedRange;
 	
 	IBOutlet YLMarkedTextView *_textField;
+    
+    NSRange _selection;
 }
 
 
