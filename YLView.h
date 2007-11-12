@@ -22,8 +22,6 @@
 	YLTerminal *_dataSource;
 	YLTelnet *_telnet;
 	
-	BOOL _connected;
-	
 	NSTimer *_timer;
 	int _x;
 	int _y;
@@ -34,19 +32,20 @@
 	
 	IBOutlet YLMarkedTextView *_textField;
     
-    NSRange _selection;
+    int _selectionLocation;
+    int _selectionLength;
 }
 
 
 - (void) update;
 - (void) drawSpecialSymbol: (unichar) ch forRow: (int) r column: (int) c leftAttribute: (attribute) attr1 rightAttribute: (attribute) attr2 ;
+- (void) drawSelection ;
 
 - (id)dataSource;
 - (void)setDataSource:(id)value;
 - (YLTelnet *)telnet;
 - (void)setTelnet:(YLTelnet *)value;
 - (BOOL)connected;
-- (void)setConnected:(BOOL)value;
 
 - (void) extendBottom ;
 - (void) extendTop ;

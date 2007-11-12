@@ -125,8 +125,8 @@ BOOL isSpecialSymbol(unichar ch) {
 		_fontHeight = [gConfig cellHeight];
         [self createSymbolPath];
 		
-        _selection.length = 0;
-        _selection.location = 0;
+        _selectionLength = 0;
+        _selectionLocation = 0;
         
 		_backedImage = [[NSImage alloc] initWithSize: frame.size];
 		[_backedImage setFlipped: NO];
@@ -146,7 +146,6 @@ BOOL isSpecialSymbol(unichar ch) {
 			gSingleAdvance[i] = CGSizeMake(_fontWidth * 1.0, 0.0);
 			gDoubleAdvance[i] = CGSizeMake(_fontWidth * 2.0, 0.0);
 		}
-		[self setConnected: NO];
 		_markedText = nil;
 		_selectedRange = NSMakeRange(NSNotFound, 0);
 		_markedRange = NSMakeRange(NSNotFound, 0);
@@ -161,18 +160,46 @@ BOOL isSpecialSymbol(unichar ch) {
 }
 
 #pragma mark -
+#pragma mark Coordinate Mapping
+- (int) convertPointToIndex: (NSPoint) p {
+    if (p.x >= gColumn * _fontWidth) p.x = gColumn * _fontWidth - 0.001;
+    if (p.y >= gRow * _fontHeight) p.y = gRow * _fontHeight - 0.001;
+    if (p.x < 0) p.x = 0;
+    if (p.y < 0) p.y = 0;
+    int cx, cy = 0;
+    cx = ((int)p.x) / _fontWidth;
+    cy = gRow - (((int)p.y) / _fontHeight) - 1;
+    return cy * gColumn + cx;
+}
+
+
+#pragma mark -
 #pragma mark Event Handling
 - (void) mouseDown: (NSEvent *) e {
-    if (!_connected) return;
-    
+    if (![self connected]) return;
+    NSPoint p = [e locationInWindow];
+    p = [self convertPoint: p toView: nil];
+//    NSLog(@"Click: %f %f %d", p.x, p.y, [e clickCount]);
+    _selectionLocation = [self convertPointToIndex: p];
+    _selectionLength = 0;
+    [self setNeedsDisplay: YES];
 }
 
 - (void) mouseDragged: (NSEvent *) e {
-    if (!_connected) return;
+    if (![self connected]) return;
+    NSPoint p = [e locationInWindow];
+    p = [self convertPoint: p toView: nil];
+    int index = [self convertPointToIndex: p];
+    int oldValue = _selectionLength;
+    _selectionLength = index - _selectionLocation + 1;
+    if (_selectionLength <= 0) _selectionLength--;
+    NSLog(@"Drag: %d %d", _selectionLocation, _selectionLength);
+    if (oldValue != _selectionLength)
+        [self setNeedsDisplay: YES];
 }
 
 - (void) mouseUp: (NSEvent *) e {
-    if (!_connected) return;
+    if (![self connected]) return;
     
 }
 
@@ -233,7 +260,7 @@ BOOL isSpecialSymbol(unichar ch) {
 }
 
 - (void)drawRect:(NSRect)rect {
-	if ([_telnet connected]) {
+	if ([self connected]) {
 		NSRect imgRect = rect;
 		imgRect.origin.y = (_fontHeight * gRow) - rect.origin.y - rect.size.height;
 		[_backedImage compositeToPoint: rect.origin
@@ -249,6 +276,9 @@ BOOL isSpecialSymbol(unichar ch) {
 
 		/* Draw the input buffer */
 		
+        if (_selectionLength != 0) 
+            [self drawSelection];
+        
 	} else {
 		[[gConfig colorAtIndex: NUM_COLOR - 1 hilite: 0] set];
 		[NSBezierPath fillRect: [self bounds]];
@@ -261,6 +291,32 @@ BOOL isSpecialSymbol(unichar ch) {
 //	for (x = 0; x < gColumn; x++) 
 //		[NSBezierPath strokeLineFromPoint: NSMakePoint(x * _fontWidth + 0.5, 0) toPoint: NSMakePoint(x * _fontWidth + 0.5, gRow * _fontHeight)];	
 
+}
+
+- (void) drawSelection {
+    int location, length;
+    if (_selectionLength >= 0) {
+        location = _selectionLocation;
+        length = _selectionLength;
+    } else {
+        location = _selectionLocation + _selectionLength;
+        length = 0 - (int)_selectionLength;
+    }
+    int x = location % gColumn;
+    int y = location / gColumn;
+    [[NSColor colorWithCalibratedRed: 0.6 green: 0.9 blue: 0.6 alpha: 0.4] set];
+
+    while (length > 0) {
+        if (x + length <= gColumn) { // one-line
+            [NSBezierPath fillRect: NSMakeRect(x * _fontWidth, (gRow - y - 1) * _fontHeight, _fontWidth * length, _fontHeight)];
+            length = 0;
+        } else {
+            [NSBezierPath fillRect: NSMakeRect(x * _fontWidth, (gRow - y - 1) * _fontHeight, _fontWidth * (gColumn - x), _fontHeight)];
+            length -= (gColumn - x);
+        }
+        x = 0;
+        y++;
+    }
 }
 
 - (void) clearScreen: (int) opt atRow: (int) r column: (int) c {
@@ -632,20 +688,7 @@ BOOL isSpecialSymbol(unichar ch) {
 }
 
 - (BOOL)connected {
-	return _connected;
-}
-
-- (void)setConnected:(BOOL)value {
-	if (value != _connected) {
-		_connected = value;	
-		if (_connected == YES) {
-//			_timer = [NSTimer scheduledTimerWithTimeInterval: 2.0 target: self selector: @selector(tick:) userInfo: nil repeats: YES];
-		} else {
-//			[_timer invalidate];
-//			_timer = nil;
-			[self setNeedsDisplay: YES];
-		}
-	}
+	return [_telnet connected];
 }
 
 - (id)dataSource {
