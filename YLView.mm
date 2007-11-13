@@ -164,15 +164,41 @@ BOOL isSpecialSymbol(unichar ch) {
 
 - (void) copy: (id) sender {
     if (_selectionLength == 0) return;
+    int location, length;
+    if (_selectionLength >= 0) {
+        location = _selectionLocation;
+        length = _selectionLength;
+    } else {
+        location = _selectionLocation + _selectionLength;
+        length = 0 - (int)_selectionLength;
+    }
     
+    NSString *s = [_dataSource stringFromIndex: location length: length];
+    if (s) {
+        NSPasteboard *pb = [NSPasteboard generalPasteboard];
+        NSArray *types = [NSArray arrayWithObjects: NSStringPboardType, nil];
+        [pb declareTypes:types owner:self];
+        [pb setString: s forType:NSStringPboardType];        
+    }
 }
 
 - (void) paste: (id) sender {
-    
+    NSPasteboard *pb = [NSPasteboard generalPasteboard];
+    NSArray *types = [pb types];
+    if ([types containsObject: NSStringPboardType]) {
+        NSString *str = [pb stringForType: NSStringPboardType];
+        NSMutableString *mStr = [NSMutableString stringWithString: str];
+        [mStr replaceOccurrencesOfString: @"\n"
+                              withString: @"\r"
+                                 options: NSLiteralSearch
+                                   range: NSMakeRange(0, [str length])];
+        [self insertText: mStr];
+    }
 }
 
 #pragma mark -
-#pragma mark Coordinate Mapping
+#pragma mark Conversion
+
 - (int) convertPointToIndex: (NSPoint) p {
     if (p.x >= gColumn * _fontWidth) p.x = gColumn * _fontWidth - 0.001;
     if (p.y >= gRow * _fontHeight) p.y = gRow * _fontHeight - 0.001;

@@ -50,7 +50,10 @@
 - (NSColor *) fgColorAtRow: (int) r column: (int) c;
 - (NSColor *) bgColorAtRow: (int) r column: (int) c;
 - (BOOL) boldAtRow:(int) r column:(int) c ;
+
+- (NSString *) stringFromIndex: (int) begin length: (int) length ;
 - (unichar) charAtRow: (int) r column: (int) c;
+
 - (cell *) cellsOfRow: (int) r ;
 - (void) updateDoubleByteStateForRow: (int) r ;
 - (int) isDoubleByteAtRow: (int) r column:(int) c;

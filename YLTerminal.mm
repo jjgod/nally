@@ -385,6 +385,32 @@ static unsigned short gEmptyAttr;
 	return GRID(c, r).attr.f.bgColor;	
 }
 
+- (NSString *) stringFromIndex: (int) begin length: (int) length {
+    int i;
+    unichar textBuf[_row * (_column + 1) + 1];
+    unichar firstByte = 0;
+    int bufLength = 0;
+    for (i = begin; i < begin + length; i++) {
+        int x = i % _column;
+        int y = i / _column;
+        if (x == 0 && i - 1 < begin + length) {
+            [self updateDoubleByteStateForRow: y];
+            unichar cr = 0x000D;
+            textBuf[bufLength++] = cr;
+        }
+        int db = GRID(x, y).attr.f.doubleByte;
+        if (db == 0) {
+            textBuf[bufLength++] = GRID(x, y).byte;
+        } else if (db == 1) {
+            firstByte = GRID(x, y).byte;
+        } else if (db == 2 && firstByte) {
+            int index = (firstByte << 8) + GRID(x, y).byte - 0x8000;
+            textBuf[bufLength++] = B2U[index];
+        }
+    }
+    if (bufLength == 0) return nil;
+    return [[[NSString alloc] initWithCharacters: textBuf length: bufLength] autorelease];
+}
 
 - (unichar) charAtRow: (int) r column: (int) c {
 	int db = [self isDoubleByteAtRow: r column: c];
