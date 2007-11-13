@@ -123,7 +123,9 @@ static unsigned short gEmptyAttr;
 	for (i = 0; i < len; i++) {
 		c = bytes[i];
 		if (_state == TP_NORMAL) {
-			if (c == 0x07) { // Beep
+            if (c == 0x00) {
+                // do nothing
+            } else if (c == 0x07) { // Beep
 				NSBeep();
 			} else if (c == 0x08) { // Backspace
 				if (_cursorX > 0)
@@ -240,10 +242,16 @@ static unsigned short gEmptyAttr;
 						^[3;4H		: go to row 3, column 4
 					 */
 					if (_csArg->size() == 0) {
+                        NSLog(@"move to: row 1, column 1");
 						_cursorX = 0, _cursorY = 0;
 					} else if (_csArg->size() == 1) {
+                        NSLog(@"move to: row %d, column 1", (*_csArg)[0]);
+                        if ((*_csArg)[0] < 1) (*_csArg)[0] = 1;
 						CURSOR_MOVETO(0, _csArg->front() - 1);
 					} else {
+                        NSLog(@"move to: row %d, column %d", (*_csArg)[0], (*_csArg)[1]);
+                        if ((*_csArg)[0] < 1) (*_csArg)[0] = 1;
+                        if ((*_csArg)[1] < 1) (*_csArg)[1] = 1;
 						CURSOR_MOVETO((*_csArg)[1] - 1, (*_csArg)[0] - 1);
 					}
 				} else if (c == 'J') {		// Erase Region (cursor does not move)
@@ -393,7 +401,7 @@ static unsigned short gEmptyAttr;
     for (i = begin; i < begin + length; i++) {
         int x = i % _column;
         int y = i / _column;
-        if (x == 0 && i - 1 < begin + length) {
+        if (x == 0 && i != begin && i - 1 < begin + length) {
             [self updateDoubleByteStateForRow: y];
             unichar cr = 0x000D;
             textBuf[bufLength++] = cr;
