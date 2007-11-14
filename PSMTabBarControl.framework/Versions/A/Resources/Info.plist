@@ -5,26 +5,18 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string>${EXECUTABLE_NAME}</string>
-	<key>CFBundleIconFile</key>
-	<string>DragonBall</string>
+	<string>PSMTabBarControl</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.yllan.MacBlueTelnet</string>
+	<string>com.positivespinmedia.PSMTabBarControlFramework</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
-	<key>CFBundleName</key>
-	<string>${PRODUCT_NAME}</string>
 	<key>CFBundlePackageType</key>
-	<string>APPL</string>
+	<string>FMWK</string>
 	<key>CFBundleSignature</key>
-	<string>????</string>
+	<string>PSM1</string>
 	<key>CFBundleVersion</key>
-	<string>1.0</string>
-	<key>NSMainNibFile</key>
-	<string>MainMenu</string>
+	<string>1.1</string>
 	<key>NSPrincipalClass</key>
-	<string>NSApplication</string>
-	<key>QuartzGLEnable</key>
-	<true/>
+	<string>PSMTabBarControl</string>
 </dict>
 </plist>

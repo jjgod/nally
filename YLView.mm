@@ -173,7 +173,7 @@ BOOL isSpecialSymbol(unichar ch) {
         length = 0 - (int)_selectionLength;
     }
     
-    NSString *s = [_dataSource stringFromIndex: location length: length];
+    NSString *s = [[self dataSource] stringFromIndex: location length: length];
     if (s) {
         NSPasteboard *pb = [NSPasteboard generalPasteboard];
         NSArray *types = [NSArray arrayWithObjects: NSStringPboardType, nil];
@@ -217,7 +217,6 @@ BOOL isSpecialSymbol(unichar ch) {
     if (![self connected]) return;
     NSPoint p = [e locationInWindow];
     p = [self convertPoint: p toView: nil];
-//    NSLog(@"Click: %f %f %d", p.x, p.y, [e clickCount]);
     _selectionLocation = [self convertPointToIndex: p];
     _selectionLength = 0;
     [self setNeedsDisplay: YES];
@@ -231,14 +230,32 @@ BOOL isSpecialSymbol(unichar ch) {
     int oldValue = _selectionLength;
     _selectionLength = index - _selectionLocation + 1;
     if (_selectionLength <= 0) _selectionLength--;
-    NSLog(@"Drag: %d %d", _selectionLocation, _selectionLength);
     if (oldValue != _selectionLength)
         [self setNeedsDisplay: YES];
 }
 
 - (void) mouseUp: (NSEvent *) e {
     if (![self connected]) return;
-    
+    if (_selectionLength == 0) {
+        NSPoint p = [e locationInWindow];
+        p = [self convertPoint: p toView: nil];
+        int index = [self convertPointToIndex: p];
+        int r = index / gColumn;
+        int c = index % gColumn;
+        cell *currRow = [[self dataSource] cellsOfRow: r];
+        if (currRow[c].attr.f.url) {
+            int start = c;
+            for (start = c; start >= 0 && currRow[start].attr.f.url; start--) ;
+            start++;
+            int end = c;
+            for (end = c; end < gColumn && currRow[end].attr.f.url; end++) ;
+
+            NSMutableString *url = [NSMutableString string];
+            for (c = start; c < end; c++)
+                [url appendFormat: @"%c", currRow[c].byte];
+            [[NSWorkspace sharedWorkspace] openURL: [NSURL URLWithString: url]];
+        }
+    }
 }
 
 - (void) keyDown: (NSEvent *) e {
@@ -249,7 +266,7 @@ BOOL isSpecialSymbol(unichar ch) {
 
 	if ([e modifierFlags] & NSControlKeyMask) {
 		buf[0] = c;
-		[_telnet sendBytes: buf length: 1];
+		[[self telnet] sendBytes: buf length: 1];
 	}
 	
 	if (c == NSUpArrowFunctionKey) arrow[2] = 'A';
@@ -262,13 +279,13 @@ BOOL isSpecialSymbol(unichar ch) {
 		 c == NSDownArrowFunctionKey ||
 		 c == NSRightArrowFunctionKey || 
 		 c == NSLeftArrowFunctionKey)) {
-		[_telnet sendBytes: arrow length: 3];
+		[[self telnet] sendBytes: arrow length: 3];
 		return;
 	}
 	
 	if (![self hasMarkedText] && (c == 0x7F || c == NSDeleteFunctionKey)) {
 		buf[0] = 0x08;
-		[_telnet sendBytes: buf length: 1];
+		[[self telnet] sendBytes: buf length: 1];
 	}
 //	
 //	unsigned char ch = (unsigned char) c;
@@ -281,11 +298,12 @@ BOOL isSpecialSymbol(unichar ch) {
 
 - (void) tick: (NSTimer *) t {
 	[self update];
-	if (_x != _dataSource->_cursorX || _y != _dataSource->_cursorY) {
+    YLTerminal *ds = [self dataSource];
+	if (_x != ds->_cursorX || _y != ds->_cursorY) {
 		[self setNeedsDisplayInRect: NSMakeRect(_x * _fontWidth, (gRow - 1 - _y) * _fontHeight, _fontWidth, _fontHeight)];
-		[self setNeedsDisplayInRect: NSMakeRect(_dataSource->_cursorX * _fontWidth, (gRow - 1 - _dataSource->_cursorY) * _fontHeight, _fontWidth, _fontHeight)];
-		_x = _dataSource->_cursorX;
-		_y = _dataSource->_cursorY;
+		[self setNeedsDisplayInRect: NSMakeRect(ds->_cursorX * _fontWidth, (gRow - 1 - ds->_cursorY) * _fontHeight, _fontWidth, _fontHeight)];
+		_x = ds->_cursorX;
+		_y = ds->_cursorY;
 	}
 }
 
@@ -298,20 +316,37 @@ BOOL isSpecialSymbol(unichar ch) {
 }
 
 - (void)drawRect:(NSRect)rect {
+    YLTerminal *ds = [self dataSource];
 	if ([self connected]) {
 		NSRect imgRect = rect;
 		imgRect.origin.y = (_fontHeight * gRow) - rect.origin.y - rect.size.height;
 		[_backedImage compositeToPoint: rect.origin
 							  fromRect: rect
 							 operation: NSCompositeCopy];
-		
+
+        [[NSColor orangeColor] set];
+        [NSBezierPath setDefaultLineWidth: 1.0];
+        /* Draw the url underline */
+        int c, r;
+        for (r = 0; r < gColumn; r++) {
+            [ds updateURLStateForRow: r];
+            cell *currRow = [ds cellsOfRow: r];
+            for (c = 0; c < gColumn; c++) {
+                int start;
+                for (start = c; currRow[c].attr.f.url && c < gColumn; c++) ;
+                if (c != start) {
+                    [NSBezierPath strokeLineFromPoint: NSMakePoint(start * _fontWidth + 0.5, (gRow - r - 1) * _fontHeight + 0.5) 
+                                              toPoint: NSMakePoint(c * _fontWidth - 0.5, (gRow - r - 1) * _fontHeight + 0.5)];
+                }
+            }
+        }
 		/* Draw the cursor */
 		
 		[[NSColor whiteColor] set];
 		[NSBezierPath setDefaultLineWidth: 2.0];
-		[NSBezierPath strokeLineFromPoint: NSMakePoint(_dataSource->_cursorX * _fontWidth, (gRow - 1 - _dataSource->_cursorY) * _fontHeight + 1) 
-								  toPoint: NSMakePoint((_dataSource->_cursorX + 1) * _fontWidth, (gRow - 1 - _dataSource->_cursorY) * _fontHeight + 1) ];
-
+		[NSBezierPath strokeLineFromPoint: NSMakePoint(ds->_cursorX * _fontWidth, (gRow - 1 - ds->_cursorY) * _fontHeight + 1) 
+								  toPoint: NSMakePoint((ds->_cursorX + 1) * _fontWidth, (gRow - 1 - ds->_cursorY) * _fontHeight + 1) ];
+        [NSBezierPath setDefaultLineWidth: 1.0];
 		/* Draw the input buffer */
 		
         if (_selectionLength != 0) 
@@ -403,15 +438,16 @@ BOOL isSpecialSymbol(unichar ch) {
 
 - (void) update {
 	int x, y;
+    YLTerminal *ds = [self dataSource];
 	[_backedImage lockFocus];
 	CGContextRef myCGContext = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
 	
 	/* Draw Background */
 	for (y = 0; y < gRow; y++) {
 		for (x = 0; x < gColumn; x++) {
-			if ([_dataSource isDirtyAtRow: y column: x]) {
+			if ([ds isDirtyAtRow: y column: x]) {
 				int startx = x;
-				for (; x < gColumn && [_dataSource isDirtyAtRow:y column:x]; x++) ;
+				for (; x < gColumn && [ds isDirtyAtRow:y column:x]; x++) ;
 				[self updateBackgroundForRow: y from: startx to: x];
 			}
 		}
@@ -421,14 +457,13 @@ BOOL isSpecialSymbol(unichar ch) {
 
 	/* Draw String row by row */
 	for (y = 0; y < gRow; y++) {
-		[_dataSource updateDoubleByteStateForRow: y];
 		[self drawStringForRow: y context: myCGContext];
 	}		
 	CGContextRestoreGState(myCGContext);
 	
 	for (y = 0; y < gRow; y++) {
 		for (x = 0; x < gColumn; x++) {
-			[_dataSource setDirty: NO atRow: y column: x];
+			[ds setDirty: NO atRow: y column: x];
 		}
 	}
 
@@ -444,18 +479,20 @@ BOOL isSpecialSymbol(unichar ch) {
 	int runLength[gColumn];
 	CGPoint position[gColumn];
 	int bufLength = 0;
-
-	cell *currRow = [_dataSource cellsOfRow: r];
+    YLTerminal *ds = [self dataSource];
+    [ds updateDoubleByteStateForRow: r];
+	
+    cell *currRow = [ds cellsOfRow: r];
 
 	for (i = 0; i < gColumn; i++) 
 		isDoubleByte[i] = textBuf[i] = runLength[i] = 0;
 
-	for (x = 0; x < gColumn && ![_dataSource isDirtyAtRow: r column: x]; x++) ;
+	for (x = 0; x < gColumn && ![ds isDirtyAtRow: r column: x]; x++) ;
 	start = x;
 	if (start == gColumn) return;
 	
 	for (x = start; x < gColumn; x++) {
-		if (![_dataSource isDirtyAtRow: r column: x]) continue;
+		if (![ds isDirtyAtRow: r column: x]) continue;
 		end = x;
 		int db = (currRow + x)->attr.f.doubleByte;
 
@@ -577,7 +614,7 @@ BOOL isSpecialSymbol(unichar ch) {
 
 - (void) updateBackgroundForRow: (int) r from: (int) start to: (int) end {
 	int c;
-	cell *currRow = [_dataSource cellsOfRow: r];
+	cell *currRow = [[self dataSource] cellsOfRow: r];
 	NSRect rowRect = NSMakeRect(start * _fontWidth, (gRow - 1 - r) * _fontHeight, (end - start) * _fontWidth, _fontHeight);
 
 	attribute currAttr, lastAttr = (currRow + start)->attr;
@@ -715,47 +752,33 @@ BOOL isSpecialSymbol(unichar ch) {
     }
 }
 
-- (int)y {
+- (int) y {
     return _y;
 }
 
-- (void)setY:(int)value {
+- (void) setY: (int) value {
     if (_y != value) {
         _y = value;
     }
 }
 
-- (BOOL)connected {
-	return [_telnet connected];
+- (BOOL) connected {
+	return [[self telnet] connected];
 }
 
-- (id)dataSource {
-    return [[_dataSource retain] autorelease];
+- (YLTerminal *) dataSource {
+    return (YLTerminal *)[[self telnet] terminal];
 }
 
-- (void)setDataSource:(id)value {
-    if (_dataSource != value) {
-        [_dataSource release];
-        _dataSource = [value retain];
-    }
-}
-
-- (YLTelnet *)telnet {
-    return [[_telnet retain] autorelease];
-}
-
-- (void)setTelnet:(YLTelnet *)value {
-    if (_telnet != value) {
-        [_telnet release];
-        _telnet = [value retain];
-    }
+- (YLTelnet *) telnet {
+    return (YLTelnet *)[[self selectedTabViewItem] identifier];
 }
 
 #pragma mark - 
 #pragma mark NSTextInput Protocol
 /* NSTextInput protocol */
 // instead of keyDown: aString can be NSString or NSAttributedString
-- (void) insertText:(id)aString {
+- (void) insertText: (id) aString {
 	[_textField setHidden: YES];
 	[_markedText release];
 	_markedText = nil;	
@@ -775,14 +798,14 @@ BOOL isSpecialSymbol(unichar ch) {
 			[data appendBytes: buf length: 2];
 		}
 	}
-	[_telnet sendMessage: data];
+	[[self telnet] sendMessage: data];
 }
 
 - (void) doCommandBySelector:(SEL)aSelector {
 	unsigned char ch[10];
 	if (strcmp((char *) aSelector, "insertNewline:") == 0) {
 		ch[0] = 0x0D;
-		[_telnet sendBytes: ch length: 1];
+		[[self telnet] sendBytes: ch length: 1];
 	} else if (strcmp((char *) aSelector, "cancelOperation:") == 0) {
 	} else if (strcmp((char *) aSelector, "cancel:") == 0) {
 	} else if (strcmp((char *) aSelector, "scrollToBeginningOfDocument:") == 0) {
@@ -794,6 +817,7 @@ BOOL isSpecialSymbol(unichar ch) {
 
 // setMarkedText: cannot take a nil first argument. aString can be NSString or NSAttributedString
 - (void) setMarkedText:(id)aString selectedRange:(NSRange)selRange {
+    YLTerminal *ds = [self dataSource];
 	if ([aString isKindOfClass: [NSString class]])
 		aString = [[[NSAttributedString alloc] initWithString: aString] autorelease];
 
@@ -814,18 +838,18 @@ BOOL isSpecialSymbol(unichar ch) {
 	[_textField setSelectedRange: selRange];
 	[_textField setMarkedRange: _markedRange];
 
-	NSPoint o = NSMakePoint(_dataSource->_cursorX * _fontWidth, (gRow - 1 - _dataSource->_cursorY) * _fontHeight + 5.0);
+	NSPoint o = NSMakePoint(ds->_cursorX * _fontWidth, (gRow - 1 - ds->_cursorY) * _fontHeight + 5.0);
 	CGFloat dy;
 	if (o.x + [_textField frame].size.width > gColumn * _fontWidth) 
 		o.x = gColumn * _fontWidth - [_textField frame].size.width;
 	if (o.y + [_textField frame].size.height > gRow * _fontHeight) {
-		o.y = (gRow - _dataSource->_cursorY) * _fontHeight - 5.0 - [_textField frame].size.height;
+		o.y = (gRow - ds->_cursorY) * _fontHeight - 5.0 - [_textField frame].size.height;
 		dy = o.y + [_textField frame].size.height;
 	} else {
 		dy = o.y;
 	}
 	[_textField setFrameOrigin: o];
-	[_textField setDestination: [_textField convertPoint: NSMakePoint((_dataSource->_cursorX + 0.5) * _fontWidth, dy)
+	[_textField setDestination: [_textField convertPoint: NSMakePoint((ds->_cursorX + 0.5) * _fontWidth, dy)
 												fromView: self]];
 	[_textField setHidden: NO];
 }

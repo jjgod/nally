@@ -13,14 +13,11 @@
 @class YLTelnet;
 @class YLMarkedTextView;
 
-@interface YLView : NSView <NSTextInput> {	
+@interface YLView : NSTabView <NSTextInput> {	
 	int _fontWidth;
 	int _fontHeight;
 	
 	NSImage *_backedImage;
-	
-	YLTerminal *_dataSource;
-	YLTelnet *_telnet;
 	
 	NSTimer *_timer;
 	int _x;
@@ -41,10 +38,8 @@
 - (void) drawSpecialSymbol: (unichar) ch forRow: (int) r column: (int) c leftAttribute: (attribute) attr1 rightAttribute: (attribute) attr2 ;
 - (void) drawSelection ;
 
-- (id)dataSource;
-- (void)setDataSource:(id)value;
+- (YLTerminal *)dataSource;
 - (YLTelnet *)telnet;
-- (void)setTelnet:(YLTelnet *)value;
 - (BOOL)connected;
 
 - (void) extendBottom ;

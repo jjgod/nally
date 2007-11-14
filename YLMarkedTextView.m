@@ -100,7 +100,6 @@
 	CGFloat offset = CTLineGetOffsetForStringIndex(line, _selectedRange.location, NULL);
 	[[NSColor whiteColor] set];
 	[NSBezierPath strokeLineFromPoint: NSMakePoint(offset, 0) toPoint: NSMakePoint(offset, _lineHeight)];
-	
 	CGContextRestoreGState(context);
 	
 	CFRelease(line);

@@ -80,6 +80,7 @@ static unsigned short gEmptyAttr;
 		_grid[0].attr.f.underline = 0;
 		_grid[0].attr.f.blink = 0;
 		_grid[0].attr.f.reverse = 0;
+        _grid[0].attr.f.url = 0;
 		_grid[0].attr.f.nothing = 0;
 		gEmptyAttr = _grid[0].attr.v;
 		for (i = 0; i < (_row * _column); i++) {
@@ -153,7 +154,6 @@ static unsigned short gEmptyAttr;
 				_csTemp = 0;
 				_state = TP_CONTROL;
 			} else {
-//				NSLog(@"insert %d @ %d %d", c, _cursorX, _cursorY);
 				GRID(_cursorX, _cursorY).byte = c;
 				GRID(_cursorX, _cursorY).attr.f.fgColor = _fgColor;
 				GRID(_cursorX, _cursorY).attr.f.bgColor = _bgColor;
@@ -161,6 +161,7 @@ static unsigned short gEmptyAttr;
 				GRID(_cursorX, _cursorY).attr.f.underline = _underline;
 				GRID(_cursorX, _cursorY).attr.f.blink = _blink;
 				GRID(_cursorX, _cursorY).attr.f.reverse = _reverse;
+                GRID(_cursorX, _cursorY).attr.f.url = NO;
 				[self setDirty: YES atRow: _cursorY column: _cursorX];
 				_cursorX++;
 			}
@@ -242,14 +243,11 @@ static unsigned short gEmptyAttr;
 						^[3;4H		: go to row 3, column 4
 					 */
 					if (_csArg->size() == 0) {
-                        NSLog(@"move to: row 1, column 1");
 						_cursorX = 0, _cursorY = 0;
 					} else if (_csArg->size() == 1) {
-                        NSLog(@"move to: row %d, column 1", (*_csArg)[0]);
                         if ((*_csArg)[0] < 1) (*_csArg)[0] = 1;
 						CURSOR_MOVETO(0, _csArg->front() - 1);
 					} else {
-                        NSLog(@"move to: row %d, column %d", (*_csArg)[0], (*_csArg)[1]);
                         if ((*_csArg)[0] < 1) (*_csArg)[0] = 1;
                         if ((*_csArg)[1] < 1) (*_csArg)[1] = 1;
 						CURSOR_MOVETO((*_csArg)[1] - 1, (*_csArg)[0] - 1);
@@ -448,6 +446,49 @@ static unsigned short gEmptyAttr;
 			db = 2;
 		}
 		(currRow + i)->attr.f.doubleByte = db;
+	}
+}
+
+- (void) updateURLStateForRow: (int) r {
+	cell *currRow = _grid + ((r + _offset) % _row) * _column;
+    int httpLength = 7; // http://
+    int httpsLength = 8; // https://
+    BOOL urlState = NO;
+    
+	int i;
+	for (i = 0; i < _column; i++) {
+        if (urlState) {
+            unsigned char c = (currRow + i)->byte;
+            if (0x21 <= c && c <= 0x7E) {
+                (currRow + i)->attr.f.url = YES;                
+            } else {
+                urlState = NO;
+                (currRow + i)->attr.f.url = NO;
+            }
+        } else if (i + httpLength < _column && 
+            (currRow + i + 0)->byte == 'h' &&
+            (currRow + i + 1)->byte == 't' && 
+            (currRow + i + 2)->byte == 't' &&
+            (currRow + i + 3)->byte == 'p' &&
+            (currRow + i + 4)->byte == ':' &&
+            (currRow + i + 5)->byte == '/' &&
+            (currRow + i + 6)->byte == '/') {
+            urlState = YES;
+            (currRow + i)->attr.f.url = YES;
+        } else if (i + httpsLength < _column && 
+                   (currRow + i + 0)->byte == 'h' &&
+                   (currRow + i + 1)->byte == 't' && 
+                   (currRow + i + 2)->byte == 't' &&
+                   (currRow + i + 3)->byte == 'p' &&
+                   (currRow + i + 4)->byte == 's' &&
+                   (currRow + i + 5)->byte == ':' &&
+                   (currRow + i + 6)->byte == '/' &&
+                   (currRow + i + 7)->byte == '/' ) {
+            urlState = YES;
+            (currRow + i)->attr.f.url = YES;
+        } else {
+            (currRow + i)->attr.f.url = NO;
+        }
 	}
 }
 

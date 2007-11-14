@@ -13,6 +13,7 @@
 @implementation YLController
 
 - (void) awakeFromNib {
+    [_tab setStyleNamed: @"Metal"];
 }
 
 - (IBAction) connect:(id )sender {
@@ -24,28 +25,16 @@
 	[telnet setTerminal: terminal];
 	[telnet setServerAddress: [sender stringValue]];
 	[terminal setDelegate: _telnetView];
-	[_telnetView setDataSource: terminal];
-	[_telnetView setTelnet: telnet];
-
-	_selectedIndex = [self countOfConnections];
-	if (_selectedIndex < 0) _selectedIndex = 0;
-	[self insertObject: telnet inConnectionsAtIndex: _selectedIndex];
-
-	[_tab setSegmentCount: [self countOfConnections]];
-	
-	NSUInteger i, count = [self countOfConnections];
-	for (i = 0; i < count; i++) {
-		YLTelnet * obj = [self objectInConnectionsAtIndex: i];
-		[_tab setLabel: [obj serverAddress] forSegment: i];
-		NSLog(@"%d - %@", i, [obj serverAddress]);
-		[_tab setWidth: 120.0 forSegment: i];
-	}
-	[_tab setSelectedSegment: _selectedIndex];
-	NSSize size = [_tab frame].size;
-	size.width = 120.0 * [self countOfConnections] + 10;
-	[_tab setFrameSize: size];
+    
+    NSTabViewItem *tabItem = [[NSTabViewItem alloc] initWithIdentifier: telnet];
+    [tabItem setLabel: [sender stringValue]];
+    [_telnetView addTabViewItem: tabItem];
 	
 	[telnet connectToAddress: [sender stringValue] port: 23];
+    [_telnetView selectTabViewItem: tabItem];
+    [tabItem release];
+    [terminal release];
+    [telnet release];
 }
 
 - (IBAction) openLocation:(id )sender {
@@ -53,74 +42,50 @@
 	[_addressBar becomeFirstResponder];
 }
 
-- (IBAction) clickTab: (id) sender {
-	_selectedIndex = [_tab selectedSegment];
-	id telnet = [self objectInConnectionsAtIndex: _selectedIndex];
-	[_addressBar setStringValue: [telnet serverAddress]];
-	[_telnetView setTelnet: telnet];
-	[_telnetView setDataSource: [telnet terminal]];
-	[[telnet terminal] setAllDirty];
-	[_telnetView update];
+#pragma mark -
+#pragma mark Tab Delegation
+
+- (BOOL)tabView:(NSTabView *)tabView shouldCloseTabViewItem:(NSTabViewItem *)tabViewItem {
+    return YES;
 }
 
-- (NSArray *)connections {
-    if (!_connections) {
-        _connections = [[NSMutableArray alloc] init];
-    }
-    return [[_connections retain] autorelease];
+- (void)tabView:(NSTabView *)tabView willCloseTabViewItem:(NSTabViewItem *)tabViewItem {
+
 }
 
+- (void)tabView:(NSTabView *)tabView didCloseTabViewItem:(NSTabViewItem *)tabViewItem {
 
-- (unsigned)countOfConnections {
-    if (!_connections) {
-        _connections = [[NSMutableArray alloc] init];
-    }
-    return [_connections count];
 }
 
-- (id)objectInConnectionsAtIndex:(unsigned)theIndex {
-    if (!_connections) {
-        _connections = [[NSMutableArray alloc] init];
-    }
-    return [_connections objectAtIndex:theIndex];
+- (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem {
+    [_telnetView update];
+    [_telnetView setNeedsDisplay: YES];
 }
 
-- (void)getConnections:(id *)objsPtr range:(NSRange)range {
-    if (!_connections) {
-        _connections = [[NSMutableArray alloc] init];
-    }
-    [_connections getObjects:objsPtr range:range];
+- (BOOL)tabView:(NSTabView *)tabView shouldSelectTabViewItem:(NSTabViewItem *)tabViewItem {
+    return YES;
 }
 
-- (void)insertObject:(id)obj inConnectionsAtIndex:(unsigned)theIndex {
-    if (!_connections) {
-        _connections = [[NSMutableArray alloc] init];
-    }
-    [_connections insertObject:obj atIndex:theIndex];
+- (void)tabView:(NSTabView *)tabView willSelectTabViewItem:(NSTabViewItem *)tabViewItem {
+    [[[tabViewItem identifier] terminal] setAllDirty];
 }
 
-- (void)removeObjectFromConnectionsAtIndex:(unsigned)theIndex {
-    if (!_connections) {
-        _connections = [[NSMutableArray alloc] init];
-    }
-    [_connections removeObjectAtIndex:theIndex];
+- (BOOL)tabView:(NSTabView*)aTabView shouldDragTabViewItem:(NSTabViewItem *)tabViewItem fromTabBar:(PSMTabBarControl *)tabBarControl {
+	return YES;
 }
 
-- (void)replaceObjectInConnectionsAtIndex:(unsigned)theIndex withObject:(id)obj {
-    if (!_connections) {
-        _connections = [[NSMutableArray alloc] init];
-    }
-    [_connections replaceObjectAtIndex:theIndex withObject:obj];
-}
-	 
-- (int)selectedIndex {
-    return _selectedIndex;
+- (BOOL)tabView:(NSTabView*)aTabView shouldDropTabViewItem:(NSTabViewItem *)tabViewItem inTabBar:(PSMTabBarControl *)tabBarControl {
+	return YES;
 }
 
-- (void)setSelectedIndex:(int)value {
-    if (_selectedIndex != value) {
-        _selectedIndex = value;
-    }
+- (void)tabView:(NSTabView*)aTabView didDropTabViewItem:(NSTabViewItem *)tabViewItem inTabBar:(PSMTabBarControl *)tabBarControl {
 }
 
+- (NSImage *)tabView:(NSTabView *)aTabView imageForTabViewItem:(NSTabViewItem *)tabViewItem offset:(NSSize *)offset styleMask:(unsigned int *)styleMask {
+    return nil;
+}
+
+- (void)tabViewDidChangeNumberOfTabViewItems:(NSTabView *)tabView {
+    
+}
 @end

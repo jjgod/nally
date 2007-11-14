@@ -55,6 +55,7 @@
 - (unichar) charAtRow: (int) r column: (int) c;
 
 - (cell *) cellsOfRow: (int) r ;
+- (void) updateURLStateForRow: (int) r ;
 - (void) updateDoubleByteStateForRow: (int) r ;
 - (int) isDoubleByteAtRow: (int) r column:(int) c;
 - (void) setAllDirty ;
