@@ -14,7 +14,10 @@
 		8540F7310CEB4428003B17D1 /* PSMTabBarControl.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8540F7240CEB43FF003B17D1 /* PSMTabBarControl.framework */; };
 		856CDB260C9650550025C754 /* encoding.c in Sources */ = {isa = PBXBuildFile; fileRef = 856CDB250C9650550025C754 /* encoding.c */; };
 		8570AD5F0A3923A900838442 /* YLView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8570AD5E0A3923A900838442 /* YLView.mm */; };
+		85899C7B0CEED4E40031907F /* YLApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 85899C7A0CEED4E40031907F /* YLApplication.m */; };
 		858A54E60CAE78C8000E1AA7 /* YLMarkedTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 858A54E50CAE78C8000E1AA7 /* YLMarkedTextView.m */; };
+		859CB7DB0CEF43C300B27180 /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 859CB7DA0CEF43C300B27180 /* Sparkle.framework */; };
+		859CB7FA0CEF43F300B27180 /* Sparkle.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 859CB7DA0CEF43C300B27180 /* Sparkle.framework */; };
 		85ABEB810C966FEF008227D6 /* YLController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 85ABEB800C966FEF008227D6 /* YLController.mm */; };
 		85AE9DA70CB1597A0045317F /* reload.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 85AE9DA60CB1597A0045317F /* reload.pdf */; };
 		85AE9DAE0CB15D220045317F /* bookmark.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 85AE9DAD0CB15D220045317F /* bookmark.pdf */; };
@@ -34,6 +37,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				859CB7FA0CEF43F300B27180 /* Sparkle.framework in CopyFiles */,
 				8540F7310CEB4428003B17D1 /* PSMTabBarControl.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -59,8 +63,11 @@
 		856CDB250C9650550025C754 /* encoding.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = encoding.c; sourceTree = "<group>"; };
 		8570AD5D0A3923A900838442 /* YLView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLView.h; sourceTree = "<group>"; };
 		8570AD5E0A3923A900838442 /* YLView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = YLView.mm; sourceTree = "<group>"; };
+		85899C790CEED4E40031907F /* YLApplication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLApplication.h; sourceTree = "<group>"; };
+		85899C7A0CEED4E40031907F /* YLApplication.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YLApplication.m; sourceTree = "<group>"; };
 		858A54E40CAE78C8000E1AA7 /* YLMarkedTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLMarkedTextView.h; sourceTree = "<group>"; };
 		858A54E50CAE78C8000E1AA7 /* YLMarkedTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YLMarkedTextView.m; sourceTree = "<group>"; };
+		859CB7DA0CEF43C300B27180 /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Sparkle.framework; sourceTree = "<group>"; };
 		85ABEB7F0C966FEF008227D6 /* YLController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLController.h; sourceTree = "<group>"; };
 		85ABEB800C966FEF008227D6 /* YLController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = YLController.mm; sourceTree = "<group>"; };
 		85AE9DA60CB1597A0045317F /* reload.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = reload.pdf; sourceTree = "<group>"; };
@@ -71,7 +78,7 @@
 		85F7F2070B06EE36000C4CDF /* YLLGlobalConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLLGlobalConfig.h; sourceTree = "<group>"; };
 		85F7F2080B06EE36000C4CDF /* YLLGlobalConfig.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YLLGlobalConfig.m; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		8D1107320486CEB800E47090 /* MacBlueTelnet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacBlueTelnet.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D1107320486CEB800E47090 /* Nally.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Nally.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -82,6 +89,7 @@
 				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
 				850711AB0CA7A347005F4734 /* ApplicationServices.framework in Frameworks */,
 				8540F7250CEB43FF003B17D1 /* PSMTabBarControl.framework in Frameworks */,
+				859CB7DB0CEF43C300B27180 /* Sparkle.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -91,6 +99,8 @@
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				85899C790CEED4E40031907F /* YLApplication.h */,
+				85899C7A0CEED4E40031907F /* YLApplication.m */,
 				85ABEB7F0C966FEF008227D6 /* YLController.h */,
 				85ABEB800C966FEF008227D6 /* YLController.mm */,
 				856CDB240C9650550025C754 /* encoding.h */,
@@ -116,6 +126,7 @@
 		1058C7A2FEA54F0111CA2CBB /* Other Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				859CB7DA0CEF43C300B27180 /* Sparkle.framework */,
 				8540F7240CEB43FF003B17D1 /* PSMTabBarControl.framework */,
 				29B97324FDCFA39411CA2CEA /* AppKit.framework */,
 				29B97325FDCFA39411CA2CEA /* Foundation.framework */,
@@ -126,7 +137,7 @@
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8D1107320486CEB800E47090 /* MacBlueTelnet.app */,
+				8D1107320486CEB800E47090 /* Nally.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -201,9 +212,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		8D1107260486CEB800E47090 /* MacBlueTelnet */ = {
+		8D1107260486CEB800E47090 /* Nally */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "MacBlueTelnet" */;
+			buildConfigurationList = C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "Nally" */;
 			buildPhases = (
 				8540F7350CEB4435003B17D1 /* CopyFiles */,
 				8D1107290486CEB800E47090 /* Resources */,
@@ -214,10 +225,10 @@
 			);
 			dependencies = (
 			);
-			name = MacBlueTelnet;
+			name = Nally;
 			productInstallPath = "$(HOME)/Applications";
 			productName = MacBlueTelnet;
-			productReference = 8D1107320486CEB800E47090 /* MacBlueTelnet.app */;
+			productReference = 8D1107320486CEB800E47090 /* Nally.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -232,7 +243,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				8D1107260486CEB800E47090 /* MacBlueTelnet */,
+				8D1107260486CEB800E47090 /* Nally */,
 			);
 		};
 /* End PBXProject section */
@@ -266,6 +277,7 @@
 				85ABEB810C966FEF008227D6 /* YLController.mm in Sources */,
 				85D9B9D10C97DF70006C5E0F /* YLBitmapView.mm in Sources */,
 				858A54E60CAE78C8000E1AA7 /* YLMarkedTextView.m in Sources */,
+				85899C7B0CEED4E40031907F /* YLApplication.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -328,7 +340,7 @@
 				GCC_MODEL_TUNING = G5;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
-				PRODUCT_NAME = MacBlueTelnet;
+				PRODUCT_NAME = Nally;
 				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.5.sdk";
 				WRAPPER_EXTENSION = app;
 			};
@@ -357,7 +369,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "MacBlueTelnet" */ = {
+		C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "Nally" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C01FCF4B08A954540054247B /* Debug */,

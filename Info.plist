@@ -9,7 +9,7 @@
 	<key>CFBundleIconFile</key>
 	<string>DragonBall</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.yllan.MacBlueTelnet</string>
+	<string>org.yllan.Nally</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -19,12 +19,14 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>1.0</string>
+	<string>0.8</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
-	<string>NSApplication</string>
+	<string>YLApplication</string>
 	<key>QuartzGLEnable</key>
 	<true/>
+    <key>SUFeedURL</key> 
+    <string>http://yllan.org/mac/Nally/Nally.xml</string>
 </dict>
 </plist>

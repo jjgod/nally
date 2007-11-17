@@ -286,6 +286,7 @@ BOOL isSpecialSymbol(unichar ch) {
 	if (![self hasMarkedText] && (c == 0x7F || c == NSDeleteFunctionKey)) {
 		buf[0] = 0x08;
 		[[self telnet] sendBytes: buf length: 1];
+        return;
 	}
 //	
 //	unsigned char ch = (unsigned char) c;
@@ -739,6 +740,10 @@ BOOL isSpecialSymbol(unichar ch) {
 	return YES;
 }
 
+- (BOOL)canBecomeKeyView {
+    return YES;
+}
+
 #pragma mark -
 #pragma mark Accessor
 
@@ -812,7 +817,10 @@ BOOL isSpecialSymbol(unichar ch) {
 	} else if (strcmp((char *) aSelector, "scrollToEndOfDocument:") == 0) {
 	} else if (strcmp((char *) aSelector, "scrollPageUp:") == 0) {
 	} else if (strcmp((char *) aSelector, "scrollPageDown:") == 0) {
-	}
+	} else if (strcmp((char *) aSelector, "insertTab:") == 0) {
+        ch[0] = 0x09;
+		[[self telnet] sendBytes: ch length: 1];
+    }
 }
 
 // setMarkedText: cannot take a nil first argument. aString can be NSString or NSAttributedString

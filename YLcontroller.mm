@@ -16,7 +16,7 @@
     [_tab setStyleNamed: @"Metal"];
 }
 
-- (IBAction) connect:(id )sender {
+- (IBAction) connect: (id) sender {
 	[sender abortEditing];
 	[[_telnetView window] makeFirstResponder: _telnetView];
 	
@@ -28,6 +28,7 @@
     
     NSTabViewItem *tabItem = [[NSTabViewItem alloc] initWithIdentifier: telnet];
     [tabItem setLabel: [sender stringValue]];
+//    [tabItem setInitialFirstResponder: _telnetView];
     [_telnetView addTabViewItem: tabItem];
 	
 	[telnet connectToAddress: [sender stringValue] port: 23];
@@ -37,9 +38,48 @@
     [telnet release];
 }
 
-- (IBAction) openLocation:(id )sender {
+- (IBAction) openLocation: (id) sender {
 	[_telnetView resignFirstResponder];
 	[_addressBar becomeFirstResponder];
+}
+
+- (IBAction) selectNextTab: (id) sender {
+    if ([_telnetView indexOfTabViewItem: [_telnetView selectedTabViewItem]] == [_telnetView numberOfTabViewItems] - 1)
+        [_telnetView selectFirstTabViewItem: self];
+    else
+        [_telnetView selectNextTabViewItem: self];
+}
+
+- (IBAction) selectPrevTab: (id) sender {
+    if ([_telnetView indexOfTabViewItem: [_telnetView selectedTabViewItem]] == 0)
+        [_telnetView selectLastTabViewItem: self];
+    else
+        [_telnetView selectPreviousTabViewItem: self];
+}
+
+- (IBAction) closeTab: (id) sender {
+    
+}
+
+- (BOOL) windowShouldClose: (id) window {
+    NSLog(@"SHOULD");
+    return NO;
+}
+
+- (BOOL) windowWillClose: (id) window {
+//    [NSApp terminate: self];
+    NSLog(@"WILL");
+    return NO;
+}
+
+- (void) windowDidBecomeKey: (NSNotification *) notification {
+    [_closeWindowMenuItem setKeyEquivalentModifierMask: NSCommandKeyMask | NSShiftKeyMask];
+    [_closeTabMenuItem setKeyEquivalent: @"w"];
+}
+
+- (void) windowDidResignKey: (NSNotification *) notification {
+    [_closeWindowMenuItem setKeyEquivalentModifierMask: NSCommandKeyMask];
+    [_closeTabMenuItem setKeyEquivalent: @""];
 }
 
 #pragma mark -
@@ -59,6 +99,7 @@
 
 - (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem {
     [_telnetView update];
+    [_addressBar setStringValue: [[tabViewItem identifier] serverAddress]];
     [_telnetView setNeedsDisplay: YES];
 }
 
