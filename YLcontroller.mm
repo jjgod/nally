@@ -14,6 +14,7 @@
 
 - (void) awakeFromNib {
     [_tab setStyleNamed: @"Metal"];
+    [_tab setCanCloseOnlyTab: YES];
 }
 
 - (IBAction) connect: (id) sender {
@@ -23,7 +24,7 @@
 	id telnet = [YLTelnet new];
 	id terminal = [YLTerminal new];
 	[telnet setTerminal: terminal];
-	[telnet setServerAddress: [sender stringValue]];
+    [telnet setConnectionName: [sender stringValue]];
 	[terminal setDelegate: _telnetView];
     
     NSTabViewItem *tabItem = [[NSTabViewItem alloc] initWithIdentifier: telnet];
@@ -43,6 +44,10 @@
 	[_addressBar becomeFirstResponder];
 }
 
+- (IBAction) recoonect: (id) sender {
+    [[_telnetView telnet] reconnect];
+}
+
 - (IBAction) selectNextTab: (id) sender {
     if ([_telnetView indexOfTabViewItem: [_telnetView selectedTabViewItem]] == [_telnetView numberOfTabViewItems] - 1)
         [_telnetView selectFirstTabViewItem: self];
@@ -58,7 +63,11 @@
 }
 
 - (IBAction) closeTab: (id) sender {
+    if ([_telnetView numberOfTabViewItems] == 0) return;
     
+    NSTabViewItem *tabItem = [_telnetView selectedTabViewItem];
+    
+    [_telnetView removeTabViewItem: tabItem];
 }
 
 - (BOOL) windowShouldClose: (id) window {
@@ -99,7 +108,7 @@
 
 - (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem {
     [_telnetView update];
-    [_addressBar setStringValue: [[tabViewItem identifier] serverAddress]];
+    [_addressBar setStringValue: [[tabViewItem identifier] connectionName]];
     [_telnetView setNeedsDisplay: YES];
 }
 

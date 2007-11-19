@@ -25,5 +25,5 @@
 - (IBAction) selectNextTab: (id) sender;
 - (IBAction) selectPrevTab: (id) sender;
 - (IBAction) closeTab: (id) sender;
-
+- (IBAction) recoonect: (id) sender;
 @end

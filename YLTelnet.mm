@@ -35,58 +35,113 @@ void dump_packet(unsigned char *s, int length) {
 
 @implementation YLTelnet
 
-- (BOOL) connectToAddress: (NSString *) addr port: (unsigned int) port {
-	struct hostent *hostinfo;
-	
-	hostinfo = gethostbyname2([addr UTF8String], AF_INET);
-
-	if (hostinfo == NULL) {
-		// can't resolve host
-		NSLog(@"cannot resolve host");
-		return NO;
-	}
-	
-	unsigned char *addr_ptr = (unsigned char *)hostinfo->h_addr;
-	NSString *ip_address = [NSString stringWithFormat: @"%d.%d.%d.%d", addr_ptr[0], addr_ptr[1], addr_ptr[2], addr_ptr[3]];
-	
-	BOOL result = [self connectToIP: ip_address port: port];
-	[self setServerAddress: addr];
-	return result;
+- (void) dealloc {
+    [self close];
+    [_host release];
+    [_connectionName release];
+    [_terminal release];
+    [_sbBuffer release];
+    [super dealloc];
 }
 
-- (BOOL) connectToIP: (NSString *) ip port: (unsigned int) port {
-	[self setServerAddress: ip];
-	int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-	struct sockaddr_in serverAddress;
-	if (sockfd < 0) {
-		// set error code
-		return NO;
-	}
-	
-	bzero( &serverAddress, sizeof(serverAddress) );
-	serverAddress.sin_family = AF_INET;
-	serverAddress.sin_port = htons(port);
-	
-	inet_pton( AF_INET, [ip UTF8String], &serverAddress.sin_addr );
-	
-	if ( connect( sockfd, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) < 0 ) {
-		// set error code
-		[self setConnected: NO];
-		NSLog(@"cannot connect");
-		return NO;
-	}
-	
-	[self setConnected: YES];	
-	[_terminal startConnection];
-	
-	_server = [[NSFileHandle alloc] initWithFileDescriptor: sockfd closeOnDealloc: YES];
+- (void) lookUpDomainName: (NSDictionary *) d {
+    NSAutoreleasePool *pool = [NSAutoreleasePool new];
+    NSString *addr = [d valueForKey: @"addr"];
+    int port = [[d valueForKey: @"port"] intValue];
+    
+    NSHost *host = [NSHost hostWithName: addr];
+    
+    if (host) {
+        NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys: host, @"host", [NSNumber numberWithInt: port], @"port", nil];
+        [self performSelectorOnMainThread: @selector(connectWithDictionary:) withObject: dict waitUntilDone: NO];
+    }
+    [pool release];
+}
 
-    [[NSNotificationCenter defaultCenter] addObserver: self
-											 selector: @selector(receiveMessage:)
-												 name: NSFileHandleReadCompletionNotification
-											   object: _server];
-	[_server readInBackgroundAndNotify];
-	return YES;
+- (void) close {
+    [_inputStream close];
+    [_inputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+    [_inputStream release];
+    _inputStream = nil;
+    [_outputStream close];
+    [_outputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+    [_outputStream release];
+    _outputStream = nil;
+    [self setConnected: NO];
+    [[self terminal] closeConnection];
+}
+
+- (void) reconnect {
+    if (_host) {
+        [self close];
+        [self connectWithDictionary: [NSDictionary dictionaryWithObjectsAndKeys: _host, @"host", [NSNumber numberWithInt: _port], @"port", nil]];
+    }
+}
+
+- (void) connectWithDictionary: (NSDictionary *) d {
+    NSHost *host = [d valueForKey: @"host"];
+    int port = [[d valueForKey: @"port"] intValue];
+    
+    if (!host) return;
+    [self setHost: host];
+    [NSStream getStreamsToHost: host 
+                          port: port 
+                   inputStream: &_inputStream
+                  outputStream: &_outputStream];
+    [_inputStream retain];
+    [_outputStream retain];
+    [_inputStream setDelegate: self];
+    [_outputStream setDelegate: self];
+    [_inputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+    [_outputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+    [_inputStream open];
+    [_outputStream open];
+}
+
+- (BOOL) connectToAddress: (NSString *) addr port: (unsigned int) port {
+    if (!addr) return NO;
+    _port = port;
+    NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys: addr, @"addr", [NSNumber numberWithInt: port], @"port", nil];
+    [self performSelectorInBackground: @selector(lookUpDomainName:) withObject: dict];
+    return YES;
+}
+
+- (void) stream: (NSStream *) stream handleEvent: (NSStreamEvent) eventCode {
+    switch(eventCode) {
+        case NSStreamEventOpenCompleted: {
+            [self setConnected: YES];
+            [[self terminal] startConnection];
+            break;
+        }
+        case NSStreamEventHasBytesAvailable: {
+            uint8_t buf[1024];
+            while ([(NSInputStream *)stream hasBytesAvailable]) {
+                NSInteger len = [(NSInputStream *)stream read: buf maxLength: 1024];
+                if (len > 0) {
+                    [self receiveBytes: buf length: len];                    
+                }
+            }
+            break;
+        }
+        case NSStreamEventHasSpaceAvailable: {
+            break;
+        }
+        case NSStreamEventErrorOccurred: {
+            NSLog(@"Error");
+        }
+        case NSStreamEventEndEncountered: {
+            [stream close];
+            [stream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+            [stream release];
+            if (stream == _inputStream)
+                _inputStream = nil;
+            else if (stream == _outputStream)
+                _outputStream = nil;
+            [self setConnected: NO];
+            [[self terminal] closeConnection];
+            break;
+        }
+    }    
 }
 
 /* Send telnet command */
@@ -95,26 +150,16 @@ void dump_packet(unsigned char *s, int length) {
 	b[0] = IAC;
 	b[1] = _command;
 	b[2] = _opt;
-	[_server writeData: [NSData dataWithBytes: b length: 3]];
+    [self sendBytes: b length: 3];
 }
 
-- (void) receiveMessage: (NSNotification *) notify {
+- (void) receiveBytes: (unsigned char *) bytes length: (NSUInteger) length {
 
-	NSData *messageData = [[notify userInfo] objectForKey: NSFileHandleNotificationDataItem];
-	if ([messageData length] == 0) {
-		[self setConnected: NO];
-		[_terminal closeConnection];
-		NSLog(@"Disconnect.");
-		return;
-	}
-		
-	[_server readInBackgroundAndNotify];
-
-	unsigned char *stream = (unsigned char *) [messageData bytes];
+	unsigned char *stream = (unsigned char *) bytes;
 	std::deque<unsigned char> terminalBuf;
 	
 	/* parse the telnet command. */
-	int L = [messageData length];
+	int L = length;
 #ifdef __DUMPPACKET__
 //	dump_packet(stream, L);
 #endif
@@ -197,7 +242,8 @@ void dump_packet(unsigned char *s, int length) {
 				break;
 			case SEENSB:
 				_sbOption = c;
-				_sbBuffer = [NSMutableData data];
+                [_sbBuffer release];
+				_sbBuffer = [[NSMutableData data] retain];
 				_state = SUBNEGOT;
 				break;
 			case SUBNEGOT:
@@ -218,6 +264,8 @@ void dump_packet(unsigned char *s, int length) {
 						[self sendBytes: b length: 11];
 					}
 					_state = TOP_LEVEL;
+                    [_sbBuffer release];
+                    _sbBuffer = nil;
 				}
 				break;
 		}
@@ -237,12 +285,21 @@ void dump_packet(unsigned char *s, int length) {
 	}
 }
 
-- (void) sendBytes: (unsigned char *) _msg length: (unsigned int) length {
-	[_server writeData: [NSData dataWithBytes: _msg length: length]];
+- (void) sendBytes: (unsigned char *) msg length: (NSInteger) length {
+    if (length <= 0) return;
+    if (!_outputStream) return;
+    
+    int result = [_outputStream write: msg maxLength: length];
+    if (result == length) return;
+    if (result <= 0) {
+        [self performSelector: @selector(sendMessage:) withObject: [NSData dataWithBytes: msg length: length] afterDelay: 0.001];
+    } else {
+        [self performSelector: @selector(sendMessage:) withObject: [NSData dataWithBytes: msg + result length: length - result] afterDelay: 0.001];        
+    }
 }
 
-- (void) sendMessage: (NSData *) _msg {
-	[_server writeData: _msg];
+- (void) sendMessage: (NSData *) msg {
+    [self sendBytes: (unsigned char *)[msg bytes] length: [msg length]];
 }
 
 
@@ -254,21 +311,21 @@ void dump_packet(unsigned char *s, int length) {
 	return _terminal;
 }
 
-- (void) setTerminal: (YLTerminal *) _term {
-	if (_term != _terminal) {
-		[_terminal release];
-		_terminal = [_term retain];
+- (void) setTerminal: (YLTerminal *) term {
+	if (term != _terminal) {
+		[_terminal autorelease];
+		_terminal = [term retain];
 	}
 }
 
-- (NSString *)serverAddress {
-    return [[_serverAddress retain] autorelease];
+- (NSHost *)host {
+    return [[_host retain] autorelease];
 }
 
-- (void)setServerAddress:(NSString *)value {
-    if (_serverAddress != value) {
-        [_serverAddress release];
-        _serverAddress = [value copy];
+- (void)setHost:(NSHost *)value {
+    if (_host != value) {
+        [_host autorelease];
+        _host = [value retain];
     }
 }
 
@@ -277,202 +334,33 @@ void dump_packet(unsigned char *s, int length) {
 }
 
 - (void)setConnected:(BOOL)value {
-    if (_connected != value) {
-        _connected = value;
+    _connected = value;
+    if (_connected) 
+        [self setValue: [NSImage imageNamed: @"connect.pdf"] forKey: @"icon"];
+    else
+        [self setValue: [NSImage imageNamed: @"offline.pdf"] forKey: @"icon"];
+}
+
+- (NSString *)connectionName {
+    return [[_connectionName retain] autorelease];
+}
+
+- (void)setConnectionName:(NSString *)value {
+    if (_connectionName != value) {
+        [_connectionName release];
+        _connectionName = [value copy];
+    }
+}
+
+- (NSImage *)icon {
+    return [[_icon retain] autorelease];
+}
+
+- (void)setIcon:(NSImage *)value {
+    if (_icon != value) {
+        [_icon release];
+        _icon = [value retain];
     }
 }
 
 @end
-
-
-/* -- OLD CODE -- */
-//- (void) sideEffectForOption: (const struct Opt *) o enabled: (BOOL) enabled {
-//	if (o->option == TELOPT_ECHO && o->send == DO)
-//		_echoing = !enabled;
-//	else if (o->option == TELOPT_SGA && o->send == DO) 
-//		_editing = !enabled;
-//	// TODO: notify "ldisc"
-//	
-//	if (!_activated) {
-//		if (_optStates[o_echo.index] == INACTIVE) {
-//			_optStates[o_echo.index] == REQUESTED;
-//			[self sendCommand: o_echo.send option: o_echo.option];
-//		}
-//		if (_optStates[o_we_sga.index] == INACTIVE) {
-//			_optStates[o_we_sga.index] == REQUESTED;
-//			[self sendCommand: o_we_sga.send option: o_we_sga.option];
-//		}
-//		if (_optStates[o_they_sga.index] == INACTIVE) {
-//			_optStates[o_they_sga.index] = REQUESTED;
-//			[self sendCommand: o_they_sga.send option: o_they_sga.option];
-//		}
-//		_activated = YES;
-//	}
-//}
-//
-//- (void) deactivateOption: (const struct Opt *) o  {
-//	if (_optStates[o->index] == REQUESTED || _optStates[o->index] == ACTIVE)
-//		[self sendCommand: o->nsend option: o->option];
-//	_optStates[o->index] = REALLY_INACTIVE;
-//}
-//
-//- (void) activateOption: (const struct Opt *) o {
-//	if (o->send == WILL && o->option == TELOPT_NAWS)
-//		// TODO: change telnet size
-//		;
-//	if (o->send == WILL && 
-//		(o->option == TELOPT_NEW_ENVIRON ||
-//		 o->option == TELOPT_OLD_ENVIRON)) {
-//		[self deactivateOption: (o->option == TELOPT_NEW_ENVIRON) ? &o_oenv : &o_nenv];
-//	}
-//	[self sideEffectForOption: o enabled: YES];
-//}
-//
-//- (void) refusedOption: (const struct Opt *) o {
-//	if (o->send == WILL && o->option == TELOPT_NEW_ENVIRON && _optStates[o_oenv.index] == INACTIVE) {
-//		[self sendCommand: WILL option: TELOPT_OLD_ENVIRON];
-//		_optStates[o_oenv.index] = REQUESTED;
-//	}
-//	[self sideEffectForOption: o enabled: NO];
-//}
-//
-//- (void) processCommand: (int) _command option: (int) _opt {
-//	const struct Opt *const *o;
-//	for (o = opts; *o; o++) {
-//		if ((*o)->option == _opt && (*o)->ack == _command) {
-//			switch (_optStates[(*o)->index]) {
-//				case REQUESTED:
-//					_optStates[(*o)->index] = ACTIVE;
-//					[self activateOption: *o];
-//					break;
-//				case ACTIVE:
-//					break;
-//				case INACTIVE:
-//					_optStates[(*o)->index] = ACTIVE;
-//					[self sendCommand: (*o)->send option: _opt];
-//					[self activateOption: *o];
-//					break;
-//				case REALLY_INACTIVE:
-//					[self sendCommand: (*o)->nsend option: _opt];
-//					break;
-//			}
-//			return;
-//		} else if ((*o)->option == _opt && (*o)->nak == _command) {
-//			switch (_optStates[(*o)->index]) {
-//				case REQUESTED:
-//					_optStates[(*o)->index] = INACTIVE;
-//					[self refusedOption: *o];
-//					break;
-//				case ACTIVE:
-//					_optStates[(*o)->index] = INACTIVE;
-//					[self sendCommand:(*o)->nsend option: _opt];
-//					[self sideEffectForOption: *o enabled: NO];
-//					break;
-//				case INACTIVE:
-//				case REALLY_INACTIVE:
-//					break;
-//			}
-//			return;
-//		}
-//	}
-//	
-//	/*
-//     * If we reach here, the option was one we weren't prepared to
-//     * cope with. If the request was positive (WILL or DO), we send
-//     * a negative ack to indicate refusal. If the request was
-//     * negative (WONT / DONT), we must do nothing.
-//     */	
-//	if (_command == WILL || _command == DO)
-//		[self sendCommand: (_command == WILL ? DONT : WONT) option: _opt];
-//	return;
-//}
-//
-//- (void) processSubnegotiation {
-//	unsigned char b[2048], *p, *q;
-//	int var, value;
-//	//	char *e;
-//	const char *buf = [_sbBuffer bytes];
-//	
-//	switch (_sbOption) {
-//		case TELOPT_TSPEED:
-//			if ([_sbBuffer length] == 1 && buf[0] == TELQUAL_SEND) {
-//				b[0] = IAC;
-//				b[1] = SB;
-//				b[2] = TELOPT_TSPEED;
-//				b[3] = TELQUAL_IS;
-//				// copy from config
-//				b[4] = '1';
-//				b[5] = '9';
-//				b[6] = '2';
-//				b[7] = '0';
-//				b[8] = '0';
-//				b[9] = IAC;
-//				b[10] = SE;
-//				[self sendBytes: b length: 11];
-//				NSLog(@"server:\tSB TSPEED SEND");
-//				NSLog(@"client:\tSB TSPEED IS %s", "19200");
-//			} else 
-//				NSLog(@"server:\tSB TSPEED <something weird>");
-//				break;
-//			case TELOPT_TTYPE:
-//			if ([_sbBuffer length] == 1 && buf[0] == TELQUAL_SEND) {
-//				b[0] = IAC;
-//				b[1] = SB;
-//				b[2] = TELOPT_TTYPE;
-//				b[3] = TELQUAL_IS;
-//				b[4] = 'V';
-//				b[5] = 'T';
-//				b[6] = '1';
-//				b[7] = '0';
-//				b[8] = '0';
-//				b[9] = IAC;
-//				b[10] = SE;
-//				[self sendBytes: b length: 11];
-//			} else
-//				NSLog(@"server:\tSB TTYPE <something weird>");
-//				break;
-//			case TELOPT_OLD_ENVIRON:
-//			case TELOPT_NEW_ENVIRON:
-//			p = (unsigned char *) buf;
-//			q = p + [_sbBuffer length];
-//			if (p < q && *p == TELQUAL_SEND) {
-//				p++;
-//				if (_sbOption == TELOPT_OLD_ENVIRON) {
-//					if (1/* TODO: config */) {
-//						value = RFC_VALUE;
-//						var = RFC_VAR;
-//					} else {
-//						value = BSD_VALUE;
-//						var = BSD_VAR;
-//					}
-//					
-//					/*
-//					 * Try to guess the sense of VAR and VALUE.
-//					 */
-//					while (p < q) {
-//						if (*p == RFC_VAR) {
-//							value = RFC_VALUE;
-//							var = RFC_VAR;
-//						} else if (*p == BSD_VAR) {
-//							value = BSD_VALUE;
-//							var = BSD_VAR;
-//						}
-//						p++;
-//					}
-//				} else {
-//					/*
-//					 * With NEW_ENVIRON, the sense of VAR and VALUE
-//					 * isn't in doubt.
-//					 */
-//					value = RFC_VALUE;
-//					var = RFC_VAR;
-//				}
-//				b[0] = IAC;
-//				b[1] = SB;
-//				b[2] = _sbOption;
-//				b[3] = TELQUAL_IS;
-//				// TODO: get the information, fill in.
-//			}
-//			break;			
-//	}
-//}

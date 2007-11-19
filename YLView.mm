@@ -163,6 +163,7 @@ BOOL isSpecialSymbol(unichar ch) {
 #pragma mark Actions
 
 - (void) copy: (id) sender {
+    if (![self connected]) return;
     if (_selectionLength == 0) return;
     int location, length;
     if (_selectionLength >= 0) {
@@ -183,6 +184,7 @@ BOOL isSpecialSymbol(unichar ch) {
 }
 
 - (void) paste: (id) sender {
+    if (![self connected]) return;
     NSPasteboard *pb = [NSPasteboard generalPasteboard];
     NSArray *types = [pb types];
     if ([types containsObject: NSStringPboardType]) {
@@ -194,6 +196,24 @@ BOOL isSpecialSymbol(unichar ch) {
                                    range: NSMakeRange(0, [str length])];
         [self insertText: mStr];
     }
+}
+
+- (void) selectAll: (id) sender {
+    if (![self connected]) return;
+    _selectionLocation = 0;
+    _selectionLength = gRow * gColumn;
+    [self setNeedsDisplay: YES];
+}
+
+- (BOOL) validateMenuItem: (NSMenuItem *) item {
+    if ([item action] == @selector(copy:) && (![self connected] || _selectionLength == 0)) {
+        return NO;
+    } else if ([item action] == @selector(paste:) && ![self connected]) {
+        return NO;
+    } else if ([item action] == @selector(selectAll:)  && ![self connected]) {
+        return NO;
+    }
+    return YES;
 }
 
 #pragma mark -
@@ -214,6 +234,7 @@ BOOL isSpecialSymbol(unichar ch) {
 #pragma mark -
 #pragma mark Event Handling
 - (void) mouseDown: (NSEvent *) e {
+    [[self window] makeFirstResponder: self];
     if (![self connected]) return;
     NSPoint p = [e locationInWindow];
     p = [self convertPoint: p toView: nil];
@@ -742,6 +763,11 @@ BOOL isSpecialSymbol(unichar ch) {
 
 - (BOOL)canBecomeKeyView {
     return YES;
+}
+
+- (void)removeTabViewItem:(NSTabViewItem *)tabViewItem {
+    [[tabViewItem identifier] close];
+    [super removeTabViewItem: tabViewItem];
 }
 
 #pragma mark -

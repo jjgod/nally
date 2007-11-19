@@ -179,9 +179,13 @@ enum {
 };
 
 @interface YLTelnet : NSObject {
-	NSString		* _serverAddress;
-	NSFileHandle	* _server;
+    NSHost          * _host;
+    int               _port;
+    NSInputStream   * _inputStream;
+    NSOutputStream  * _outputStream;
 	YLTerminal		* _terminal;
+    NSString        * _connectionName;
+    NSImage         * _icon;
 	
 	unsigned int	  _optStates[NUM_OPTS];
 	BOOL _echoing;
@@ -210,21 +214,30 @@ enum {
 }
 
 /* return YES if successful, NO otherwise. */
+- (void) close ;
+- (void) reconnect ;
+- (void) connectWithDictionary: (NSDictionary *) d ;
 - (BOOL) connectToAddress: (NSString *) addr port: (unsigned int) port ;
-- (BOOL) connectToIP: (NSString *) ip port: (unsigned int) port ;
+
+- (void) stream: (NSStream *) stream handleEvent: (NSStreamEvent) eventCode ;
 
 /* return the last error message. */
 - (NSString *) lastError;
 
 - (YLTerminal *) terminal ;
-- (void) setTerminal: (YLTerminal *) _term;
+- (void) setTerminal: (YLTerminal *) term;
 
-- (void) sendBytes: (unsigned char *) _msg length: (unsigned int) length;
-- (void) sendMessage: (NSData *) _msg;
+- (void) receiveBytes: (unsigned char *) bytes length: (NSUInteger) length ;
+- (void) sendBytes: (unsigned char *) msg length: (NSInteger) length ;
+- (void) sendMessage: (NSData *) msg;
 
-- (NSString *)serverAddress;
-- (void)setServerAddress:(NSString *)value;
+- (NSHost *)host;
+- (void)setHost:(NSHost *)value;
 - (BOOL)connected;
 - (void)setConnected:(BOOL)value;
+- (NSString *)connectionName;
+- (void)setConnectionName:(NSString *)value;
+- (NSImage *)icon;
+- (void)setIcon:(NSImage *)value;
 
 @end

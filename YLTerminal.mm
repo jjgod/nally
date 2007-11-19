@@ -64,35 +64,50 @@ static unsigned short gEmptyAttr;
 	
 }
 
+- (void) clearAll {
+    _cursorX = 0;
+    _cursorY = 0;
+    _grid[0].attr.f.fgColor = 7;
+    _grid[0].attr.f.bgColor = 9;
+    _grid[0].attr.f.bold = 0;
+    _grid[0].attr.f.underline = 0;
+    _grid[0].attr.f.blink = 0;
+    _grid[0].attr.f.reverse = 0;
+    _grid[0].attr.f.url = 0;
+    _grid[0].attr.f.nothing = 0;
+    gEmptyAttr = _grid[0].attr.v;
+    int i;
+    for (i = 0; i < (_row * _column); i++) {
+        _grid[i].byte = '\0';
+        _grid[i].attr.v = gEmptyAttr;
+        _dirty[i] = YES;
+    }
+    if (_csBuf)
+        _csBuf->clear();
+    else
+        _csBuf = new std::deque<unsigned char>();
+    if (_csArg)
+        _csArg->clear();
+    else
+        _csArg = new std::deque<int>();
+    _fgColor = 7;
+    _bgColor = 9;
+    _csTemp = 0;
+    _state = TP_NORMAL;
+    _bold = NO;
+	_underline = NO;
+	_blink = NO;
+	_reverse = NO;
+    _offset = 0;
+}
+
 - (id) init {
 	if (self = [super init]) {
 		_row = [[YLLGlobalConfig sharedInstance] row];
 		_column = [[YLLGlobalConfig sharedInstance] column];
-		_cursorX = 0;
-		_cursorY = 0;
 		_grid = (cell *) malloc(sizeof(cell) * (_row * _column));
 		_dirty = (char *) malloc(sizeof(char) * (_row * _column));
-		int i;
-		
-		_grid[0].attr.f.fgColor = 7;
-		_grid[0].attr.f.bgColor = 9;
-		_grid[0].attr.f.bold = 0;
-		_grid[0].attr.f.underline = 0;
-		_grid[0].attr.f.blink = 0;
-		_grid[0].attr.f.reverse = 0;
-        _grid[0].attr.f.url = 0;
-		_grid[0].attr.f.nothing = 0;
-		gEmptyAttr = _grid[0].attr.v;
-		for (i = 0; i < (_row * _column); i++) {
-			_grid[i].byte = '\0';
-			_grid[i].attr.v = gEmptyAttr;
-			_dirty[i] = YES;
-		}
-		_csBuf = new std::deque<unsigned char>();
-		_csArg = new std::deque<int>();
-		_fgColor = 7;
-		_bgColor = 9;
-		_state = TP_NORMAL;
+        [self clearAll];
 	}
 	return self;
 }
@@ -344,6 +359,7 @@ static unsigned short gEmptyAttr;
 # pragma mark 
 
 - (void) startConnection {
+    [self clearAll];
 	[_delegate setNeedsDisplay: YES];
 }
 
