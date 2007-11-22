@@ -42,7 +42,6 @@
     
     NSTabViewItem *tabItem = [[NSTabViewItem alloc] initWithIdentifier: telnet];
     [tabItem setLabel: [sender stringValue]];
-//    [tabItem setInitialFirstResponder: _telnetView];
     [_telnetView addTabViewItem: tabItem];
 	
 	[telnet connectToAddress: [sender stringValue] port: 23];
@@ -91,7 +90,27 @@
           contextInfo: nil];
 }
 
-- (IBAction) saveSites: (id) sender {
+- (IBAction) openSites: (id) sender {
+    NSArray *a = [_sitesController selectedObjects];
+    [self closeSites: sender];
+    
+    if ([a count] == 1) {
+        YLSite *s = [a objectAtIndex: 0];
+        id telnet = [YLTelnet new];
+        id terminal = [YLTerminal new];
+        [telnet setTerminal: terminal];
+        [telnet setConnectionName: [s name]];
+        [terminal setDelegate: _telnetView];
+        
+        NSTabViewItem *tabItem = [[NSTabViewItem alloc] initWithIdentifier: telnet];
+        [tabItem setLabel: [s name]];
+        [_telnetView addTabViewItem: tabItem];
+        
+        [telnet connectToAddress: [s address] port: 23];
+        [_telnetView selectTabViewItem: tabItem];
+        [tabItem release];
+        [terminal release];
+    }
 }
 
 - (IBAction) closeSites: (id) sender {
@@ -201,6 +220,7 @@
     [_telnetView update];
     [_addressBar setStringValue: [[tabViewItem identifier] connectionName]];
     [_telnetView setNeedsDisplay: YES];
+    [_mainWindow makeFirstResponder: _telnetView];
 }
 
 - (BOOL)tabView:(NSTabView *)tabView shouldSelectTabViewItem:(NSTabViewItem *)tabViewItem {

@@ -41,5 +41,8 @@
     }
 }
 
+- (NSString *) description {
+    return [NSString stringWithFormat: @"%@:%@", [self name], [self address]];
+}
 
 @end

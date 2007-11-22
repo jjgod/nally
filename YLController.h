@@ -22,6 +22,7 @@
     IBOutlet NSMenuItem *_closeWindowMenuItem;
     IBOutlet NSMenuItem *_closeTabMenuItem;
     NSMutableArray *_sites;
+    IBOutlet NSArrayController *_sitesController;
 }
 
 - (IBAction) connect: (id) sender;
@@ -30,7 +31,7 @@
 - (IBAction) selectPrevTab: (id) sender;
 - (IBAction) closeTab: (id) sender;
 - (IBAction) recoonect: (id) sender;
-- (IBAction) saveSites: (id) sender;
+- (IBAction) openSites: (id) sender;
 - (IBAction) editSites: (id) sender;
 - (IBAction) closeSites: (id) sender;
 
