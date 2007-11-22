@@ -15,7 +15,20 @@
 - (void) awakeFromNib {
     [_tab setStyleNamed: @"Metal"];
     [_tab setCanCloseOnlyTab: YES];
+    
+    NSArray *array = [[NSUserDefaults standardUserDefaults] arrayForKey: @"Sites"];
+    for (NSDictionary *d in array) {
+        YLSite *s = [[YLSite new] autorelease];
+        [s setName: [d objectForKey: @"name"]];
+        [s setAddress: [d objectForKey: @"address"]];
+        [self insertObject: s inSitesAtIndex: [self countOfSites]];
+    }
+
+    NSLog(@"sites: %@",_sites);
 }
+
+#pragma mark -
+#pragma mark Actions
 
 - (IBAction) connect: (id) sender {
 	[sender abortEditing];
@@ -69,6 +82,84 @@
     
     [_telnetView removeTabViewItem: tabItem];
 }
+
+- (IBAction) editSites: (id) sender {
+    [NSApp beginSheet: _sitesWindow
+       modalForWindow: _mainWindow
+        modalDelegate: nil
+       didEndSelector: NULL
+          contextInfo: nil];
+}
+
+- (IBAction) saveSites: (id) sender {
+}
+
+- (IBAction) closeSites: (id) sender {
+    [NSApp endSheet: _sitesWindow];
+    [_sitesWindow orderOut: self];
+    NSMutableArray *a = [NSMutableArray array];
+    for (YLSite *s in _sites) 
+        [a addObject: [NSDictionary dictionaryWithObjectsAndKeys: [s name], @"name", [s address], @"address", nil]];
+    [[NSUserDefaults standardUserDefaults] setObject: a forKey: @"Sites"];
+    
+}
+
+
+#pragma mark -
+#pragma mark Accessor
+
+- (NSArray *)sites {
+    if (!_sites) {
+        _sites = [[NSMutableArray alloc] init];
+    }
+    return [[_sites retain] autorelease];
+}
+
+- (unsigned)countOfSites {
+    if (!_sites) {
+        _sites = [[NSMutableArray alloc] init];
+    }
+    return [_sites count];
+}
+
+- (id)objectInSitesAtIndex:(unsigned)theIndex {
+    if (!_sites) {
+        _sites = [[NSMutableArray alloc] init];
+    }
+    return [_sites objectAtIndex:theIndex];
+}
+
+- (void)getSites:(id *)objsPtr range:(NSRange)range {
+    if (!_sites) {
+        _sites = [[NSMutableArray alloc] init];
+    }
+    [_sites getObjects:objsPtr range:range];
+}
+
+- (void)insertObject:(id)obj inSitesAtIndex:(unsigned)theIndex {
+    if (!_sites) {
+        _sites = [[NSMutableArray alloc] init];
+    }
+    [_sites insertObject:obj atIndex:theIndex];
+}
+
+- (void)removeObjectFromSitesAtIndex:(unsigned)theIndex {
+    if (!_sites) {
+        _sites = [[NSMutableArray alloc] init];
+    }
+    [_sites removeObjectAtIndex:theIndex];
+}
+
+- (void)replaceObjectInSitesAtIndex:(unsigned)theIndex withObject:(id)obj {
+    if (!_sites) {
+        _sites = [[NSMutableArray alloc] init];
+    }
+    [_sites replaceObjectAtIndex:theIndex withObject:obj];
+}
+
+
+#pragma mark -
+#pragma mark Window Delegation
 
 - (BOOL) windowShouldClose: (id) window {
     NSLog(@"SHOULD");

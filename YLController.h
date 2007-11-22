@@ -9,15 +9,19 @@
 #import <Cocoa/Cocoa.h>
 #import "YLView.h"
 #import <PSMTabBarControl/PSMTabBarControl.h>
+#import "YLSite.h"
 
 @class YLTerminal;
 
 @interface YLController : NSObject {
+    IBOutlet NSPanel *_sitesWindow;
+    IBOutlet NSWindow *_mainWindow;
 	IBOutlet id _telnetView;
 	IBOutlet id _addressBar;
     IBOutlet PSMTabBarControl *_tab;
     IBOutlet NSMenuItem *_closeWindowMenuItem;
     IBOutlet NSMenuItem *_closeTabMenuItem;
+    NSMutableArray *_sites;
 }
 
 - (IBAction) connect: (id) sender;
@@ -26,4 +30,16 @@
 - (IBAction) selectPrevTab: (id) sender;
 - (IBAction) closeTab: (id) sender;
 - (IBAction) recoonect: (id) sender;
+- (IBAction) saveSites: (id) sender;
+- (IBAction) editSites: (id) sender;
+- (IBAction) closeSites: (id) sender;
+
+- (NSArray *)sites;
+- (unsigned)countOfSites;
+- (id)objectInSitesAtIndex:(unsigned)theIndex;
+- (void)getSites:(id *)objsPtr range:(NSRange)range;
+- (void)insertObject:(id)obj inSitesAtIndex:(unsigned)theIndex;
+- (void)removeObjectFromSitesAtIndex:(unsigned)theIndex;
+- (void)replaceObjectInSitesAtIndex:(unsigned)theIndex withObject:(id)obj;
+
 @end
