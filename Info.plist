@@ -17,16 +17,16 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleSignature</key>
-	<string>????</string>
+	<string>naly</string>
 	<key>CFBundleVersion</key>
-	<string>0.8.5</string>
+	<string>0.8.7</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>YLApplication</string>
 	<key>QuartzGLEnable</key>
 	<true/>
-    <key>SUFeedURL</key> 
-    <string>http://yllan.org/mac/Nally/Nally.xml</string>
+	<key>SUFeedURL</key>
+	<string>http://yllan.org/mac/Nally/Nally.xml</string>
 </dict>
 </plist>

@@ -185,6 +185,7 @@ enum {
     NSOutputStream  * _outputStream;
 	YLTerminal		* _terminal;
     NSString        * _connectionName;
+    NSString        * _connectionAddress;
     NSImage         * _icon;
 	
 	unsigned int	  _optStates[NUM_OPTS];
@@ -239,5 +240,8 @@ enum {
 - (void)setConnectionName:(NSString *)value;
 - (NSImage *)icon;
 - (void)setIcon:(NSImage *)value;
+- (NSString *)connectionAddress;
+- (void)setConnectionAddress:(NSString *)value;
+
 
 @end

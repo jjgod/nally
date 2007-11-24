@@ -23,6 +23,8 @@
     IBOutlet NSMenuItem *_closeTabMenuItem;
     NSMutableArray *_sites;
     IBOutlet NSArrayController *_sitesController;
+    IBOutlet NSMenuItem *_sitesMenu;
+    IBOutlet NSTableView *_sitesTableView;
 }
 
 - (IBAction) connect: (id) sender;
@@ -34,6 +36,7 @@
 - (IBAction) openSites: (id) sender;
 - (IBAction) editSites: (id) sender;
 - (IBAction) closeSites: (id) sender;
+- (IBAction) addSites: (id) sender;
 
 - (NSArray *)sites;
 - (unsigned)countOfSites;

@@ -12,6 +12,21 @@
 
 @implementation YLController
 
+- (void) updateSitesMenu {
+    int total = [[_sitesMenu submenu] numberOfItems] ;
+    int i;
+    for (i = 3; i < total; i++) {
+        [[_sitesMenu submenu] removeItemAtIndex: 3];
+    }
+    
+    for (YLSite *s in _sites) {
+        NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle: [s name] action: @selector(openSiteMenu:) keyEquivalent: @""];
+        [menuItem setRepresentedObject: s];
+        [[_sitesMenu submenu] addItem: menuItem];
+        [menuItem release];        
+    }
+}
+
 - (void) awakeFromNib {
     [_tab setStyleNamed: @"Metal"];
     [_tab setCanCloseOnlyTab: YES];
@@ -24,7 +39,34 @@
         [self insertObject: s inSitesAtIndex: [self countOfSites]];
     }
 
-    NSLog(@"sites: %@",_sites);
+    [self updateSitesMenu];
+}
+
+- (void) saveSites {
+    NSMutableArray *a = [NSMutableArray array];
+    for (YLSite *s in _sites) 
+        [a addObject: [NSDictionary dictionaryWithObjectsAndKeys: [s name], @"name", [s address], @"address", nil]];
+    [[NSUserDefaults standardUserDefaults] setObject: a forKey: @"Sites"];
+    [self updateSitesMenu];
+}
+
+- (void) newConnectionToAddress: (NSString *) addr name: (NSString *) name {
+    id telnet = [YLTelnet new];
+	id terminal = [YLTerminal new];
+	[telnet setTerminal: terminal];
+    [telnet setConnectionName: name];
+    [telnet setConnectionAddress: addr];
+	[terminal setDelegate: _telnetView];
+    
+    NSTabViewItem *tabItem = [[NSTabViewItem alloc] initWithIdentifier: telnet];
+    [tabItem setLabel: name];
+    [_telnetView addTabViewItem: tabItem];
+	
+	[telnet connectToAddress: addr port: 23];
+    [_telnetView selectTabViewItem: tabItem];
+    [tabItem release];
+    [terminal release];
+    [telnet release];
 }
 
 #pragma mark -
@@ -33,22 +75,8 @@
 - (IBAction) connect: (id) sender {
 	[sender abortEditing];
 	[[_telnetView window] makeFirstResponder: _telnetView];
-	
-	id telnet = [YLTelnet new];
-	id terminal = [YLTerminal new];
-	[telnet setTerminal: terminal];
-    [telnet setConnectionName: [sender stringValue]];
-	[terminal setDelegate: _telnetView];
-    
-    NSTabViewItem *tabItem = [[NSTabViewItem alloc] initWithIdentifier: telnet];
-    [tabItem setLabel: [sender stringValue]];
-    [_telnetView addTabViewItem: tabItem];
-	
-	[telnet connectToAddress: [sender stringValue] port: 23];
-    [_telnetView selectTabViewItem: tabItem];
-    [tabItem release];
-    [terminal release];
-    [telnet release];
+
+	[self newConnectionToAddress: [sender stringValue] name: [sender stringValue]];
 }
 
 - (IBAction) openLocation: (id) sender {
@@ -96,33 +124,38 @@
     
     if ([a count] == 1) {
         YLSite *s = [a objectAtIndex: 0];
-        id telnet = [YLTelnet new];
-        id terminal = [YLTerminal new];
-        [telnet setTerminal: terminal];
-        [telnet setConnectionName: [s name]];
-        [terminal setDelegate: _telnetView];
-        
-        NSTabViewItem *tabItem = [[NSTabViewItem alloc] initWithIdentifier: telnet];
-        [tabItem setLabel: [s name]];
-        [_telnetView addTabViewItem: tabItem];
-        
-        [telnet connectToAddress: [s address] port: 23];
-        [_telnetView selectTabViewItem: tabItem];
-        [tabItem release];
-        [terminal release];
+        [self newConnectionToAddress: [s address] name: [s name]];
     }
 }
 
-- (IBAction) closeSites: (id) sender {
-    [NSApp endSheet: _sitesWindow];
-    [_sitesWindow orderOut: self];
-    NSMutableArray *a = [NSMutableArray array];
-    for (YLSite *s in _sites) 
-        [a addObject: [NSDictionary dictionaryWithObjectsAndKeys: [s name], @"name", [s address], @"address", nil]];
-    [[NSUserDefaults standardUserDefaults] setObject: a forKey: @"Sites"];
-    
+- (IBAction) openSiteMenu: (id) sender {
+    YLSite *s = [sender representedObject];
+    [self newConnectionToAddress: [s address] name: [s name]];
 }
 
+- (IBAction) closeSites: (id) sender {
+    [_sitesWindow endEditingFor: nil];
+    [NSApp endSheet: _sitesWindow];
+    [_sitesWindow orderOut: self];
+    [self saveSites];
+}
+
+- (IBAction) addSites: (id) sender {
+    if ([_telnetView numberOfTabViewItems] == 0) return;
+    NSString *address = [[_telnetView telnet] connectionAddress];
+    
+    for (YLSite *s in _sites) 
+        if ([[s address] isEqualToString: address]) 
+            return;
+    
+    YLSite *s = [[YLSite new] autorelease];
+    [s setName: address];
+    [s setAddress: address];
+    [_sitesController addObject: s];
+    [_sitesController setSelectedObjects: [NSArray arrayWithObject: s]];
+    [self performSelector: @selector(editSites:) withObject: sender afterDelay: 0.1];
+    [_sitesTableView editColumn: 0 row: [_sitesTableView selectedRow] withEvent: nil select: YES];
+}
 
 #pragma mark -
 #pragma mark Accessor
@@ -173,7 +206,6 @@
     if (!_sites) {
         _sites = [[NSMutableArray alloc] init];
     }
-    [_sites replaceObjectAtIndex:theIndex withObject:obj];
 }
 
 
@@ -218,7 +250,7 @@
 
 - (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem {
     [_telnetView update];
-    [_addressBar setStringValue: [[tabViewItem identifier] connectionName]];
+    [_addressBar setStringValue: [[tabViewItem identifier] connectionAddress]];
     [_telnetView setNeedsDisplay: YES];
     [_mainWindow makeFirstResponder: _telnetView];
 }

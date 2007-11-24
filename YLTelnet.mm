@@ -99,6 +99,7 @@ void dump_packet(unsigned char *s, int length) {
 }
 
 - (BOOL) connectToAddress: (NSString *) addr port: (unsigned int) port {
+    [self setConnectionAddress: addr];
     if (!addr) return NO;
     _port = port;
     NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys: addr, @"addr", [NSNumber numberWithInt: port], @"port", nil];
@@ -360,6 +361,17 @@ void dump_packet(unsigned char *s, int length) {
     if (_icon != value) {
         [_icon release];
         _icon = [value retain];
+    }
+}
+
+- (NSString *)connectionAddress {
+    return [[_connectionAddress retain] autorelease];
+}
+
+- (void)setConnectionAddress:(NSString *)value {
+    if (_connectionAddress != value) {
+        [_connectionAddress release];
+        _connectionAddress = [value copy];
     }
 }
 

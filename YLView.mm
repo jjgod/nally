@@ -274,6 +274,7 @@ BOOL isSpecialSymbol(unichar ch) {
             NSMutableString *url = [NSMutableString string];
             for (c = start; c < end; c++)
                 [url appendFormat: @"%c", currRow[c].byte];
+            NSLog(@"URL:%@", url);
             [[NSWorkspace sharedWorkspace] openURL: [NSURL URLWithString: url]];
         }
     }
@@ -281,7 +282,7 @@ BOOL isSpecialSymbol(unichar ch) {
 
 - (void) keyDown: (NSEvent *) e {
 	unichar c = [[e characters] characterAtIndex: 0];
-	unsigned char arrow[3] = {0x1B, 0x4F, 0x00};
+	unsigned char arrow[6] = {0x1B, 0x4F, 0x00, 0x1B, 0x4F, 0x00};
 	unsigned char buf[10];
 //	NSLog(@"%02X %02X", [[e characters] characterAtIndex: 0], c);
 
@@ -290,23 +291,36 @@ BOOL isSpecialSymbol(unichar ch) {
 		[[self telnet] sendBytes: buf length: 1];
 	}
 	
-	if (c == NSUpArrowFunctionKey) arrow[2] = 'A';
-	if (c == NSDownArrowFunctionKey) arrow[2] = 'B';
-	if (c == NSRightArrowFunctionKey) arrow[2] = 'C';
-	if (c == NSLeftArrowFunctionKey) arrow[2] = 'D';
+	if (c == NSUpArrowFunctionKey) arrow[2] = arrow[5] = 'A';
+	if (c == NSDownArrowFunctionKey) arrow[2] = arrow[5] = 'B';
+	if (c == NSRightArrowFunctionKey) arrow[2] = arrow[5] = 'C';
+	if (c == NSLeftArrowFunctionKey) arrow[2] = arrow[5] = 'D';
+
+    YLTerminal *ds = [self dataSource];
 	
 	if (![self hasMarkedText] && 
 		(c == NSUpArrowFunctionKey ||
 		 c == NSDownArrowFunctionKey ||
 		 c == NSRightArrowFunctionKey || 
 		 c == NSLeftArrowFunctionKey)) {
+        [ds updateDoubleByteStateForRow: [ds cursorRow]];
+        if ((c == NSRightArrowFunctionKey && [ds attrAtRow: [ds cursorRow] column: [ds cursorColumn]].f.doubleByte == 1) || 
+            (c == NSLeftArrowFunctionKey && [ds cursorColumn] > 0 && [ds attrAtRow: [ds cursorRow] column: [ds cursorColumn] - 1].f.doubleByte == 2))
+            if ([[NSUserDefaults standardUserDefaults] boolForKey: @"DetectDoubleByte"]) {
+                [[self telnet] sendBytes: arrow length: 6];
+                return;
+            }
+        
 		[[self telnet] sendBytes: arrow length: 3];
 		return;
 	}
 	
 	if (![self hasMarkedText] && (c == 0x7F || c == NSDeleteFunctionKey)) {
-		buf[0] = 0x08;
-		[[self telnet] sendBytes: buf length: 1];
+		buf[0] = buf[1] = 0x08;
+        if ([ds cursorColumn] > 0 && [ds attrAtRow: [ds cursorRow] column: [ds cursorColumn] - 1].f.doubleByte == 2)
+            [[self telnet] sendBytes: buf length: 2];
+        else
+            [[self telnet] sendBytes: buf length: 1];
         return;
 	}
 //	

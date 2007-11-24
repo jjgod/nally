@@ -533,4 +533,12 @@ static unsigned short gEmptyAttr;
 	return _delegate;
 }
 
+- (int) cursorRow {
+    return _cursorY;
+}
+
+- (int) cursorColumn {
+    return _cursorX;
+}
+
 @end

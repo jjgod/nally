@@ -64,4 +64,7 @@
 - (void) setDelegate: (id) d;
 - (id) delegate;
 
+- (int) cursorRow;
+- (int) cursorColumn;
+
 @end
