@@ -3,7 +3,7 @@
 //  MacBlueTelnet
 //
 //  Created by Yung-Luen Lan on 2006/6/9.
-//  Copyright __MyCompanyName__ 2006. All rights reserved.
+//  Copyright yllan.org 2006. All rights reserved.
 //
 
 #import <Cocoa/Cocoa.h>

@@ -17,15 +17,17 @@
 		8579CA2A0CF21D3D005A8353 /* YLSite.m in Sources */ = {isa = PBXBuildFile; fileRef = 8579CA290CF21D3D005A8353 /* YLSite.m */; };
 		857EAE2A0CF1D62900777C15 /* connect.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 857EAE290CF1D62900777C15 /* connect.pdf */; };
 		857EAE4F0CF1D89300777C15 /* offline.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 857EAE4E0CF1D89300777C15 /* offline.pdf */; };
+		85834AC30CFE7F530015E348 /* message.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 85834AC20CFE7F530015E348 /* message.pdf */; };
+		85834C100CFEC3F30015E348 /* Whit.aiff in Resources */ = {isa = PBXBuildFile; fileRef = 85834C0F0CFEC3F30015E348 /* Whit.aiff */; };
 		85899C7B0CEED4E40031907F /* YLApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 85899C7A0CEED4E40031907F /* YLApplication.m */; };
 		858A54E60CAE78C8000E1AA7 /* YLMarkedTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 858A54E50CAE78C8000E1AA7 /* YLMarkedTextView.m */; };
+		859252F50CFD4F860054E3D6 /* YLContextualMenuManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 859252F40CFD4F860054E3D6 /* YLContextualMenuManager.m */; };
 		859CB7DB0CEF43C300B27180 /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 859CB7DA0CEF43C300B27180 /* Sparkle.framework */; };
 		859CB7FA0CEF43F300B27180 /* Sparkle.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 859CB7DA0CEF43C300B27180 /* Sparkle.framework */; };
 		85ABEB810C966FEF008227D6 /* YLController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 85ABEB800C966FEF008227D6 /* YLController.mm */; };
 		85AE9DA70CB1597A0045317F /* reload.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 85AE9DA60CB1597A0045317F /* reload.pdf */; };
 		85AE9DAE0CB15D220045317F /* bookmark.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 85AE9DAD0CB15D220045317F /* bookmark.pdf */; };
 		85B247E70CEA1B840090046C /* DragonBall.icns in Resources */ = {isa = PBXBuildFile; fileRef = 85B247E60CEA1B840090046C /* DragonBall.icns */; };
-		85D9B9D10C97DF70006C5E0F /* YLBitmapView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 85D9B9D00C97DF70006C5E0F /* YLBitmapView.mm */; };
 		85F7F2090B06EE36000C4CDF /* YLLGlobalConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 85F7F2080B06EE36000C4CDF /* YLLGlobalConfig.m */; };
 		8D11072A0486CEB800E47090 /* MainMenu.nib in Resources */ = {isa = PBXBuildFile; fileRef = 29B97318FDCFA39411CA2CEA /* MainMenu.nib */; };
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
@@ -70,10 +72,14 @@
 		8579CA290CF21D3D005A8353 /* YLSite.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YLSite.m; sourceTree = "<group>"; };
 		857EAE290CF1D62900777C15 /* connect.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = connect.pdf; sourceTree = "<group>"; };
 		857EAE4E0CF1D89300777C15 /* offline.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = offline.pdf; sourceTree = "<group>"; };
+		85834AC20CFE7F530015E348 /* message.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = message.pdf; sourceTree = "<group>"; };
+		85834C0F0CFEC3F30015E348 /* Whit.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = Whit.aiff; sourceTree = "<group>"; };
 		85899C790CEED4E40031907F /* YLApplication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLApplication.h; sourceTree = "<group>"; };
 		85899C7A0CEED4E40031907F /* YLApplication.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YLApplication.m; sourceTree = "<group>"; };
 		858A54E40CAE78C8000E1AA7 /* YLMarkedTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLMarkedTextView.h; sourceTree = "<group>"; };
 		858A54E50CAE78C8000E1AA7 /* YLMarkedTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YLMarkedTextView.m; sourceTree = "<group>"; };
+		859252F30CFD4F860054E3D6 /* YLContextualMenuManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLContextualMenuManager.h; sourceTree = "<group>"; };
+		859252F40CFD4F860054E3D6 /* YLContextualMenuManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YLContextualMenuManager.m; sourceTree = "<group>"; };
 		859CB7DA0CEF43C300B27180 /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Sparkle.framework; sourceTree = "<group>"; };
 		85ABEB7F0C966FEF008227D6 /* YLController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLController.h; sourceTree = "<group>"; };
 		85ABEB800C966FEF008227D6 /* YLController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = YLController.mm; sourceTree = "<group>"; };
@@ -106,6 +112,8 @@
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				859252F30CFD4F860054E3D6 /* YLContextualMenuManager.h */,
+				859252F40CFD4F860054E3D6 /* YLContextualMenuManager.m */,
 				85899C790CEED4E40031907F /* YLApplication.h */,
 				85899C7A0CEED4E40031907F /* YLApplication.m */,
 				85ABEB7F0C966FEF008227D6 /* YLController.h */,
@@ -173,6 +181,8 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				85834C0F0CFEC3F30015E348 /* Whit.aiff */,
+				85834AC20CFE7F530015E348 /* message.pdf */,
 				857EAE290CF1D62900777C15 /* connect.pdf */,
 				857EAE4E0CF1D89300777C15 /* offline.pdf */,
 				85B247E60CEA1B840090046C /* DragonBall.icns */,
@@ -271,6 +281,8 @@
 				85B247E70CEA1B840090046C /* DragonBall.icns in Resources */,
 				857EAE2A0CF1D62900777C15 /* connect.pdf in Resources */,
 				857EAE4F0CF1D89300777C15 /* offline.pdf in Resources */,
+				85834AC30CFE7F530015E348 /* message.pdf in Resources */,
+				85834C100CFEC3F30015E348 /* Whit.aiff in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -288,10 +300,10 @@
 				85F7F2090B06EE36000C4CDF /* YLLGlobalConfig.m in Sources */,
 				856CDB260C9650550025C754 /* encoding.c in Sources */,
 				85ABEB810C966FEF008227D6 /* YLController.mm in Sources */,
-				85D9B9D10C97DF70006C5E0F /* YLBitmapView.mm in Sources */,
 				858A54E60CAE78C8000E1AA7 /* YLMarkedTextView.m in Sources */,
 				85899C7B0CEED4E40031907F /* YLApplication.m in Sources */,
 				8579CA2A0CF21D3D005A8353 /* YLSite.m in Sources */,
+				859252F50CFD4F860054E3D6 /* YLContextualMenuManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

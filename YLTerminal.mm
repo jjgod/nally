@@ -10,7 +10,6 @@
 #import "YLLGlobalConfig.h"
 #import "encoding.h"
 
-#define GRID(x, y) _grid[((_offset + (y)) % _row) * _column + (x)]
 #define CURSOR_MOVETO(x, y)		do {\
 									_cursorX = (x); _cursorY = (y); \
 									if (_cursorX < 0) _cursorX = 0; if (_cursorX >= _column) _cursorX = _column - 1;\
@@ -65,23 +64,21 @@ static unsigned short gEmptyAttr;
 }
 
 - (void) clearAll {
-    _cursorX = 0;
-    _cursorY = 0;
-    _grid[0].attr.f.fgColor = 7;
-    _grid[0].attr.f.bgColor = 9;
-    _grid[0].attr.f.bold = 0;
-    _grid[0].attr.f.underline = 0;
-    _grid[0].attr.f.blink = 0;
-    _grid[0].attr.f.reverse = 0;
-    _grid[0].attr.f.url = 0;
-    _grid[0].attr.f.nothing = 0;
-    gEmptyAttr = _grid[0].attr.v;
+    _cursorX = _cursorY = 0;
+    attribute t;
+    t.f.fgColor = 7;
+    t.f.bgColor = 9;
+    t.f.bold = 0;
+    t.f.underline = 0;
+    t.f.blink = 0;
+    t.f.reverse = 0;
+    t.f.url = 0;
+    t.f.nothing = 0;
+    gEmptyAttr = t.v;
     int i;
-    for (i = 0; i < (_row * _column); i++) {
-        _grid[i].byte = '\0';
-        _grid[i].attr.v = gEmptyAttr;
-        _dirty[i] = YES;
-    }
+    for (i = 0; i < _row; i++) 
+        [self clearRow: i];
+
     if (_csBuf)
         _csBuf->clear();
     else
@@ -98,14 +95,18 @@ static unsigned short gEmptyAttr;
 	_underline = NO;
 	_blink = NO;
 	_reverse = NO;
-    _offset = 0;
 }
 
 - (id) init {
 	if (self = [super init]) {
-		_row = [[YLLGlobalConfig sharedInstance] row];
+        _savedCursorX = _savedCursorY = 0;
+        _row = [[YLLGlobalConfig sharedInstance] row];
 		_column = [[YLLGlobalConfig sharedInstance] column];
-		_grid = (cell *) malloc(sizeof(cell) * (_row * _column));
+        _scrollBeginRow = 0; _scrollEndRow = _row - 1;
+		_grid = (cell **) malloc(sizeof(cell *) * _row);
+        int i;
+        for (i = 0; i < _row; i++)
+            _grid[i] = (cell *) malloc(sizeof(cell) * _column);
 		_dirty = (char *) malloc(sizeof(char) * (_row * _column));
         [self clearAll];
 	}
@@ -115,7 +116,10 @@ static unsigned short gEmptyAttr;
 - (void) dealloc {
 	delete _csBuf;
 	delete _csArg;
-	free(_grid);
+    int i;
+    for (i = 0; i < _row; i++)
+        free(_grid[i]);
+    free(_grid);
 	[super dealloc];
 }
 
@@ -125,11 +129,11 @@ static unsigned short gEmptyAttr;
 
 # pragma mark -
 # pragma mark Input Interface
-- (void) feedData: (NSData *) data {
-	[self feedBytes: (const unsigned char *)[data bytes] length: [data length]];
+- (void) feedData: (NSData *) data connection: (id) connection{
+	[self feedBytes: (const unsigned char *)[data bytes] length: [data length] connection: connection];
 }
 
-- (void) feedBytes: (const unsigned char *) bytes length: (int) len {
+- (void) feedBytes: (const unsigned char *) bytes length: (int) len connection: (id) connection {
 	int i, x;
 	unsigned char c;
 	[_delegate performSelector: @selector(tick:)
@@ -143,21 +147,26 @@ static unsigned short gEmptyAttr;
                 // do nothing
             } else if (c == 0x07) { // Beep
 				NSBeep();
+                if (connection != [[_delegate selectedTabViewItem] identifier]) {
+                    [connection setValue: [NSImage imageNamed: @"message.pdf"] forKey: @"icon"];
+                }
 			} else if (c == 0x08) { // Backspace
 				if (_cursorX > 0)
 					_cursorX--;
 			} else if (c == 0x0A) { // Linefeed 
-				if (_cursorY == _row - 1) {
+				if (_cursorY == _scrollEndRow) {
 					[_delegate update];
-					[_delegate extendBottom];
-					_offset = (_offset + 1) % _row;
-					for (x = 0; x < _column; x++) {
-						GRID(x, _cursorY).byte = '\0';
-						GRID(x, _cursorY).attr.v = gEmptyAttr;
-					}
+					[_delegate extendBottomFrom: _scrollBeginRow to: _scrollEndRow];
+                    cell *emptyLine = _grid[_scrollBeginRow];
+                    [self clearRow: _scrollBeginRow];
+                    
+                    for (x = _scrollBeginRow; x < _scrollEndRow; x++) 
+                        _grid[x] = _grid[x + 1];
+                    _grid[_scrollEndRow] = emptyLine;
 					[self setAllDirty];
 				} else {
 					_cursorY++;
+                    if (_cursorY >= _row) _cursorY = _row - 1;
 				}
 			} else if (c == 0x0D) { // Carriage Return
 				_cursorX = 0;
@@ -169,14 +178,14 @@ static unsigned short gEmptyAttr;
 				_csTemp = 0;
 				_state = TP_CONTROL;
 			} else {
-				GRID(_cursorX, _cursorY).byte = c;
-				GRID(_cursorX, _cursorY).attr.f.fgColor = _fgColor;
-				GRID(_cursorX, _cursorY).attr.f.bgColor = _bgColor;
-				GRID(_cursorX, _cursorY).attr.f.bold = _bold;
-				GRID(_cursorX, _cursorY).attr.f.underline = _underline;
-				GRID(_cursorX, _cursorY).attr.f.blink = _blink;
-				GRID(_cursorX, _cursorY).attr.f.reverse = _reverse;
-                GRID(_cursorX, _cursorY).attr.f.url = NO;
+				_grid[_cursorY][_cursorX].byte = c;
+				_grid[_cursorY][_cursorX].attr.f.fgColor = _fgColor;
+				_grid[_cursorY][_cursorX].attr.f.bgColor = _bgColor;
+				_grid[_cursorY][_cursorX].attr.f.bold = _bold;
+				_grid[_cursorY][_cursorX].attr.f.underline = _underline;
+				_grid[_cursorY][_cursorX].attr.f.blink = _blink;
+				_grid[_cursorY][_cursorX].attr.f.reverse = _reverse;
+                _grid[_cursorY][_cursorX].attr.f.url = NO;
 				[self setDirty: YES atRow: _cursorY column: _cursorX];
 				_cursorX++;
 			}
@@ -186,21 +195,47 @@ static unsigned short gEmptyAttr;
 				_csArg->clear();
 				_csTemp = 0;
 				_state = TP_CONTROL;
-			} else if (c == 'M') { // scroll down
-				if (_cursorY == 0) {
+			} else if (c == 'M') { // scroll down (cursor up)
+				if (_cursorY == _scrollBeginRow) {
 					[_delegate update];
-					[_delegate extendTop];
-					_offset = (_offset + _row - 1) % _row;
-					for (x = 0; x < _column; x++) {
-						GRID(x, _cursorY).byte = '\0';
-						GRID(x, _cursorY).attr.v = gEmptyAttr;
-					}
+					[_delegate extendTopFrom: _scrollBeginRow to: _scrollEndRow];
+                    cell *emptyLine = _grid[_scrollEndRow];
+                    [self clearRow: _scrollEndRow];
+                    
+                    for (x = _scrollEndRow; x > _scrollBeginRow; x--) 
+                        _grid[x] = _grid[x - 1];
+                    _grid[_scrollBeginRow] = emptyLine;
 					[self setAllDirty];
 				} else {
 					_cursorY--;
+                    if (_cursorY < 0) _cursorY = 0;
 				}
 				_state = TP_NORMAL;
-			} else {
+            } else if (c == 'D') { // scroll up (cursor down)
+                if (_cursorY == _scrollEndRow) {
+					[_delegate update];
+					[_delegate extendBottomFrom: _scrollBeginRow to: _scrollEndRow];
+                    cell *emptyLine = _grid[_scrollBeginRow];
+                    [self clearRow: _scrollBeginRow];
+                    
+                    for (x = _scrollBeginRow; x < _scrollEndRow; x++) 
+                        _grid[x] = _grid[x + 1];
+                    _grid[_scrollEndRow] = emptyLine;
+					[self setAllDirty];
+				} else {
+					_cursorY++;
+                    if (_cursorY >= _row) _cursorY = _row - 1;
+				}
+                _state = TP_NORMAL;
+			} else if (c == '7') { // Save cursor
+                _savedCursorX = _cursorX;
+                _savedCursorY = _cursorY;
+                _state = TP_NORMAL;
+			} else if (c == '8') { // Restore cursor
+                _savedCursorX = _cursorX;
+                _savedCursorY = _cursorY;
+                _state = TP_NORMAL;
+            } else {
 				NSLog(@"unprocessed esc: %c(0x%X)", c, c);
 				_state = TP_NORMAL;
 			}
@@ -273,36 +308,31 @@ static unsigned short gEmptyAttr;
 						^[1J		: clear from start to cursor position
 						^[2J		: clear all
 					 */
-					int start = 0, end = _row * _column - 1;
-					if (_csArg->size() == 0 || _csArg->front() == 0) 
-						start = _cursorX + (_cursorY * _column);
-					if (_csArg->size() == 1 && _csArg->front() == 1) 
-						end = _cursorX + (_cursorY * _column);
-//					[_delegate update];
-					int idx;
-					for (idx = start; idx <= end; idx++) {
-						int memIdx = (idx + _offset * _column) % (_row * _column);
-						_grid[memIdx].byte = '\0';
-						_grid[memIdx].attr.v = gEmptyAttr;
-						_dirty[idx] = YES;
-					}
+					int j;
+					if (_csArg->size() == 0 || _csArg->front() == 0) {
+                        [self clearRow: _cursorY fromStart: _cursorX toEnd: _column - 1];
+                        for (j = _cursorY + 1; j < _row; j++)
+                            [self clearRow: j];
+                    } else if (_csArg->size() == 1 && _csArg->front() == 1) {
+                        [self clearRow: _cursorY fromStart: 0 toEnd: _cursorX];
+                        for (j = 0; j < _cursorY; j++)
+                            [self clearRow: j];
+                    } else if (_csArg->size() == 1 && _csArg->front() == 2) {
+                        [self clearAll];
+                    }
 				} else if (c == 'K') {		// Erase Line (cursor does not move)
 					/* 
 						^[K, ^[0K	: clear from cursor position to end of line
 						^[1K		: clear from start of line to cursor position
 						^[2K		: clear whole line
 					 */
-					int start = 0, end = _column - 1;
-					if (_csArg->size() == 0 || _csArg->front() == 0) 
-						start = _cursorX;
-					if (_csArg->size() == 1 && _csArg->front() == 1) 
-						end = _cursorX;
-					int idx;
-					for (idx = start; idx <= end; idx++) {
-						GRID(idx, _cursorY).byte = '\0';
-						GRID(idx, _cursorY).attr.v = gEmptyAttr;
-						_dirty[idx + _cursorY * _column] = YES;
-					}
+					if (_csArg->size() == 0 || _csArg->front() == 0) {
+                        [self clearRow: _cursorY fromStart: _cursorX toEnd: _column - 1];
+                    } else if (_csArg->size() == 1 && _csArg->front() == 1) {
+                        [self clearRow: _cursorY fromStart: 0 toEnd: _cursorX];
+                    } else if (_csArg->size() == 1 && _csArg->front() == 2) {
+                        [self clearRow: _cursorY];
+                    }
 				} else if (c == 'L') {
 				} else if (c == 'M') {
 				} else if (c == 'm') {
@@ -339,6 +369,17 @@ static unsigned short gEmptyAttr;
 							}
 						}
 					}
+				} else if (c == 'r') {
+                    if (_csArg->size() == 0) {
+                        _scrollBeginRow = 0;
+                        _scrollEndRow = _row - 1;
+                    } else if (_csArg->size() == 2) {
+                        int s = (*_csArg)[0];
+                        int e = (*_csArg)[1];
+                        if (s > e) s = (*_csArg)[1], e = (*_csArg)[0];
+                        _scrollBeginRow = s - 1;
+                        _scrollEndRow = e - 1;
+                    }
 				} else if (c == 's') {
 					
 				} else if (c == 'u') {
@@ -367,6 +408,18 @@ static unsigned short gEmptyAttr;
 	[_delegate setNeedsDisplay: YES];
 }
 
+- (void) clearRow: (int) r {
+    [self clearRow: r fromStart: 0 toEnd: _column - 1];
+}
+
+- (void) clearRow: (int) r fromStart: (int) s toEnd: (int) e {
+    int i;
+    for (i = s; i <= e; i++) {
+        _grid[r][i].byte = '\0';
+        _grid[r][i].attr.v = gEmptyAttr;
+        _dirty[r * _column + i] = YES;
+    }
+}
 
 - (void) setAllDirty {
 	int i, end = _column * _row;
@@ -375,7 +428,6 @@ static unsigned short gEmptyAttr;
 }
 
 - (BOOL) isDirtyAtRow: (int) r column:(int) c {
-//	return YES;
 	return _dirty[(r) * _column + (c)];
 }
 
@@ -384,27 +436,7 @@ static unsigned short gEmptyAttr;
 }
 
 - (attribute) attrAtRow: (int) r column: (int) c {
-	return GRID(c, r).attr;
-}
-
-- (NSColor *) fgColorAtRow: (int) r column: (int) c {
-	return [[YLLGlobalConfig sharedInstance] colorAtIndex: GRID(c, r).attr.f.fgColor hilite: GRID(c, r).attr.f.bold];
-}
-
-- (NSColor *) bgColorAtRow: (int) r column: (int) c {
-	return [[YLLGlobalConfig sharedInstance] colorAtIndex: GRID(c, r).attr.f.bgColor hilite: NO];	
-}
-
-- (BOOL) boldAtRow:(int) r column:(int) c {
-	return GRID(c, r).attr.f.bold;
-}
-
-- (int) fgColorIndexAtRow: (int) r column: (int) c {
-	return GRID(c, r).attr.f.fgColor;
-}
-
-- (int) bgColorIndexAtRow: (int) r column: (int) c {
-	return GRID(c, r).attr.f.bgColor;	
+	return _grid[(r + _offset) % _row][c].attr;
 }
 
 - (NSString *) stringFromIndex: (int) begin length: (int) length {
@@ -420,13 +452,13 @@ static unsigned short gEmptyAttr;
             unichar cr = 0x000D;
             textBuf[bufLength++] = cr;
         }
-        int db = GRID(x, y).attr.f.doubleByte;
+        int db = _grid[y][x].attr.f.doubleByte;
         if (db == 0) {
-            textBuf[bufLength++] = GRID(x, y).byte;
+            textBuf[bufLength++] = _grid[y][x].byte;
         } else if (db == 1) {
-            firstByte = GRID(x, y).byte;
+            firstByte = _grid[y][x].byte;
         } else if (db == 2 && firstByte) {
-            int index = (firstByte << 8) + GRID(x, y).byte - 0x8000;
+            int index = (firstByte << 8) + _grid[y][x].byte - 0x8000;
             textBuf[bufLength++] = B2U[index];
         }
     }
@@ -434,39 +466,26 @@ static unsigned short gEmptyAttr;
     return [[[NSString alloc] initWithCharacters: textBuf length: bufLength] autorelease];
 }
 
-- (unichar) charAtRow: (int) r column: (int) c {
-	int db = [self isDoubleByteAtRow: r column: c];
-	if (db == 0) {
-		unichar b = GRID(c, r).byte;
-			return b;
-	}
-	if (db == 1) {
-		int index = ((int)GRID(c, r).byte << 8) + GRID(c+1, r).byte - 0x8000;
-		return B2U[index];
-	}
-	return 0;
-}
-
 - (cell *) cellsOfRow: (int) r {
-	return _grid + ((r + _offset) % _row) * _column;
+	return _grid[r];
 }
 
 - (void) updateDoubleByteStateForRow: (int) r {
-	cell *currRow = _grid + ((r + _offset) % _row) * _column;
+	cell *currRow = _grid[r];
 	int i, db = 0;
 	for (i = 0; i < _column; i++) {
 		if (db == 0 || db == 2) {
-			if ((currRow + i)->byte > 0x7F) db = 1;
+			if (currRow[i].byte > 0x7F) db = 1;
 			else db = 0;
 		} else { // db == 1
 			db = 2;
 		}
-		(currRow + i)->attr.f.doubleByte = db;
+		currRow[i].attr.f.doubleByte = db;
 	}
 }
 
 - (void) updateURLStateForRow: (int) r {
-	cell *currRow = _grid + ((r + _offset) % _row) * _column;
+	cell *currRow = _grid[r];
     int httpLength = 7; // http://
     int httpsLength = 8; // https://
     BOOL urlState = NO;
@@ -474,56 +493,39 @@ static unsigned short gEmptyAttr;
 	int i;
 	for (i = 0; i < _column; i++) {
         if (urlState) {
-            unsigned char c = (currRow + i)->byte;
+            unsigned char c = currRow[i].byte;
             if (0x21 <= c && c <= 0x7E) {
-                (currRow + i)->attr.f.url = YES;                
+                currRow[i].attr.f.url = YES;                
             } else {
                 urlState = NO;
-                (currRow + i)->attr.f.url = NO;
+                currRow[i].attr.f.url = NO;
             }
         } else if (i + httpLength < _column && 
-            (currRow + i + 0)->byte == 'h' &&
-            (currRow + i + 1)->byte == 't' && 
-            (currRow + i + 2)->byte == 't' &&
-            (currRow + i + 3)->byte == 'p' &&
-            (currRow + i + 4)->byte == ':' &&
-            (currRow + i + 5)->byte == '/' &&
-            (currRow + i + 6)->byte == '/') {
+            currRow[i + 0].byte == 'h' &&
+            currRow[i + 1].byte == 't' && 
+            currRow[i + 2].byte == 't' &&
+            currRow[i + 3].byte == 'p' &&
+            currRow[i + 4].byte == ':' &&
+            currRow[i + 5].byte == '/' &&
+            currRow[i + 6].byte == '/') {
             urlState = YES;
             (currRow + i)->attr.f.url = YES;
         } else if (i + httpsLength < _column && 
-                   (currRow + i + 0)->byte == 'h' &&
-                   (currRow + i + 1)->byte == 't' && 
-                   (currRow + i + 2)->byte == 't' &&
-                   (currRow + i + 3)->byte == 'p' &&
-                   (currRow + i + 4)->byte == 's' &&
-                   (currRow + i + 5)->byte == ':' &&
-                   (currRow + i + 6)->byte == '/' &&
-                   (currRow + i + 7)->byte == '/' ) {
+                   currRow[i + 0].byte == 'h' &&
+                   currRow[i + 1].byte == 't' && 
+                   currRow[i + 2].byte == 't' &&
+                   currRow[i + 3].byte == 'p' &&
+                   currRow[i + 4].byte == 's' &&
+                   currRow[i + 5].byte == ':' &&
+                   currRow[i + 6].byte == '/' &&
+                   currRow[i + 7].byte == '/' ) {
             urlState = YES;
-            (currRow + i)->attr.f.url = YES;
+            currRow[i].attr.f.url = YES;
         } else {
-            (currRow + i)->attr.f.url = NO;
+            currRow[i].attr.f.url = NO;
         }
 	}
 }
-
-- (int) isDoubleByteAtRow: (int) r column:(int) c {
-	int i;
-	int db = 0;
-//	if (c == _column - 1) return 0;
-	for (i = 0; i <= c; i++) {
-		unsigned char c = GRID(i, r).byte;
-		if (db == 0 || db == 2) {
-			if (c > 0x7F) db = 1;
-			else db = 0;
-		} else if (db == 1) {
-			db = 2;
-		} 
-	}
-	return db;
-}
-
 
 - (void) setDelegate: (id) d {
 	_delegate = d; // Yes, this is delegation. We shouldn't own the delegation object.

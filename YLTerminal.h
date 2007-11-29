@@ -29,7 +29,7 @@
 	BOOL _blink;
 	BOOL _reverse;
 	
-	cell *_grid;
+	cell **_grid;
 	char *_dirty;
 	
 	enum { TP_NORMAL, TP_ESCAPE, TP_CONTROL } _state;
@@ -38,26 +38,27 @@
 	std::deque<int> *_csArg;
 	unsigned int _csTemp;
 	YLView *_delegate;
+    
+    int _scrollBeginRow;
+    int _scrollEndRow;
 }
 
-- (void) feedData: (NSData *) data ;
-- (void) feedBytes: (const unsigned char *) bytes length: (int) len ;
+- (void) feedData: (NSData *) data connection: (id) connection;
+- (void) feedBytes: (const unsigned char *) bytes length: (int) len connection: (id) connection;
 - (void) startConnection ;
 - (void) closeConnection ;
 
+- (void) clearRow: (int) r ;
+- (void) clearRow: (int) r fromStart: (int) s toEnd: (int) e ;
+
 - (BOOL) isDirtyAtRow: (int) r column:(int) c;
 - (attribute) attrAtRow: (int) r column: (int) c ;
-- (NSColor *) fgColorAtRow: (int) r column: (int) c;
-- (NSColor *) bgColorAtRow: (int) r column: (int) c;
-- (BOOL) boldAtRow:(int) r column:(int) c ;
 
 - (NSString *) stringFromIndex: (int) begin length: (int) length ;
-- (unichar) charAtRow: (int) r column: (int) c;
 
 - (cell *) cellsOfRow: (int) r ;
 - (void) updateURLStateForRow: (int) r ;
 - (void) updateDoubleByteStateForRow: (int) r ;
-- (int) isDoubleByteAtRow: (int) r column:(int) c;
 - (void) setAllDirty ;
 - (void) setDirty: (BOOL) d atRow: (int) r column: (int) c ;
 

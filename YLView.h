@@ -37,13 +37,14 @@
 - (void) update;
 - (void) drawSpecialSymbol: (unichar) ch forRow: (int) r column: (int) c leftAttribute: (attribute) attr1 rightAttribute: (attribute) attr2 ;
 - (void) drawSelection ;
+- (void) refreshHiddenRegion;
 
 - (YLTerminal *)dataSource;
 - (YLTelnet *)telnet;
 - (BOOL)connected;
 
-- (void) extendBottom ;
-- (void) extendTop ;
+- (void) extendBottomFrom: (int) start to: (int) end;
+- (void) extendTopFrom: (int) start to: (int) end ;
 - (void) clearScreen: (int) opt atRow: (int) r column: (int) c ;
 
 - (void) drawStringForRow: (int) r context: (CGContextRef) myCGContext ;
@@ -54,5 +55,7 @@
 
 - (int)y;
 - (void)setY:(int)value;
+
+- (NSString *) selectedPlainString ;
 
 @end

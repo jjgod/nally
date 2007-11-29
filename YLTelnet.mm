@@ -282,7 +282,7 @@ void dump_packet(unsigned char *s, int length) {
 			chunkBuf[i] = terminalBuf.front();
 			terminalBuf.pop_front();
 		}
-		[_terminal feedBytes: chunkBuf length: length];
+		[_terminal feedBytes: chunkBuf length: length connection: self];
 	}
 }
 

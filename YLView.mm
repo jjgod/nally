@@ -12,6 +12,7 @@
 #import "YLTelnet.h"
 #import "YLLGLobalConfig.h"
 #import "YLMarkedTextView.h"
+#import "YLContextualMenuManager.h"
 
 static YLLGlobalConfig *gConfig;
 static int gRow;
@@ -45,6 +46,11 @@ BOOL isSpecialSymbol(unichar ch) {
 	if (ch >= 0x25E2 && ch <= 0x25E5) // TRIANGLE ◢◣◤◥
 		return YES;
 	return NO;
+}
+
+BOOL isHiddenAttribute(attribute a) {
+    return (!a.f.bold && ((a.f.fgColor == a.f.bgColor) ||
+                          (a.f.fgColor == 0 && a.f.bgColor == NUM_COLOR - 1))); 
 }
 
 @implementation YLView
@@ -135,10 +141,9 @@ BOOL isSpecialSymbol(unichar ch) {
 		[NSBezierPath fillRect: NSMakeRect(0, 0, frame.size.width, frame.size.height)];
 		[_backedImage unlockFocus];
 
-		if (!gLeftImage) {
-			gLeftImage = [[NSImage alloc] initWithSize: NSMakeSize(_fontWidth, _fontHeight)];
-			[gLeftImage setFlipped: YES];			
-		}
+		if (!gLeftImage) 
+			gLeftImage = [[NSImage alloc] initWithSize: NSMakeSize(_fontWidth, _fontHeight)];			
+		
 		gSingleAdvance = (CGSize *) malloc(sizeof(CGSize) * gColumn);
 		gDoubleAdvance = (CGSize *) malloc(sizeof(CGSize) * gColumn);
 		int i;
@@ -165,16 +170,9 @@ BOOL isSpecialSymbol(unichar ch) {
 - (void) copy: (id) sender {
     if (![self connected]) return;
     if (_selectionLength == 0) return;
-    int location, length;
-    if (_selectionLength >= 0) {
-        location = _selectionLocation;
-        length = _selectionLength;
-    } else {
-        location = _selectionLocation + _selectionLength;
-        length = 0 - (int)_selectionLength;
-    }
-    
-    NSString *s = [[self dataSource] stringFromIndex: location length: length];
+
+    NSString *s = [self selectedPlainString];
+
     if (s) {
         NSPasteboard *pb = [NSPasteboard generalPasteboard];
         NSArray *types = [NSArray arrayWithObjects: NSStringPboardType, nil];
@@ -216,6 +214,17 @@ BOOL isSpecialSymbol(unichar ch) {
     return YES;
 }
 
+- (void) refreshHiddenRegion {
+    if (![self connected]) return;
+    int i, j;
+    for (i = 0; i < gRow; i++) {
+        cell *currRow = [[self dataSource] cellsOfRow: i];
+        for (j = 0; j < gColumn; j++)
+            if (isHiddenAttribute(currRow[j].attr)) 
+                [[self dataSource] setDirty: YES atRow: i column: j];
+    }
+}
+
 #pragma mark -
 #pragma mark Conversion
 
@@ -241,6 +250,7 @@ BOOL isSpecialSymbol(unichar ch) {
     _selectionLocation = [self convertPointToIndex: p];
     _selectionLength = 0;
     [self setNeedsDisplay: YES];
+    [super mouseDown: e];
 }
 
 - (void) mouseDragged: (NSEvent *) e {
@@ -364,15 +374,15 @@ BOOL isSpecialSymbol(unichar ch) {
         [NSBezierPath setDefaultLineWidth: 1.0];
         /* Draw the url underline */
         int c, r;
-        for (r = 0; r < gColumn; r++) {
+        for (r = 0; r < gRow; r++) {
             [ds updateURLStateForRow: r];
             cell *currRow = [ds cellsOfRow: r];
             for (c = 0; c < gColumn; c++) {
                 int start;
                 for (start = c; currRow[c].attr.f.url && c < gColumn; c++) ;
                 if (c != start) {
-                    [NSBezierPath strokeLineFromPoint: NSMakePoint(start * _fontWidth + 0.5, (gRow - r - 1) * _fontHeight + 0.5) 
-                                              toPoint: NSMakePoint(c * _fontWidth - 0.5, (gRow - r - 1) * _fontHeight + 0.5)];
+                    [NSBezierPath strokeLineFromPoint: NSMakePoint(start * _fontWidth, (gRow - r - 1) * _fontHeight + 0.5) 
+                                              toPoint: NSMakePoint(c * _fontWidth, (gRow - r - 1) * _fontHeight + 0.5)];
                 }
             }
         }
@@ -387,7 +397,6 @@ BOOL isSpecialSymbol(unichar ch) {
 		
         if (_selectionLength != 0) 
             [self drawSelection];
-        
 	} else {
 		[[gConfig colorAtIndex: NUM_COLOR - 1 hilite: 0] set];
 		[NSBezierPath fillRect: [self bounds]];
@@ -441,14 +450,14 @@ BOOL isSpecialSymbol(unichar ch) {
 		DDDDDDDDDDD			...........
  
  */
-- (void) extendBottom {
+- (void) extendBottomFrom: (int) start to: (int) end {
 	[_backedImage lockFocus];
-	[_backedImage compositeToPoint: NSMakePoint(0, _fontHeight) 
-						  fromRect: NSMakeRect(0, 0, gColumn * _fontWidth, (gRow - 1) * _fontHeight) 
+	[_backedImage compositeToPoint: NSMakePoint(0, (gRow - end) * _fontHeight) 
+						  fromRect: NSMakeRect(0, (gRow - end - 1) * _fontHeight, gColumn * _fontWidth, (end - start) * _fontHeight) 
 						 operation: NSCompositeCopy];
 
 	[gConfig->_colorTable[0][NUM_COLOR - 1] set];
-	[NSBezierPath fillRect: NSMakeRect(0, 0, gColumn * _fontWidth, _fontHeight)];
+	[NSBezierPath fillRect: NSMakeRect(0, (gRow - end - 1) * _fontHeight, gColumn * _fontWidth, _fontHeight)];
 	[_backedImage unlockFocus];
 }
 
@@ -461,14 +470,14 @@ BOOL isSpecialSymbol(unichar ch) {
 		CCCCCCCCCCC   ->	BBBBBBBBBBB
 		DDDDDDDDDDD			CCCCCCCCCCC
  */
-- (void) extendTop {
-	[_backedImage lockFocus];
-	[_backedImage compositeToPoint: NSMakePoint(0, 0) 
-						  fromRect: NSMakeRect(0, _fontHeight, gColumn * _fontWidth, (gRow - 1) * _fontHeight) 
+- (void) extendTopFrom: (int) start to: (int) end {
+    [_backedImage lockFocus];
+	[_backedImage compositeToPoint: NSMakePoint(0, (gRow - end - 1) * _fontHeight) 
+						  fromRect: NSMakeRect(0, (gRow - end) * _fontHeight, gColumn * _fontWidth, (end - start) * _fontHeight) 
 						 operation: NSCompositeCopy];
 	
 	[gConfig->_colorTable[0][NUM_COLOR - 1] set];
-	[NSBezierPath fillRect: NSMakeRect(0, (gRow - 1) * _fontHeight, gColumn * _fontWidth, _fontHeight)];
+	[NSBezierPath fillRect: NSMakeRect(0, (gRow - start - 1) * _fontHeight, gColumn * _fontWidth, _fontHeight)];
 	[_backedImage unlockFocus];
 }
 
@@ -511,22 +520,29 @@ BOOL isSpecialSymbol(unichar ch) {
 	int start, end;
 	unichar textBuf[gColumn];
 	BOOL isDoubleByte[gColumn];
+	BOOL isDoubleColor[gColumn];
 	int bufIndex[gColumn];
 	int runLength[gColumn];
 	CGPoint position[gColumn];
 	int bufLength = 0;
+    
+    CGFloat ePaddingLeft = 1.0, ePaddingBottom = 2.0;
+    CGFloat cPaddingLeft = 1.0, cPaddingBottom = 1.0;
+    
     YLTerminal *ds = [self dataSource];
     [ds updateDoubleByteStateForRow: r];
 	
     cell *currRow = [ds cellsOfRow: r];
 
 	for (i = 0; i < gColumn; i++) 
-		isDoubleByte[i] = textBuf[i] = runLength[i] = 0;
+		isDoubleColor[i] = isDoubleByte[i] = textBuf[i] = runLength[i] = 0;
 
+    // find the first non-dirty position in this row
 	for (x = 0; x < gColumn && ![ds isDirtyAtRow: r column: x]; x++) ;
 	start = x;
 	if (start == gColumn) return;
-	
+
+    // update the information array
 	for (x = start; x < gColumn; x++) {
 		if (![ds isDirtyAtRow: r column: x]) continue;
 		end = x;
@@ -536,7 +552,8 @@ BOOL isSpecialSymbol(unichar ch) {
 			isDoubleByte[bufLength] = NO;
 			textBuf[bufLength] = 0x0000 + (currRow + x)->byte;
 			bufIndex[bufLength] = x;
-			position[bufLength] = CGPointMake(x * _fontWidth + 1.0, (gRow - 1 - r) * _fontHeight + CTFontGetDescent(gConfig->_eCTFont) + 2.0);
+			position[bufLength] = CGPointMake(x * _fontWidth + ePaddingLeft, (gRow - 1 - r) * _fontHeight + CTFontGetDescent(gConfig->_eCTFont) + ePaddingBottom);
+            isDoubleColor[bufLength] = NO;
 			bufLength++;
 		} else if (db == 1) {
 			continue;
@@ -544,21 +561,29 @@ BOOL isSpecialSymbol(unichar ch) {
 			unichar ch = B2U[(((currRow + x - 1)->byte) << 8) + ((currRow + x)->byte) - 0x8000];
 			if (isSpecialSymbol(ch)) {
 				[self drawSpecialSymbol: ch forRow: r column: (x - 1) leftAttribute: (currRow + x - 1)->attr rightAttribute: (currRow + x)->attr];
-				isDoubleByte[bufLength] = NO;
-				isDoubleByte[bufLength + 1] = NO;
-				textBuf[bufLength] = 0x3000;
-				position[bufLength] = CGPointMake((x - 1) * _fontWidth + 2.0, (gRow - 1 - r) * _fontHeight + CTFontGetDescent(gConfig->_cCTFont) + 1.0);
+				isDoubleByte[bufLength] = isDoubleByte[bufLength + 1] = NO;
+				textBuf[bufLength] = 0x3000; // full-width space
+				position[bufLength] = CGPointMake((x - 1) * _fontWidth + cPaddingLeft, (gRow - 1 - r) * _fontHeight + CTFontGetDescent(gConfig->_cCTFont) + cPaddingBottom);
 				bufIndex[bufLength] = x;
-				bufLength ++;
+                isDoubleColor[bufLength] = NO;
+				bufLength++;
 			} else {
+                unsigned int fgIndex1, fgIndex2;
+                BOOL bold1, bold2;
+                fgIndex1 = currRow[x - 1].attr.f.reverse ? currRow[x - 1].attr.f.bgColor : currRow[x - 1].attr.f.fgColor;
+                fgIndex2 = currRow[x].attr.f.reverse ? currRow[x].attr.f.bgColor : currRow[x].attr.f.fgColor;
+                bold1 = !currRow[x - 1].attr.f.reverse && currRow[x - 1].attr.f.bold;
+                bold2 = !currRow[x].attr.f.reverse && currRow[x].attr.f.bold;
+                if (fgIndex1 != fgIndex2 || bold1 != bold2) isDoubleColor[bufLength] = YES;
+                else isDoubleColor[bufLength] = NO;
 				isDoubleByte[bufLength] = YES;
 				textBuf[bufLength] = ch;
 				bufIndex[bufLength] = x;
-				position[bufLength] = CGPointMake((x - 1) * _fontWidth + 2.0, (gRow - 1 - r) * _fontHeight + CTFontGetDescent(gConfig->_cCTFont) + 2.0);
+				position[bufLength] = CGPointMake((x - 1) * _fontWidth + cPaddingLeft, (gRow - 1 - r) * _fontHeight + CTFontGetDescent(gConfig->_cCTFont) + cPaddingBottom);
 				bufLength++;
 			}
 			if (x == start)
-				[self setNeedsDisplayInRect: NSMakeRect((x - 1) * _fontWidth, (gRow - 1 - r) * _fontHeight, _fontWidth, _fontHeight)];				
+				[self setNeedsDisplayInRect: NSMakeRect((x - 1) * _fontWidth, (gRow - 1 - r) * _fontHeight, _fontWidth, _fontHeight)];
 		}
 	}
 	
@@ -567,7 +592,7 @@ BOOL isSpecialSymbol(unichar ch) {
 	CFMutableAttributedStringRef mutableAttributedString = CFAttributedStringCreateMutableCopy(kCFAllocatorDefault, 0, attributedString);
 	CFRelease(str);
 	CFRelease(attributedString);
-		
+    
 	/* Run-length of the style */
 	c = 0;
 	while (c < bufLength) {
@@ -584,10 +609,9 @@ BOOL isSpecialSymbol(unichar ch) {
 		
 		CFDictionaryRef attr;
 		if (db) 
-			attr = gConfig->_cCTAttribute[lastAttr.f.bold][lastAttr.f.reverse ? lastAttr.f.bgColor : lastAttr.f.fgColor];
+			attr = gConfig->_cCTAttribute[!lastAttr.f.reverse && lastAttr.f.bold][lastAttr.f.reverse ? lastAttr.f.bgColor : lastAttr.f.fgColor];
 		else
-			attr = gConfig->_eCTAttribute[lastAttr.f.bold][lastAttr.f.reverse ? lastAttr.f.bgColor : lastAttr.f.fgColor];
-		
+			attr = gConfig->_eCTAttribute[!lastAttr.f.reverse && lastAttr.f.bold][lastAttr.f.reverse ? lastAttr.f.bgColor : lastAttr.f.fgColor];
 		CFAttributedStringSetAttributes(mutableAttributedString, CFRangeMake(location, length), attr, YES);
 	}
 	
@@ -616,6 +640,8 @@ BOOL isSpecialSymbol(unichar ch) {
 		CGFontRef cgFont = CTFontCopyGraphicsFont(runFont, NULL);
 		NSColor *runColor = (NSColor *) CFDictionaryGetValue(attrDict, kCTForegroundColorAttributeName);
 		
+        CGContextSaveGState(myCGContext);
+        
 		CGContextSetFont(myCGContext, cgFont);
 		CGContextSetFontSize(myCGContext, CTFontGetSize(runFont));
 		CGContextSetRGBFillColor(myCGContext, 
@@ -623,29 +649,107 @@ BOOL isSpecialSymbol(unichar ch) {
 								 [runColor greenComponent], 
 								 [runColor blueComponent], 
 								 1.0);
-		
-		CGGlyph glyph[gColumn];
-		CFRange glyphRange = CFRangeMake(runGlyphIndex, runGlyphCount);
-		CTRunGetGlyphs(run, glyphRange, glyph);
+        CGContextSetRGBStrokeColor(myCGContext, 1.0, 1.0, 1.0, 1.0);
+        CGContextSetLineWidth(myCGContext, 1.0);
+        
+        int location = runGlyphIndex = 0;
+        int lastIndex = bufIndex[glyphOffset];
+        BOOL hidden = isHiddenAttribute(currRow[lastIndex].attr);
+        
+        for (runGlyphIndex = 0; runGlyphIndex <= runGlyphCount; runGlyphIndex++) {
+            int index = bufIndex[glyphOffset + runGlyphIndex];
 
-		CGAffineTransform textMatrix = CTRunGetTextMatrix(run);
-		textMatrix.tx = position[glyphOffset].x;
-		textMatrix.ty = position[glyphOffset].y;
-		CGContextSetTextMatrix(myCGContext, textMatrix);
-		
-		CGContextShowGlyphsWithAdvances(myCGContext, glyph, isDoubleByte[glyphOffset] ? gDoubleAdvance : gSingleAdvance, runGlyphCount);
-		
-/*		for (; runGlyphIndex < runGlyphCount; runGlyphIndex++) {
-			CFRange glyphRange = CFRangeMake(runGlyphIndex, 1);
-			CGGlyph glyph;
-			CTRunGetGlyphs(run, glyphRange, &glyph);
-			CGContextShowGlyphsAtPoint(myCGContext, position[runGlyphIndex + glyphOffset].x, position[runGlyphIndex + glyphOffset].y, &glyph, 1);
-		}*/
+            if (runGlyphIndex == runGlyphCount || 
+                ([[NSUserDefaults standardUserDefaults] boolForKey: @"ShowHiddenText"] && isHiddenAttribute(currRow[index].attr) != hidden) ||
+                (isDoubleByte[runGlyphIndex] && index != lastIndex + 2) ||
+                (!isDoubleByte[runGlyphIndex] && index != lastIndex + 1)) {
+                int len = runGlyphIndex - location;
+                
+                if ([[NSUserDefaults standardUserDefaults] boolForKey: @"ShowHiddenText"] && hidden) {
+                    CGContextSetTextDrawingMode(myCGContext, kCGTextStroke);
+                } else {
+                    CGContextSetTextDrawingMode(myCGContext, kCGTextFill);                        
+                }
+
+                CGGlyph glyph[gColumn];
+                CFRange glyphRange = CFRangeMake(location, len);
+                CTRunGetGlyphs(run, glyphRange, glyph);
+                
+                CGAffineTransform textMatrix = CTRunGetTextMatrix(run);
+                textMatrix.tx = position[glyphOffset + location].x;
+                textMatrix.ty = position[glyphOffset + location].y;
+                CGContextSetTextMatrix(myCGContext, textMatrix);
+                
+                CGContextShowGlyphsWithAdvances(myCGContext, glyph, isDoubleByte[glyphOffset + location] ? gDoubleAdvance : gSingleAdvance, len);
+                
+                location = runGlyphIndex;
+                if (runGlyphIndex != runGlyphCount)
+                    hidden = isHiddenAttribute(currRow[index].attr);
+            }
+            lastIndex = index;
+        }
+        
+		/* Double Color */
+		for (runGlyphIndex = 0; runGlyphIndex < runGlyphCount; runGlyphIndex++) {
+            if (isDoubleColor[glyphOffset + runGlyphIndex]) {
+                CFRange glyphRange = CFRangeMake(runGlyphIndex, 1);
+                CGGlyph glyph;
+                CTRunGetGlyphs(run, glyphRange, &glyph);
+                
+                int index = bufIndex[glyphOffset + runGlyphIndex] - 1;
+                unsigned int bgColor = currRow[index].attr.f.reverse ? currRow[index].attr.f.fgColor : currRow[index].attr.f.bgColor;
+                unsigned int fgColor = currRow[index].attr.f.reverse ? currRow[index].attr.f.bgColor : currRow[index].attr.f.fgColor;
+                
+                [gLeftImage lockFocus];
+                [[gConfig colorAtIndex: bgColor hilite: currRow[index].attr.f.reverse && currRow[index].attr.f.bold] set];
+                NSRect rect;
+                rect.size = [gLeftImage size];
+                rect.origin = NSZeroPoint;
+                [NSBezierPath fillRect: rect];
+                
+                CGContextRef tempContext = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
+                NSColor *tempColor = [gConfig colorAtIndex: fgColor hilite: !currRow[index].attr.f.reverse && currRow[index].attr.f.bold];
+                CGContextSetFont(tempContext, cgFont);
+                CGContextSetFontSize(tempContext, CTFontGetSize(runFont));
+                CGContextSetRGBFillColor(tempContext, 
+                                         [tempColor redComponent], 
+                                         [tempColor greenComponent], 
+                                         [tempColor blueComponent], 
+                                         1.0);
+//                CGContextSetAllowsAntialiasing(tempContext, false);
+                CGContextSetShouldSmoothFonts (tempContext, false);
+//                CGContextSetShouldAntialias(tempContext, false);
+                CGContextShowGlyphsAtPoint(tempContext, cPaddingLeft, CTFontGetDescent(gConfig->_cCTFont) + cPaddingBottom, &glyph, 1);
+                [gLeftImage unlockFocus];
+                [gLeftImage drawAtPoint: NSMakePoint(index * _fontWidth, (gRow - 1 - r) * _fontHeight) fromRect: rect operation: NSCompositeCopy fraction: 1.0];
+            }
+		}
 		glyphOffset += runGlyphCount;
 		CFRelease(cgFont);
 	}
 	
 	CFRelease(line);
+    
+    CGContextRestoreGState(myCGContext);
+    
+    /* underline */
+    for (x = start; x <= end; x++) {
+        if (currRow[x].attr.f.underline) {
+            unsigned int beginColor = currRow[x].attr.f.reverse ? currRow[x].attr.f.bgColor : currRow[x].attr.f.fgColor;
+            BOOL beginBold = !currRow[x].attr.f.reverse && currRow[x].attr.f.bold;
+            int begin = x;
+            for (; x <= end; x++) {
+                unsigned int currentColor = currRow[x].attr.f.reverse ? currRow[x].attr.f.bgColor : currRow[x].attr.f.fgColor;
+                BOOL currentBold = !currRow[x].attr.f.reverse && currRow[x].attr.f.bold;
+                if (!currRow[x].attr.f.underline || currentColor != beginColor || currentBold != beginBold) 
+                    break;
+            }
+            [[gConfig colorAtIndex: beginColor hilite: beginBold] set];
+            [NSBezierPath strokeLineFromPoint: NSMakePoint(begin * _fontWidth, (gRow - 1 - r) * _fontHeight + 0.5) 
+                                      toPoint: NSMakePoint(x * _fontWidth, (gRow - 1 - r) * _fontHeight + 0.5)];
+            x--;
+        }
+    }
 }
 
 - (void) updateBackgroundForRow: (int) r from: (int) start to: (int) end {
@@ -656,8 +760,9 @@ BOOL isSpecialSymbol(unichar ch) {
 	attribute currAttr, lastAttr = (currRow + start)->attr;
 	int length = 0;
 	unsigned int currentBackgroundColor;
+    BOOL currentBold;
 	unsigned int lastBackgroundColor = lastAttr.f.reverse ? lastAttr.f.fgColor : lastAttr.f.bgColor;
-	
+	BOOL lastBold = (lastAttr.f.reverse && lastAttr.f.bold);
 	/* TODO: optimize the number of fillRect method. */
 	/* 
 		for example: 
@@ -681,19 +786,21 @@ BOOL isSpecialSymbol(unichar ch) {
 		if (c < end) {
 			currAttr = (currRow + c)->attr;
 			currentBackgroundColor = currAttr.f.reverse ? currAttr.f.fgColor : currAttr.f.bgColor;
+            currentBold = (currAttr.f.reverse && currAttr.f.bold);
 		}
 		
-		if (currentBackgroundColor != lastBackgroundColor || c == end) {
+		if (currentBackgroundColor != lastBackgroundColor || currentBold != lastBold || c == end) {
 			/* Draw Background */
 			NSRect rect = NSMakeRect((c - length) * _fontWidth, (gRow - 1 - r) * _fontHeight,
 								  _fontWidth * length, _fontHeight);
-			[[gConfig colorAtIndex: lastBackgroundColor hilite: NO] set];
+			[[gConfig colorAtIndex: lastBackgroundColor hilite: lastBold] set];
 			[NSBezierPath fillRect: rect];
 			
 			/* finish this segment */
 			length = 1;
 			lastAttr.v = currAttr.v;
 			lastBackgroundColor = currentBackgroundColor;
+            lastBold = currentBold;
 		} else {
 			length++;
 		}
@@ -759,7 +866,6 @@ BOOL isSpecialSymbol(unichar ch) {
 	[xform concat];
 }
 
-
 #pragma mark -
 #pragma mark Override
 
@@ -782,6 +888,26 @@ BOOL isSpecialSymbol(unichar ch) {
 - (void)removeTabViewItem:(NSTabViewItem *)tabViewItem {
     [[tabViewItem identifier] close];
     [super removeTabViewItem: tabViewItem];
+}
+
++ (NSMenu *) defaultMenu {
+    return [[[NSMenu alloc] init] autorelease];
+}
+
+- (NSMenu *) menuForEvent: (NSEvent *) theEvent {
+    NSMenu *menu = [[self class] defaultMenu];
+    if (![self connected]) return menu;
+    
+    NSString *s = [self selectedPlainString];
+    NSArray *a = [[YLContextualMenuManager sharedInstance] availableMenuItemForSelectionString: s];
+    for(NSMenuItem *item in a) {
+        [menu addItem: item];
+    }
+    return menu;
+}
+
+- (NSView *) hitTest: (NSPoint) p {
+    return self;
 }
 
 #pragma mark -
@@ -819,7 +945,20 @@ BOOL isSpecialSymbol(unichar ch) {
     return (YLTelnet *)[[self selectedTabViewItem] identifier];
 }
 
-#pragma mark - 
+- (NSString *) selectedPlainString {
+    if (_selectionLength == 0) return nil;
+    int location, length;
+    if (_selectionLength >= 0) {
+        location = _selectionLocation;
+        length = _selectionLength;
+    } else {
+        location = _selectionLocation + _selectionLength;
+        length = 0 - (int)_selectionLength;
+    }
+    return [[self dataSource] stringFromIndex: location length: length];
+}
+
+#pragma mark -
 #pragma mark NSTextInput Protocol
 /* NSTextInput protocol */
 // instead of keyDown: aString can be NSString or NSAttributedString
@@ -848,15 +987,26 @@ BOOL isSpecialSymbol(unichar ch) {
 
 - (void) doCommandBySelector:(SEL)aSelector {
 	unsigned char ch[10];
+    
+    NSLog(@"%s", aSelector);
+    
 	if (strcmp((char *) aSelector, "insertNewline:") == 0) {
 		ch[0] = 0x0D;
 		[[self telnet] sendBytes: ch length: 1];
 	} else if (strcmp((char *) aSelector, "cancelOperation:") == 0) {
 	} else if (strcmp((char *) aSelector, "cancel:") == 0) {
 	} else if (strcmp((char *) aSelector, "scrollToBeginningOfDocument:") == 0) {
+        ch[0] = 0x1B; ch[1] = '['; ch[2] = '1'; ch[3] = '~';
+		[[self telnet] sendBytes: ch length: 4];		
 	} else if (strcmp((char *) aSelector, "scrollToEndOfDocument:") == 0) {
+        ch[0] = 0x1B; ch[1] = '['; ch[2] = '4'; ch[3] = '~';
+		[[self telnet] sendBytes: ch length: 4];		
 	} else if (strcmp((char *) aSelector, "scrollPageUp:") == 0) {
+		ch[0] = 0x1B; ch[1] = '['; ch[2] = '5'; ch[3] = '~';
+		[[self telnet] sendBytes: ch length: 4];
 	} else if (strcmp((char *) aSelector, "scrollPageDown:") == 0) {
+		ch[0] = 0x1B; ch[1] = '['; ch[2] = '6'; ch[3] = '~';
+		[[self telnet] sendBytes: ch length: 4];		
 	} else if (strcmp((char *) aSelector, "insertTab:") == 0) {
         ch[0] = 0x09;
 		[[self telnet] sendBytes: ch length: 1];
@@ -962,5 +1112,44 @@ BOOL isSpecialSymbol(unichar ch) {
 - (NSArray*) validAttributesForMarkedText {
 	return [NSArray array];
 }
+
+/*
+#pragma mark -
+#pragma mark NSTabVIew
+- (void)addTabViewItem:(NSTabViewItem *)tabViewItem {
+    [_tabItems addObject: tabViewItem];
+}
+
+- (void)insertTabViewItem:(NSTabViewItem *)tabViewItem atIndex:(NSInteger)index {
+    [_tabItems insertObject: tabViewItem atIndex: index];
+}
+
+- (void)removeTabViewItem:(NSTabViewItem *)tabViewItem {
+    [_tabItems removeObject: tabViewItem];
+}
+
+- (NSInteger)indexOfTabViewItem:(NSTabViewItem *)tabViewItem {
+    return [_tabItems indexOfObject: tabViewItem];
+}
+
+- (NSInteger)indexOfTabViewItemWithIdentifier:(id)identifier {
+    for (NSTabViewItem *item in _tabItems) {
+        if ([item identifier] == identifier) return [_tabItems indexOfObject: item];
+    }
+    return NSNotFound;
+}
+
+- (NSInteger)numberOfTabViewItems {
+    return [_tabItems count];
+}
+
+- (NSTabViewItem *)tabViewItemAtIndex:(NSInteger)index {
+    return [_tabItems objectAtIndex: index];
+}
+
+- (NSArray *)tabViewItems {
+    return _tabItems;
+}
+*/
 
 @end

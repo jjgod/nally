@@ -62,7 +62,6 @@ static int gLinePixels;
 #pragma mark -
 #pragma mark Event Handling
 - (void) mouseDown: (NSEvent *) e {
-	NSLog(@"%X %d %d", [_dataSource charAtRow: 1 column: 78], [_dataSource isDoubleByteAtRow: 1 column: 78], [_dataSource isDoubleByteAtRow: 1 column: 79]);
 }
 
 - (void) keyDown: (NSEvent *) e {

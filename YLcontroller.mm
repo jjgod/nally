@@ -157,6 +157,12 @@
     [_sitesTableView editColumn: 0 row: [_sitesTableView selectedRow] withEvent: nil select: YES];
 }
 
+- (IBAction) showHiddenText: (id) sender {
+    [_telnetView refreshHiddenRegion];
+    [_telnetView update];
+    [_telnetView setNeedsDisplay: YES];
+}
+
 #pragma mark -
 #pragma mark Accessor
 
@@ -253,6 +259,9 @@
     [_addressBar setStringValue: [[tabViewItem identifier] connectionAddress]];
     [_telnetView setNeedsDisplay: YES];
     [_mainWindow makeFirstResponder: _telnetView];
+    if ([[tabViewItem identifier] connected]) {
+        [[tabViewItem identifier] setValue: [NSImage imageNamed: @"connect.pdf"] forKey: @"icon"];
+    }
 }
 
 - (BOOL)tabView:(NSTabView *)tabView shouldSelectTabViewItem:(NSTabViewItem *)tabViewItem {

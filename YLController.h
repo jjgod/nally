@@ -37,6 +37,7 @@
 - (IBAction) editSites: (id) sender;
 - (IBAction) closeSites: (id) sender;
 - (IBAction) addSites: (id) sender;
+- (IBAction) showHiddenText: (id) sender;
 
 - (NSArray *)sites;
 - (unsigned)countOfSites;
