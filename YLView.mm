@@ -516,7 +516,6 @@ BOOL isHiddenAttribute(attribute a) {
 }
 
 - (void) drawStringForRow: (int) r context: (CGContextRef) myCGContext {
-    return;
 	int i, c, x;
 	int start, end;
 	unichar textBuf[gColumn];
@@ -640,9 +639,7 @@ BOOL isHiddenAttribute(attribute a) {
 		CTFontRef runFont = (CTFontRef)CFDictionaryGetValue(attrDict,  kCTFontAttributeName);
 		CGFontRef cgFont = CTFontCopyGraphicsFont(runFont, NULL);
 		NSColor *runColor = (NSColor *) CFDictionaryGetValue(attrDict, kCTForegroundColorAttributeName);
-		
-        CGContextSaveGState(myCGContext);
-        
+		        
 		CGContextSetFont(myCGContext, cgFont);
 		CGContextSetFontSize(myCGContext, CTFontGetSize(runFont));
 		CGContextSetRGBFillColor(myCGContext, 
@@ -730,9 +727,7 @@ BOOL isHiddenAttribute(attribute a) {
 	}
 	
 	CFRelease(line);
-    
-    CGContextRestoreGState(myCGContext);
-    
+        
     /* underline */
     for (x = start; x <= end; x++) {
         if (currRow[x].attr.f.underline) {

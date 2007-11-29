@@ -265,7 +265,7 @@
     [_telnetView setNeedsDisplay: YES];
     [_mainWindow makeFirstResponder: _telnetView];
     if ([[tabViewItem identifier] connected]) {
-        [[tabViewItem identifier] setValue: [NSImage imageNamed: @"connect.pdf"] forKey: @"icon"];
+        [[tabViewItem identifier] setIcon: [NSImage imageNamed: @"connect.pdf"]];
     }
 }
 

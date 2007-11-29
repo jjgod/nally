@@ -85,11 +85,11 @@ void dump_packet(unsigned char *s, int length) {
 - (void) close {
     [_inputStream close];
     [_inputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-    [_inputStream release];
+    [_inputStream autorelease];
     _inputStream = nil;
     [_outputStream close];
     [_outputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-    [_outputStream release];
+    [_outputStream autorelease];
     _outputStream = nil;
     [self setConnected: NO];
     [[self terminal] closeConnection];
@@ -364,9 +364,9 @@ void dump_packet(unsigned char *s, int length) {
 - (void)setConnected:(BOOL)value {
     _connected = value;
     if (_connected) 
-        [self setValue: [NSImage imageNamed: @"connect.pdf"] forKey: @"icon"];
+        [self setIcon: [NSImage imageNamed: @"connect.pdf"]];
     else
-        [self setValue: [NSImage imageNamed: @"offline.pdf"] forKey: @"icon"];
+        [self setIcon: [NSImage imageNamed: @"offline.pdf"]];
 }
 
 - (NSString *)connectionName {
@@ -381,7 +381,7 @@ void dump_packet(unsigned char *s, int length) {
 }
 
 - (NSImage *)icon {
-    return [[_icon retain] autorelease];
+    return _icon;
 }
 
 - (void)setIcon:(NSImage *)value {

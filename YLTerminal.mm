@@ -150,7 +150,7 @@ static unsigned short gEmptyAttr;
 				[[NSSound soundNamed: @"Whit.aiff"] play];
                 [NSApp requestUserAttention: NSInformationalRequest];
                 if (connection != [[_delegate selectedTabViewItem] identifier]) {
-                    [connection setValue: [NSImage imageNamed: @"message.pdf"] forKey: @"icon"];
+                    [connection setIcon: [NSImage imageNamed: @"message.pdf"]];
                 }
 			} else if (c == 0x08) { // Backspace
 				if (_cursorX > 0)
