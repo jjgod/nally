@@ -114,6 +114,7 @@ static unsigned short gEmptyAttr;
 }
 
 - (void) dealloc {
+    NSLog(@"Terminal Die");
 	delete _csBuf;
 	delete _csArg;
     int i;
@@ -146,7 +147,8 @@ static unsigned short gEmptyAttr;
             if (c == 0x00) {
                 // do nothing
             } else if (c == 0x07) { // Beep
-				NSBeep();
+				[[NSSound soundNamed: @"Whit.aiff"] play];
+                [NSApp requestUserAttention: NSInformationalRequest];
                 if (connection != [[_delegate selectedTabViewItem] identifier]) {
                     [connection setValue: [NSImage imageNamed: @"message.pdf"] forKey: @"icon"];
                 }

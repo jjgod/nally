@@ -9,6 +9,7 @@
 #import "YLController.h"
 #import "YLTelnet.h"
 #import "YLTerminal.h"
+#import "YLLGlobalConfig.h"
 
 @implementation YLController
 
@@ -30,6 +31,8 @@
 - (void) awakeFromNib {
     [_tab setStyleNamed: @"Metal"];
     [_tab setCanCloseOnlyTab: YES];
+    
+    [[YLLGlobalConfig sharedInstance] setShowHiddenText: [[NSUserDefaults standardUserDefaults] boolForKey: @"ShowHiddenText"]];
     
     NSArray *array = [[NSUserDefaults standardUserDefaults] arrayForKey: @"Sites"];
     for (NSDictionary *d in array) {
@@ -158,6 +161,7 @@
 }
 
 - (IBAction) showHiddenText: (id) sender {
+    [[YLLGlobalConfig sharedInstance] setShowHiddenText: ([sender state] == NSOnState)];
     [_telnetView refreshHiddenRegion];
     [_telnetView update];
     [_telnetView setNeedsDisplay: YES];
@@ -251,7 +255,8 @@
 }
 
 - (void)tabView:(NSTabView *)tabView didCloseTabViewItem:(NSTabViewItem *)tabViewItem {
-
+    NSLog(@"%d", [[tabViewItem identifier] retainCount]);
+//    [[tabViewItem identifier] release];
 }
 
 - (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem {

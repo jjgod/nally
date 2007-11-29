@@ -516,6 +516,7 @@ BOOL isHiddenAttribute(attribute a) {
 }
 
 - (void) drawStringForRow: (int) r context: (CGContextRef) myCGContext {
+    return;
 	int i, c, x;
 	int start, end;
 	unichar textBuf[gColumn];
@@ -586,7 +587,7 @@ BOOL isHiddenAttribute(attribute a) {
 				[self setNeedsDisplayInRect: NSMakeRect((x - 1) * _fontWidth, (gRow - 1 - r) * _fontHeight, _fontWidth, _fontHeight)];
 		}
 	}
-	
+
 	CFStringRef str = CFStringCreateWithCharacters(kCFAllocatorDefault, textBuf, bufLength);
 	CFAttributedStringRef attributedString = CFAttributedStringCreate(kCFAllocatorDefault, str, NULL);
 	CFMutableAttributedStringRef mutableAttributedString = CFAttributedStringCreateMutableCopy(kCFAllocatorDefault, 0, attributedString);
@@ -614,7 +615,7 @@ BOOL isHiddenAttribute(attribute a) {
 			attr = gConfig->_eCTAttribute[!lastAttr.f.reverse && lastAttr.f.bold][lastAttr.f.reverse ? lastAttr.f.bgColor : lastAttr.f.fgColor];
 		CFAttributedStringSetAttributes(mutableAttributedString, CFRangeMake(location, length), attr, YES);
 	}
-	
+    
 	CTLineRef line = CTLineCreateWithAttributedString(mutableAttributedString);
 	CFRelease(mutableAttributedString);
 	
@@ -629,7 +630,7 @@ BOOL isHiddenAttribute(attribute a) {
 	CFIndex glyphOffset = 0;
 	
 	CFIndex runIndex = 0;
-
+        
 	for (; runIndex < runCount; runIndex++) {
 		CTRunRef run = (CTRunRef) CFArrayGetValueAtIndex(runArray,  runIndex);
 		CFIndex runGlyphCount = CTRunGetGlyphCount(run);
@@ -660,12 +661,12 @@ BOOL isHiddenAttribute(attribute a) {
             int index = bufIndex[glyphOffset + runGlyphIndex];
 
             if (runGlyphIndex == runGlyphCount || 
-                ([[NSUserDefaults standardUserDefaults] boolForKey: @"ShowHiddenText"] && isHiddenAttribute(currRow[index].attr) != hidden) ||
+                (gConfig->_showHiddenText && isHiddenAttribute(currRow[index].attr) != hidden) ||
                 (isDoubleByte[runGlyphIndex] && index != lastIndex + 2) ||
                 (!isDoubleByte[runGlyphIndex] && index != lastIndex + 1)) {
                 int len = runGlyphIndex - location;
                 
-                if ([[NSUserDefaults standardUserDefaults] boolForKey: @"ShowHiddenText"] && hidden) {
+                if (gConfig->_showHiddenText && hidden) {
                     CGContextSetTextDrawingMode(myCGContext, kCGTextStroke);
                 } else {
                     CGContextSetTextDrawingMode(myCGContext, kCGTextFill);                        
@@ -988,7 +989,7 @@ BOOL isHiddenAttribute(attribute a) {
 - (void) doCommandBySelector:(SEL)aSelector {
 	unsigned char ch[10];
     
-    NSLog(@"%s", aSelector);
+//    NSLog(@"%s", aSelector);
     
 	if (strcmp((char *) aSelector, "insertNewline:") == 0) {
 		ch[0] = 0x0D;

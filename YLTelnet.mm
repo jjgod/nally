@@ -35,13 +35,37 @@ void dump_packet(unsigned char *s, int length) {
 
 @implementation YLTelnet
 
+- (id) init {
+    if (self = [super init]) {
+//        _timer = [NSTimer scheduledTimerWithTimeInterval: 300 target: self selector: @selector(antiIdle:) userInfo: nil repeats: YES];
+    }
+    return self;
+}
+
 - (void) dealloc {
     [self close];
+    NSLog(@"Telnet %@ Die. timer: %d lastTouch: %d", self, [_timer retainCount], [_lastTouchDate retainCount]);
+
+//    [_timer invalidate];
+    
+    [_lastTouchDate release];
+    [_icon release];
     [_host release];
     [_connectionName release];
+    [_connectionAddress release];
     [_terminal release];
     [_sbBuffer release];
     [super dealloc];
+}
+
+- (void) antiIdle: (NSTimer *) t {
+    if ([self connected] && [[NSUserDefaults standardUserDefaults] boolForKey: @"AntiIdle"]) {
+        NSDate *now = [NSDate date];
+        if (_lastTouchDate && [now timeIntervalSinceDate: _lastTouchDate] >= 299) {
+            unsigned char msg[] = {0x1B, 'O', 'A', 0x1B, 'O', 'B'};
+            [self sendBytes: msg length: 6];
+        }
+    }
 }
 
 - (void) lookUpDomainName: (NSDictionary *) d {
@@ -289,6 +313,9 @@ void dump_packet(unsigned char *s, int length) {
 - (void) sendBytes: (unsigned char *) msg length: (NSInteger) length {
     if (length <= 0) return;
     if (!_outputStream) return;
+    
+    [_lastTouchDate release];
+    _lastTouchDate = [[NSDate date] retain];
     
     int result = [_outputStream write: msg maxLength: length];
     if (result == length) return;

@@ -268,4 +268,13 @@ static YLLGlobalConfig *sSharedInstance;
 	return _eDictTable[h][i];
 }
 
+- (BOOL)showHiddenText {
+    return _showHiddenText;
+}
+
+- (void)setShowHiddenText:(BOOL)value {
+    _showHiddenText = value;
+    [[NSUserDefaults standardUserDefaults] setBool: value forKey: @"ShowHiddenText"];
+}
+
 @end

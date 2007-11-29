@@ -17,6 +17,8 @@
 	
 	int _cellWidth;
 	int _cellHeight;
+    
+    BOOL _showHiddenText;
 	
 	NSFont *_eFont;
 	NSFont *_cFont;
@@ -44,6 +46,9 @@
 
 - (int)column;
 - (void)setColumn:(int)value;
+
+- (BOOL)showHiddenText;
+- (void)setShowHiddenText:(BOOL)value;
 
 - (int)cellWidth;
 - (void)setCellWidth:(int)value;

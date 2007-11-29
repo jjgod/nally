@@ -188,6 +188,9 @@ enum {
     NSString        * _connectionAddress;
     NSImage         * _icon;
 	
+    NSTimer         * _timer;
+    NSDate          * _lastTouchDate;
+    
 	unsigned int	  _optStates[NUM_OPTS];
 	BOOL _echoing;
 	BOOL _editing;
