@@ -19,13 +19,11 @@
 	<key>CFBundleSignature</key>
 	<string>naly</string>
 	<key>CFBundleVersion</key>
-	<string>0.9</string>
+	<string>0.9.1</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>YLApplication</string>
-	<key>QuartzGLEnable</key>
-	<true/>
 	<key>SUFeedURL</key>
 	<string>http://yllan.org/mac/Nally/Nally.xml</string>
 </dict>

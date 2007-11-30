@@ -37,16 +37,13 @@ void dump_packet(unsigned char *s, int length) {
 
 - (id) init {
     if (self = [super init]) {
-//        _timer = [NSTimer scheduledTimerWithTimeInterval: 300 target: self selector: @selector(antiIdle:) userInfo: nil repeats: YES];
+        // init code
     }
     return self;
 }
 
 - (void) dealloc {
     [self close];
-    NSLog(@"Telnet %@ Die. timer: %d lastTouch: %d", self, [_timer retainCount], [_lastTouchDate retainCount]);
-
-//    [_timer invalidate];
     
     [_lastTouchDate release];
     [_icon release];
@@ -85,11 +82,11 @@ void dump_packet(unsigned char *s, int length) {
 - (void) close {
     [_inputStream close];
     [_inputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-    [_inputStream autorelease];
+    [_inputStream release];
     _inputStream = nil;
     [_outputStream close];
     [_outputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-    [_outputStream autorelease];
+    [_outputStream release];
     _outputStream = nil;
     [self setConnected: NO];
     [[self terminal] closeConnection];
@@ -341,18 +338,18 @@ void dump_packet(unsigned char *s, int length) {
 
 - (void) setTerminal: (YLTerminal *) term {
 	if (term != _terminal) {
-		[_terminal autorelease];
+		[_terminal release];
 		_terminal = [term retain];
 	}
 }
 
 - (NSHost *)host {
-    return [[_host retain] autorelease];
+    return _host;
 }
 
 - (void)setHost:(NSHost *)value {
     if (_host != value) {
-        [_host autorelease];
+        [_host release];
         _host = [value retain];
     }
 }
@@ -370,13 +367,13 @@ void dump_packet(unsigned char *s, int length) {
 }
 
 - (NSString *)connectionName {
-    return [[_connectionName retain] autorelease];
+    return _connectionName;
 }
 
 - (void)setConnectionName:(NSString *)value {
     if (_connectionName != value) {
         [_connectionName release];
-        _connectionName = [value copy];
+        _connectionName = [value retain];
     }
 }
 
@@ -392,14 +389,17 @@ void dump_packet(unsigned char *s, int length) {
 }
 
 - (NSString *)connectionAddress {
-    return [[_connectionAddress retain] autorelease];
+    return _connectionAddress;
 }
 
 - (void)setConnectionAddress:(NSString *)value {
     if (_connectionAddress != value) {
         [_connectionAddress release];
-        _connectionAddress = [value copy];
+        _connectionAddress = [value retain];
     }
 }
 
+- (NSDate *) lastTouchDate {
+    return _lastTouchDate;
+}
 @end

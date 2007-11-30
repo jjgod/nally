@@ -114,7 +114,6 @@ static unsigned short gEmptyAttr;
 }
 
 - (void) dealloc {
-    NSLog(@"Terminal Die");
 	delete _csBuf;
 	delete _csArg;
     int i;

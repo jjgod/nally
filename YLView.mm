@@ -343,6 +343,7 @@ BOOL isHiddenAttribute(attribute a) {
 #pragma mark Drawing
 
 - (void) tick: (NSTimer *) t {
+    NSAutoreleasePool *pool = [NSAutoreleasePool new];
 	[self update];
     YLTerminal *ds = [self dataSource];
 	if (_x != ds->_cursorX || _y != ds->_cursorY) {
@@ -351,6 +352,7 @@ BOOL isHiddenAttribute(attribute a) {
 		_x = ds->_cursorX;
 		_y = ds->_cursorY;
 	}
+    [pool release];
 }
 
 - (NSRect) cellRectForRect: (NSRect) r {
@@ -362,6 +364,7 @@ BOOL isHiddenAttribute(attribute a) {
 }
 
 - (void)drawRect:(NSRect)rect {
+    NSAutoreleasePool *pool = [NSAutoreleasePool new];
     YLTerminal *ds = [self dataSource];
 	if ([self connected]) {
 		NSRect imgRect = rect;
@@ -408,7 +411,7 @@ BOOL isHiddenAttribute(attribute a) {
 //		[NSBezierPath strokeLineFromPoint: NSMakePoint(0, y * _fontHeight + 0.5) toPoint: NSMakePoint(gColumn * _fontWidth, y * _fontHeight + 0.5)];
 //	for (x = 0; x < gColumn; x++) 
 //		[NSBezierPath strokeLineFromPoint: NSMakePoint(x * _fontWidth + 0.5, 0) toPoint: NSMakePoint(x * _fontWidth + 0.5, gRow * _fontHeight)];	
-
+    [pool release];
 }
 
 - (void) drawSelection {
@@ -482,6 +485,7 @@ BOOL isHiddenAttribute(attribute a) {
 }
 
 - (void) update {
+    NSAutoreleasePool *pool = [NSAutoreleasePool new];
 	int x, y;
     YLTerminal *ds = [self dataSource];
 	[_backedImage lockFocus];
@@ -513,6 +517,7 @@ BOOL isHiddenAttribute(attribute a) {
 	}
 
 	[_backedImage unlockFocus];
+    [pool release];
 }
 
 - (void) drawStringForRow: (int) r context: (CGContextRef) myCGContext {
@@ -914,9 +919,7 @@ BOOL isHiddenAttribute(attribute a) {
 }
 
 - (void)setX:(int)value {
-    if (_x != value) {
-        _x = value;
-    }
+    _x = value;
 }
 
 - (int) y {
@@ -924,9 +927,7 @@ BOOL isHiddenAttribute(attribute a) {
 }
 
 - (void) setY: (int) value {
-    if (_y != value) {
-        _y = value;
-    }
+    _y = value;
 }
 
 - (BOOL) connected {

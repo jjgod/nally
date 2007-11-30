@@ -41,8 +41,20 @@
         [s setAddress: [d objectForKey: @"address"]];
         [self insertObject: s inSitesAtIndex: [self countOfSites]];
     }
-
+    [NSTimer scheduledTimerWithTimeInterval: 180 target: self selector: @selector(antiIdle:) userInfo: nil repeats: YES];
     [self updateSitesMenu];
+}
+
+- (void) antiIdle: (NSTimer *) t {
+    if (![[NSUserDefaults standardUserDefaults] boolForKey: @"AntiIdle"]) return;
+    NSArray *a = [_telnetView tabViewItems];
+    for (NSTabViewItem *item in a) {
+        id telnet = [item identifier];
+        if ([telnet connected] && [telnet lastTouchDate] && [[NSDate date] timeIntervalSinceDate: [telnet lastTouchDate]] >= 179) {
+            unsigned char msg[] = {0x1B, 'O', 'A', 0x1B, 'O', 'B'};
+            [telnet sendBytes:msg length:6];
+        }
+    }
 }
 
 - (void) saveSites {
@@ -255,8 +267,7 @@
 }
 
 - (void)tabView:(NSTabView *)tabView didCloseTabViewItem:(NSTabViewItem *)tabViewItem {
-    NSLog(@"%d", [[tabViewItem identifier] retainCount]);
-//    [[tabViewItem identifier] release];
+
 }
 
 - (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem {
