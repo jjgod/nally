@@ -25,6 +25,7 @@
     IBOutlet NSArrayController *_sitesController;
     IBOutlet NSMenuItem *_sitesMenu;
     IBOutlet NSTableView *_sitesTableView;
+    IBOutlet NSMenuItem *_showHiddenTextMenuItem;
 }
 
 - (IBAction) connect: (id) sender;
@@ -32,7 +33,7 @@
 - (IBAction) selectNextTab: (id) sender;
 - (IBAction) selectPrevTab: (id) sender;
 - (IBAction) closeTab: (id) sender;
-- (IBAction) recoonect: (id) sender;
+- (IBAction) reconnect: (id) sender;
 - (IBAction) openSites: (id) sender;
 - (IBAction) editSites: (id) sender;
 - (IBAction) closeSites: (id) sender;

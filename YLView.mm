@@ -14,6 +14,10 @@
 #import "YLMarkedTextView.h"
 #import "YLContextualMenuManager.h"
 
+#include<deque>
+
+using namespace std;
+
 static YLLGlobalConfig *gConfig;
 static int gRow;
 static int gColumn;
@@ -21,7 +25,9 @@ static NSImage *gLeftImage;
 static CGSize *gSingleAdvance;
 static CGSize *gDoubleAdvance;
 static NSCharacterSet *gBopomofoCharSet = nil;
+static NSCursor *gMoveCursor = nil;
 
+NSString *ANSIColorPBoardType = @"ANSIColorPBoardType";
 
 static NSRect gSymbolBlackSquareRect;
 static NSRect gSymbolBlackSquareRect1;
@@ -53,7 +59,50 @@ BOOL isHiddenAttribute(attribute a) {
                           (a.f.fgColor == 0 && a.f.bgColor == NUM_COLOR - 1))); 
 }
 
+BOOL isBlinkCell(cell c) {
+    if (c.attr.f.blink && (c.attr.f.doubleByte != 0 || (c.byte != ' ' && c.byte != '\0')))
+        return YES;
+    return NO;
+}
+
 @implementation YLView
+
++ (void) initialize {
+    NSImage *cursorImage = [[NSImage alloc] initWithSize: NSMakeSize(11.0, 20.0)];
+    [cursorImage lockFocus];
+    [[NSColor clearColor] set];
+    [NSBezierPath fillRect: NSMakeRect(0, 0, 11, 20)];
+    [[NSColor whiteColor] set];
+    NSBezierPath *path = [NSBezierPath bezierPath];
+    [path setLineCapStyle: NSRoundLineCapStyle];
+    [path moveToPoint: NSMakePoint(1.5, 1.5)];
+    [path lineToPoint: NSMakePoint(2.5, 1.5)];
+    [path lineToPoint: NSMakePoint(5.5, 4.5)];
+    [path lineToPoint: NSMakePoint(8.5, 1.5)];
+    [path lineToPoint: NSMakePoint(9.5, 1.5)];
+    [path moveToPoint: NSMakePoint(5.5, 4.5)];
+    [path lineToPoint: NSMakePoint(5.5, 15.5)];
+    [path lineToPoint: NSMakePoint(2.5, 18.5)];
+    [path lineToPoint: NSMakePoint(1.5, 18.5)];
+    [path moveToPoint: NSMakePoint(5.5, 15.5)];
+    [path lineToPoint: NSMakePoint(8.5, 18.5)];
+    [path lineToPoint: NSMakePoint(9.5, 18.5)];
+    [path moveToPoint: NSMakePoint(3.5, 9.5)];
+    [path lineToPoint: NSMakePoint(7.5, 9.5)];
+    [path setLineWidth: 3];
+    [path stroke];
+    [path setLineWidth: 1];
+    [[NSColor blackColor] set];
+    [path stroke];
+        //		[NSBezierPath strokeRect: NSMakeRect(0.5, 0.5, 9, 19)];
+    [cursorImage unlockFocus];
+    gMoveCursor = [[NSCursor alloc] initWithImage: cursorImage hotSpot: NSMakePoint(5.5, 9.5)];
+    [cursorImage release];
+    
+    gBopomofoCharSet = [[NSCharacterSet characterSetWithCharactersInString: 
+                         [NSString stringWithUTF8String: "ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙㄧㄨㄩㄚㄛㄜㄝㄞㄟㄠㄡㄢㄣㄤㄥㄦ【】、"]] retain];
+
+}
 
 - (void) createSymbolPath {
 	int i = 0;
@@ -117,12 +166,7 @@ BOOL isHiddenAttribute(attribute a) {
 - (id)initWithFrame:(NSRect)frame {
 	if (!gConfig) gConfig = [YLLGlobalConfig sharedInstance];
 	gColumn = [gConfig column];
-	gRow = [gConfig row];
-	if (!gBopomofoCharSet) 
-		gBopomofoCharSet = [[NSCharacterSet characterSetWithCharactersInString: 
-							[NSString stringWithUTF8String: "ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙㄧㄨㄩㄚㄛㄜㄝㄞㄟㄠㄡㄢㄣㄤㄥㄦ【】、"]] retain];
-	
-	
+	gRow = [gConfig row];	
 	
 	frame.size = NSMakeSize(gColumn * [gConfig cellWidth], gRow * [gConfig cellHeight]);
     self = [super initWithFrame: frame];
@@ -172,13 +216,134 @@ BOOL isHiddenAttribute(attribute a) {
     if (_selectionLength == 0) return;
 
     NSString *s = [self selectedPlainString];
-
-    if (s) {
-        NSPasteboard *pb = [NSPasteboard generalPasteboard];
-        NSArray *types = [NSArray arrayWithObjects: NSStringPboardType, nil];
-        [pb declareTypes:types owner:self];
-        [pb setString: s forType:NSStringPboardType];        
+    
+    /* Color copy */
+    int location, length;
+    if (_selectionLength >= 0) {
+        location = _selectionLocation;
+        length = _selectionLength;
+    } else {
+        location = _selectionLocation + _selectionLength;
+        length = 0 - (int)_selectionLength;
     }
+
+    cell *buffer = (cell *) malloc((length + gRow + gColumn + 1) * sizeof(cell));
+    int i;
+    int bufferLength = 0;
+    id ds = [self dataSource];
+
+    for (i = 0; i < length; i++) {
+        int index = location + i;
+        cell *currentRow = [ds cellsOfRow: index / gColumn];
+        
+        if ((index % gColumn == 0) && (index != location)) {
+            buffer[bufferLength].byte = '\n';
+            buffer[bufferLength].attr = buffer[bufferLength - 1].attr;
+            bufferLength++;
+        }
+        buffer[bufferLength] = currentRow[index % gColumn];
+        if (buffer[bufferLength].byte == '\0') 
+            buffer[bufferLength].byte = ' ';
+        /* Clear non-ANSI related properties. */
+        buffer[bufferLength].attr.f.doubleByte = 0;
+        buffer[bufferLength].attr.f.url = 0;
+        buffer[bufferLength].attr.f.nothing = 0;
+        
+        bufferLength++;
+    }
+    
+    NSPasteboard *pb = [NSPasteboard generalPasteboard];
+    NSMutableArray *types = [NSMutableArray arrayWithObjects: NSStringPboardType, ANSIColorPBoardType, nil];
+    if (!s) s = @"";
+    [pb declareTypes: types owner: self];
+    [pb setString: s forType: NSStringPboardType];
+    [pb setData: [NSData dataWithBytes: buffer length: bufferLength * sizeof(cell)] forType: ANSIColorPBoardType];
+    free(buffer);
+}
+
+- (void) pasteColor: (id) sender {
+    if (![self connected]) return;
+    
+    NSPasteboard *pb = [NSPasteboard generalPasteboard];
+	NSArray *types = [pb types];
+	if (![types containsObject: ANSIColorPBoardType]) {
+		[self paste: self];
+		return;
+	}
+	
+	cell *buffer = (cell *) [[pb dataForType: ANSIColorPBoardType] bytes];
+	int bufferLength = [[pb dataForType: ANSIColorPBoardType] length] / sizeof(cell);
+		
+	attribute defaultANSI;
+	defaultANSI.f.bgColor = 0;
+	defaultANSI.f.fgColor = 7;
+	defaultANSI.f.blink = 0;
+	defaultANSI.f.bold = 0;
+	defaultANSI.f.underline = 0;
+	defaultANSI.f.reverse = 0;
+	
+	attribute previousANSI = defaultANSI;
+	NSMutableData *writeBuffer = [NSMutableData data];
+	
+	int i;
+	for (i = 0; i < bufferLength; i++) {
+		if (buffer[i].byte == '\n' ) {
+			previousANSI = defaultANSI;
+			[writeBuffer appendBytes: "\x15[m\n\r" length: 5];
+			continue;
+		}
+		
+		attribute currentANSI = buffer[i].attr;
+		
+		/* Unchanged */
+		if ((currentANSI.f.blink == previousANSI.f.blink) &&
+			(currentANSI.f.bold == previousANSI.f.bold) &&
+			(currentANSI.f.underline == previousANSI.f.underline) &&
+			(currentANSI.f.reverse == previousANSI.f.reverse) &&
+			(currentANSI.f.bgColor == previousANSI.f.bgColor) &&
+			(currentANSI.f.fgColor == previousANSI.f.fgColor)) {
+			[writeBuffer appendBytes: &(buffer[i].byte) length: 1];
+			continue;
+		}
+		
+		/* Clear */
+		if ((currentANSI.f.blink == 0 && previousANSI.f.blink == 1) ||
+			(currentANSI.f.bold == 0 && previousANSI.f.bold == 1) ||
+			(currentANSI.f.underline == 0 && previousANSI.f.underline == 1) ||
+			(currentANSI.f.reverse == 0 && previousANSI.f.reverse == 1)) {
+			char tmp[100];
+			strcpy(tmp, "\x15[0");
+			if (currentANSI.f.blink == 1) strcat(tmp, ";5");
+			if (currentANSI.f.bold == 1) strcat(tmp, ";1");
+			if (currentANSI.f.underline == 1) strcat(tmp, ";4");
+			if (currentANSI.f.reverse == 1) strcat(tmp, ";7");
+			if (currentANSI.f.fgColor != 7) sprintf(tmp, "%s;%d", tmp, currentANSI.f.fgColor + 30);
+			if (currentANSI.f.bgColor != 0) sprintf(tmp, "%s;%d", tmp, currentANSI.f.bgColor + 40);
+			strcat(tmp, "m");
+			[writeBuffer appendBytes: tmp length: strlen(tmp)];
+			[writeBuffer appendBytes: &(buffer[i].byte) length: 1];
+			previousANSI = currentANSI;
+			continue;
+		}
+		
+		/* Add attribute */
+		char tmp[100];
+		strcpy(tmp, "\x15[");
+		
+		if (currentANSI.f.blink == 1 && previousANSI.f.blink == 0) strcat(tmp, "5;");
+		if (currentANSI.f.bold == 1 && previousANSI.f.bold == 0) strcat(tmp, "1;");
+		if (currentANSI.f.underline == 1 && previousANSI.f.underline == 0) strcat(tmp, "4;");
+		if (currentANSI.f.reverse == 1 && previousANSI.f.reverse == 0) strcat(tmp, "7;");
+		if (currentANSI.f.fgColor != previousANSI.f.fgColor) sprintf(tmp, "%s%d;", tmp, currentANSI.f.fgColor + 30);
+		if (currentANSI.f.bgColor != previousANSI.f.bgColor) sprintf(tmp, "%s%d;", tmp, currentANSI.f.bgColor + 40);
+		tmp[strlen(tmp) - 1] = 'm';
+		sprintf(tmp, "%s%c", tmp, buffer[i].byte);
+		[writeBuffer appendBytes: tmp length: strlen(tmp)];
+		previousANSI = currentANSI;
+		continue;
+	}
+	[writeBuffer appendBytes: "\x15[m" length: 3];
+    [[self telnet] sendMessage: writeBuffer];
 }
 
 - (void) paste: (id) sender {
@@ -196,6 +361,106 @@ BOOL isHiddenAttribute(attribute a) {
     }
 }
 
+- (void) pasteWrap: (id) sender {
+    if (![self connected]) return;
+    NSPasteboard *pb = [NSPasteboard generalPasteboard];
+    NSArray *types = [pb types];
+    if (![types containsObject: NSStringPboardType]) return;
+    
+    NSString *str = [pb stringForType: NSStringPboardType];
+    int i, j, LINE_WIDTH = 66, LPADDING = 4;
+    deque<unichar> word;
+    deque<unichar> text;
+    int word_width = 0, line_width = 0;
+    text.push_back(0x000d);
+    for (i = 0; i < LPADDING; i++)
+        text.push_back(0x0020);
+    line_width = LPADDING;
+    for (i = 0; i < [str length]; i++) {
+        unichar c = [str characterAtIndex: i];
+        if (c == 0x0020 || c == 0x0009) { // space
+            for (j = 0; j < word.size(); j++)
+                text.push_back(word[j]);
+            word.clear();
+            line_width += word_width;
+            word_width = 0;
+            if (line_width >= LINE_WIDTH + LPADDING) {
+                text.push_back(0x000d);
+                for (j = 0; j < LPADDING; j++)
+                    text.push_back(0x0020);
+                line_width = LPADDING;
+            }
+            int repeat = (c == 0x0020) ? 1 : 4;
+            for (j = 0; j < repeat ; j++)
+                text.push_back(0x0020);
+            line_width += repeat;
+        } else if (c == 0x000a || c == 0x000d) {
+            for (j = 0; j < word.size(); j++)
+                text.push_back(word[j]);
+            word.clear();
+            text.push_back(0x000d);
+//            text.push_back(0x000d);
+            for (j = 0; j < LPADDING; j++)
+                text.push_back(0x0020);
+            line_width = LPADDING;
+            word_width = 0;
+        } else if (c > 0x0020 && c < 0x0100) {
+            word.push_back(c);
+            word_width++;
+            if (c >= 0x0080) word_width++;
+        } else if (c >= 0x1000){
+            for (j = 0; j < word.size(); j++)
+                text.push_back(word[j]);
+            word.clear();
+            line_width += word_width;
+            word_width = 0;
+            if (line_width >= LINE_WIDTH + LPADDING) {
+                text.push_back(0x000d);
+                for (j = 0; j < LPADDING; j++)
+                    text.push_back(0x0020);
+                line_width = LPADDING;
+            }
+            text.push_back(c);
+            line_width += 2;
+        } else {
+            word.push_back(c);
+        }
+        if (line_width + word_width > LINE_WIDTH + LPADDING) {
+            text.push_back(0x000d);
+            for (j = 0; j < LPADDING; j++)
+                text.push_back(0x0020);
+            line_width = LPADDING;
+        }
+        if (word_width > LINE_WIDTH) {
+            int acc_width = 0;
+            while (!word.empty()) {
+                int w = (word.front() < 0x0080) ? 1 : 2;
+                if (acc_width + w <= LINE_WIDTH) {
+                    text.push_back(word.front());
+                    acc_width += w;
+                    word.pop_front();
+                } else {
+                    text.push_back(0x000d);
+                    for (j = 0; j < LPADDING; j++)
+                        text.push_back(0x0020);
+                    line_width = LPADDING;
+                    word_width -= acc_width;
+                }
+            }
+        }
+    }
+    while (!word.empty()) {
+        text.push_back(word.front());
+        word.pop_front();
+    }
+    unichar *carray = (unichar *)malloc(sizeof(unichar) * text.size());
+    for (i = 0; i < text.size(); i++)
+        carray[i] = text[i];
+    NSString *mStr = [NSString stringWithCharacters: carray length: text.size()];
+    free(carray);
+    [self insertText: mStr];
+}
+
 - (void) selectAll: (id) sender {
     if (![self connected]) return;
     _selectionLocation = 0;
@@ -204,13 +469,16 @@ BOOL isHiddenAttribute(attribute a) {
 }
 
 - (BOOL) validateMenuItem: (NSMenuItem *) item {
-    if ([item action] == @selector(copy:) && (![self connected] || _selectionLength == 0)) {
+    SEL action = [item action];
+    if (action == @selector(copy:) && (![self connected] || _selectionLength == 0)) {
         return NO;
-    } else if ([item action] == @selector(paste:) && ![self connected]) {
+    } else if ((action == @selector(paste:) || 
+                action == @selector(pasteWrap:) || 
+                action == @selector(pasteColor:)) && ![self connected]) {
         return NO;
-    } else if ([item action] == @selector(selectAll:)  && ![self connected]) {
+    } else if (action == @selector(selectAll:)  && ![self connected]) {
         return NO;
-    }
+    } 
     return YES;
 }
 
@@ -228,7 +496,7 @@ BOOL isHiddenAttribute(attribute a) {
 #pragma mark -
 #pragma mark Conversion
 
-- (int) convertPointToIndex: (NSPoint) p {
+- (int) convertIndexFromPoint: (NSPoint) p {
     if (p.x >= gColumn * _fontWidth) p.x = gColumn * _fontWidth - 0.001;
     if (p.y >= gRow * _fontHeight) p.y = gRow * _fontHeight - 0.001;
     if (p.x < 0) p.x = 0;
@@ -247,9 +515,59 @@ BOOL isHiddenAttribute(attribute a) {
     if (![self connected]) return;
     NSPoint p = [e locationInWindow];
     p = [self convertPoint: p toView: nil];
-    _selectionLocation = [self convertPointToIndex: p];
+    _selectionLocation = [self convertIndexFromPoint: p];
     _selectionLength = 0;
     [self setNeedsDisplay: YES];
+    
+    if ([e modifierFlags] & NSCommandKeyMask) {
+        unsigned char cmd[gRow * gColumn + 1];
+        unsigned int cmdLength = 0;
+        int moveToRow = _selectionLocation / gColumn;
+        int moveToCol = _selectionLocation % gColumn;
+        id ds = [self dataSource];
+        BOOL home = NO;
+		int i;
+		if (moveToRow > [ds cursorRow]) {
+			cmd[cmdLength++] = 0x01;
+			home = YES;
+			for (i = [ds cursorRow]; i < moveToRow; i++) {
+				cmd[cmdLength++] = 0x1B;
+				cmd[cmdLength++] = 0x4F;
+				cmd[cmdLength++] = 0x42;
+			} 
+		} else if (moveToRow < [ds cursorRow]) {
+			cmd[cmdLength++] = 0x01;
+			home = YES;
+			for (i = [ds cursorRow]; i > moveToRow; i--) {
+				cmd[cmdLength++] = 0x1B;
+				cmd[cmdLength++] = 0x4F;
+				cmd[cmdLength++] = 0x41;
+			} 			
+		} 
+		
+		if (home) {
+			for (i = 0; i < moveToCol; i++) {
+				cmd[cmdLength++] = 0x1B;
+				cmd[cmdLength++] = 0x4F;
+				cmd[cmdLength++] = 0x43;
+			}
+		} else if (moveToCol > [ds cursorColumn]) {
+			for (i = [ds cursorColumn]; i < moveToCol; i++) {
+				cmd[cmdLength++] = 0x1B;
+				cmd[cmdLength++] = 0x4F;
+				cmd[cmdLength++] = 0x43;
+			}
+		} else if (moveToCol < [ds cursorColumn]) {
+			for (i = [ds cursorColumn]; i > moveToCol; i--) {
+				cmd[cmdLength++] = 0x1B;
+				cmd[cmdLength++] = 0x4F;
+				cmd[cmdLength++] = 0x44;
+			}
+		}
+		if (cmdLength > 0) 
+            [[self telnet] sendBytes: cmd length: cmdLength];
+    }
+    
     [super mouseDown: e];
 }
 
@@ -257,7 +575,7 @@ BOOL isHiddenAttribute(attribute a) {
     if (![self connected]) return;
     NSPoint p = [e locationInWindow];
     p = [self convertPoint: p toView: nil];
-    int index = [self convertPointToIndex: p];
+    int index = [self convertIndexFromPoint: p];
     int oldValue = _selectionLength;
     _selectionLength = index - _selectionLocation + 1;
     if (_selectionLength <= 0) _selectionLength--;
@@ -270,7 +588,7 @@ BOOL isHiddenAttribute(attribute a) {
     if (_selectionLength == 0) {
         NSPoint p = [e locationInWindow];
         p = [self convertPoint: p toView: nil];
-        int index = [self convertPointToIndex: p];
+        int index = [self convertIndexFromPoint: p];
         int r = index / gColumn;
         int c = index % gColumn;
         cell *currRow = [[self dataSource] cellsOfRow: r];
@@ -339,6 +657,18 @@ BOOL isHiddenAttribute(attribute a) {
 	[self interpretKeyEvents: [NSArray arrayWithObject: e]];
 }
 
+- (void) flagsChanged: (NSEvent *) event {
+	unsigned int currentFlags = [event modifierFlags];
+	NSCursor *viewCursor = nil;
+	if (currentFlags & NSCommandKeyMask) {
+		viewCursor = gMoveCursor;
+	} else {
+		viewCursor = [NSCursor arrowCursor];
+	}
+	[viewCursor set];
+	[super flagsChanged: event];
+}
+
 #pragma mark -
 #pragma mark Drawing
 
@@ -373,10 +703,11 @@ BOOL isHiddenAttribute(attribute a) {
 							  fromRect: rect
 							 operation: NSCompositeCopy];
 
+        [self drawBlink];
+        int c, r;
         [[NSColor orangeColor] set];
         [NSBezierPath setDefaultLineWidth: 1.0];
         /* Draw the url underline */
-        int c, r;
         for (r = 0; r < gRow; r++) {
             [ds updateURLStateForRow: r];
             cell *currRow = [ds cellsOfRow: r];
@@ -412,6 +743,25 @@ BOOL isHiddenAttribute(attribute a) {
 //	for (x = 0; x < gColumn; x++) 
 //		[NSBezierPath strokeLineFromPoint: NSMakePoint(x * _fontWidth + 0.5, 0) toPoint: NSMakePoint(x * _fontWidth + 0.5, gRow * _fontHeight)];	
     [pool release];
+}
+
+- (void) drawBlink {
+    int c, r;
+    if (![gConfig blinkTicker]) return;
+    id ds = [self dataSource];
+    if (!ds) return;
+    for (r = 0; r < gRow; r++) {
+        cell *currRow = [ds cellsOfRow: r];
+        for (c = 0; c < gColumn; c++) {
+            if (isBlinkCell(currRow[c])) {
+                int bgColorIndex = currRow[c].attr.f.reverse ? currRow[c].attr.f.fgColor : currRow[c].attr.f.bgColor;
+                BOOL bold = currRow[c].attr.f.reverse ? currRow[c].attr.f.bold : NO;
+                [[gConfig colorAtIndex: bgColorIndex hilite: bold] set];
+                [NSBezierPath fillRect: NSMakeRect(c * _fontWidth, (gRow - r - 1) * _fontHeight, _fontWidth, _fontHeight)];
+            }
+        }
+    }
+    
 }
 
 - (void) drawSelection {
@@ -953,6 +1303,20 @@ BOOL isHiddenAttribute(attribute a) {
         length = 0 - (int)_selectionLength;
     }
     return [[self dataSource] stringFromIndex: location length: length];
+}
+
+- (BOOL) hasBlinkCell {
+    int c, r;
+    id ds = [self dataSource];
+    if (!ds) return NO;
+    for (r = 0; r < gRow; r++) {
+        [ds updateDoubleByteStateForRow: r];
+        cell *currRow = [ds cellsOfRow: r];
+        for (c = 0; c < gColumn; c++) 
+            if (isBlinkCell(currRow[c]))
+                return YES;
+    }
+    return NO;
 }
 
 #pragma mark -

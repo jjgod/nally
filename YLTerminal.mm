@@ -458,7 +458,10 @@ static unsigned short gEmptyAttr;
         }
         int db = _grid[y][x].attr.f.doubleByte;
         if (db == 0) {
-            textBuf[bufLength++] = _grid[y][x].byte;
+            if (_grid[y][x].byte == '\0')
+                textBuf[bufLength++] = ' ';
+            else
+                textBuf[bufLength++] = _grid[y][x].byte;
         } else if (db == 1) {
             firstByte = _grid[y][x].byte;
         } else if (db == 2 && firstByte) {

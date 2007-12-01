@@ -33,10 +33,14 @@
     int _selectionLength;
 }
 
+- (void) pasteWrap: (id) sender ;
+- (void) paste: (id) sender ;
+- (void) pasteColor: (id) sender ;
 
 - (void) update;
 - (void) drawSpecialSymbol: (unichar) ch forRow: (int) r column: (int) c leftAttribute: (attribute) attr1 rightAttribute: (attribute) attr2 ;
 - (void) drawSelection ;
+- (void) drawBlink ;
 - (void) refreshHiddenRegion;
 
 - (YLTerminal *)dataSource;
@@ -57,5 +61,6 @@
 - (void)setY:(int)value;
 
 - (NSString *) selectedPlainString ;
+- (BOOL) hasBlinkCell ;
 
 @end

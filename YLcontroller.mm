@@ -29,6 +29,10 @@
 }
 
 - (void) awakeFromNib {
+    [[YLLGlobalConfig sharedInstance] addObserver: self
+                                       forKeyPath: @"showHiddenText"
+                                          options: (NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
+                                          context: NULL];
     [_tab setStyleNamed: @"Metal"];
     [_tab setCanCloseOnlyTab: YES];
     
@@ -42,7 +46,14 @@
         [self insertObject: s inSitesAtIndex: [self countOfSites]];
     }
     [NSTimer scheduledTimerWithTimeInterval: 180 target: self selector: @selector(antiIdle:) userInfo: nil repeats: YES];
+    [NSTimer scheduledTimerWithTimeInterval: 1 target: self selector: @selector(updateBlinkTicker:) userInfo: nil repeats: YES];
     [self updateSitesMenu];
+}
+
+- (void) updateBlinkTicker: (NSTimer *) t {
+    [[YLLGlobalConfig sharedInstance] updateBlinkTicker];
+    if ([_telnetView hasBlinkCell])
+        [_telnetView setNeedsDisplay: YES];
 }
 
 - (void) antiIdle: (NSTimer *) t {
@@ -85,8 +96,20 @@
 }
 
 #pragma mark -
-#pragma mark Actions
+#pragma mark KVO
 
+- (void)observeValueForKeyPath:(NSString *)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary *)change
+                       context:(void *)context {
+    if ([[YLLGlobalConfig sharedInstance] showHiddenText]) 
+        [_showHiddenTextMenuItem setState: NSOnState];
+    else
+        [_showHiddenTextMenuItem setState: NSOffState];
+}
+
+#pragma mark -
+#pragma mark Actions
 - (IBAction) connect: (id) sender {
 	[sender abortEditing];
 	[[_telnetView window] makeFirstResponder: _telnetView];
@@ -95,11 +118,12 @@
 }
 
 - (IBAction) openLocation: (id) sender {
+    [_mainWindow makeKeyAndOrderFront: self];
 	[_telnetView resignFirstResponder];
 	[_addressBar becomeFirstResponder];
 }
 
-- (IBAction) recoonect: (id) sender {
+- (IBAction) reconnect: (id) sender {
     [[_telnetView telnet] reconnect];
 }
 
@@ -173,7 +197,12 @@
 }
 
 - (IBAction) showHiddenText: (id) sender {
-    [[YLLGlobalConfig sharedInstance] setShowHiddenText: ([sender state] == NSOnState)];
+    BOOL show = ([sender state] == NSOnState);
+    if ([sender isKindOfClass: [NSMenuItem class]]) {
+        show = !show;
+    }
+
+    [[YLLGlobalConfig sharedInstance] setShowHiddenText: show];
     [_telnetView refreshHiddenRegion];
     [_telnetView update];
     [_telnetView setNeedsDisplay: YES];
@@ -230,18 +259,35 @@
     }
 }
 
+#pragma mark -
+#pragma mark Application Delegation
+- (BOOL) validateMenuItem: (NSMenuItem *) item {
+    SEL action = [item action];
+    if ((action == @selector(addSites:) ||
+         action == @selector(reconnect:) ||
+         action == @selector(selectNextTab:) ||
+         action == @selector(selectPrevTab:) )
+        && [_telnetView numberOfTabViewItems] == 0) {
+        return NO;
+    }
+    return YES;
+}
 
+- (BOOL) applicationShouldHandleReopen: (id) s hasVisibleWindows: (BOOL) b {
+    [_mainWindow makeKeyAndOrderFront: self];
+    return NO;
+} 
 #pragma mark -
 #pragma mark Window Delegation
 
 - (BOOL) windowShouldClose: (id) window {
-    NSLog(@"SHOULD");
+    [_mainWindow orderOut: self];
     return NO;
 }
 
 - (BOOL) windowWillClose: (id) window {
 //    [NSApp terminate: self];
-    NSLog(@"WILL");
+//    NSLog(@"WILL");
     return NO;
 }
 

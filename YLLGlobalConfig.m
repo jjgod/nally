@@ -277,4 +277,14 @@ static YLLGlobalConfig *sSharedInstance;
     [[NSUserDefaults standardUserDefaults] setBool: value forKey: @"ShowHiddenText"];
 }
 
+- (BOOL)blinkTicker {
+    return _blinkTicker;
+}
+
+- (void)setBlinkTicker:(BOOL)value {
+    _blinkTicker = value;
+}
+- (void)updateBlinkTicker {
+    [self setBlinkTicker: !_blinkTicker];
+}
 @end

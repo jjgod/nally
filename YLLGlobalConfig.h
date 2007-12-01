@@ -19,7 +19,8 @@
 	int _cellHeight;
     
     BOOL _showHiddenText;
-	
+	BOOL _blinkTicker;
+    
 	NSFont *_eFont;
 	NSFont *_cFont;
 	CTFontRef _cCTFont;
@@ -70,4 +71,7 @@
 - (NSDictionary *) cFontAttributeForColorIndex: (int) i hilite: (BOOL) h ;
 - (NSDictionary *) eFontAttributeForColorIndex: (int) i hilite: (BOOL) h ;
 
+- (BOOL)blinkTicker;
+- (void)setBlinkTicker:(BOOL)value;
+- (void)updateBlinkTicker;
 @end

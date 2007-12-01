@@ -149,7 +149,7 @@ void dump_packet(unsigned char *s, int length) {
             break;
         }
         case NSStreamEventErrorOccurred: {
-            NSLog(@"Error");
+            NSLog(@"Error: %@", [stream streamError]);
         }
         case NSStreamEventEndEncountered: {
             [stream close];
@@ -313,7 +313,11 @@ void dump_packet(unsigned char *s, int length) {
     
     [_lastTouchDate release];
     _lastTouchDate = [[NSDate date] retain];
-    
+    int status = [_outputStream streamStatus];
+    if (status == NSStreamStatusNotOpen ||
+        status == NSStreamStatusError ||
+        status == NSStreamStatusClosed ||
+        status == NSStreamStatusAtEnd) return;
     int result = [_outputStream write: msg maxLength: length];
     if (result == length) return;
     if (result <= 0) {
@@ -324,6 +328,7 @@ void dump_packet(unsigned char *s, int length) {
 }
 
 - (void) sendMessage: (NSData *) msg {
+    if (!_outputStream) return;
     [self sendBytes: (unsigned char *)[msg bytes] length: [msg length]];
 }
 

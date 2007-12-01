@@ -31,13 +31,13 @@ static YLContextualMenuManager *gSharedInstance;
     NSString *shortURL = [self extractShortURL: s];
     
     if ([shortURL length]) {
-        item = [[[NSMenuItem alloc] initWithTitle: [@"http://0rz.tw/" stringByAppendingString: shortURL]
+        item = [[[NSMenuItem alloc] initWithTitle: [@"0rz.tw/" stringByAppendingString: shortURL]
                                                        action: @selector(openURL:)
                                                 keyEquivalent: @""] autorelease];
         [item setTarget: self];
         [a addObject: item];
     
-        item = [[[NSMenuItem alloc] initWithTitle: [@"http://tinyurl.com/" stringByAppendingString: shortURL]
+        item = [[[NSMenuItem alloc] initWithTitle: [@"tinyurl.com/" stringByAppendingString: shortURL]
                                            action: @selector(openURL:)
                                     keyEquivalent: @""] autorelease];
         [item setTarget: self];
