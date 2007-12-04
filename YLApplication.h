@@ -7,10 +7,10 @@
 //
 
 #import <Cocoa/Cocoa.h>
-
+@class YLController;
 
 @interface YLApplication : NSApplication {
-
+    IBOutlet YLController *_controller;
 }
 
 @end

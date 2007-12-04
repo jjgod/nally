@@ -220,6 +220,7 @@ enum {
 - (void) close ;
 - (void) reconnect ;
 - (void) connectWithDictionary: (NSDictionary *) d ;
+- (BOOL) connectToAddress: (NSString *) addr;
 - (BOOL) connectToAddress: (NSString *) addr port: (unsigned int) port ;
 
 - (void) stream: (NSStream *) stream handleEvent: (NSStreamEvent) eventCode ;

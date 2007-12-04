@@ -61,6 +61,7 @@
 - (void) updateDoubleByteStateForRow: (int) r ;
 - (void) setAllDirty ;
 - (void) setDirty: (BOOL) d atRow: (int) r column: (int) c ;
+- (void) setDirtyForRow: (int) r ;
 
 - (void) setDelegate: (id) d;
 - (id) delegate;

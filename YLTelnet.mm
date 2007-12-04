@@ -69,12 +69,13 @@ void dump_packet(unsigned char *s, int length) {
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
     NSString *addr = [d valueForKey: @"addr"];
     int port = [[d valueForKey: @"port"] intValue];
-    
     NSHost *host = [NSHost hostWithName: addr];
-    
+
     if (host) {
         NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys: host, @"host", [NSNumber numberWithInt: port], @"port", nil];
         [self performSelectorOnMainThread: @selector(connectWithDictionary:) withObject: dict waitUntilDone: NO];
+    } else {
+
     }
     [pool release];
 }
@@ -105,6 +106,7 @@ void dump_packet(unsigned char *s, int length) {
     
     if (!host) return;
     [self setHost: host];
+    NSLog(@"CONNECT: %@ %d", [host address], port);
     [NSStream getStreamsToHost: host 
                           port: port 
                    inputStream: &_inputStream
@@ -113,18 +115,37 @@ void dump_packet(unsigned char *s, int length) {
     [_outputStream retain];
     [_inputStream setDelegate: self];
     [_outputStream setDelegate: self];
-    [_inputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-    [_outputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+    [_inputStream scheduleInRunLoop: [NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+    [_outputStream scheduleInRunLoop: [NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
     [_inputStream open];
     [_outputStream open];
 }
 
+- (BOOL) connectToAddress: (NSString *) addr {
+    NSArray *a = [addr componentsSeparatedByCharactersInSet: [NSCharacterSet characterSetWithCharactersInString: @": "]];
+    if ([a count] == 2) {
+        int p = [[a objectAtIndex: 1] intValue];
+        if (p > 0) {
+            return [self connectToAddress: [a objectAtIndex: 0] port: p];            
+        } else {
+            return [self connectToAddress: [a objectAtIndex: 0] port: 23];
+        }
+    } else if ([a count] == 1) {
+        return [self connectToAddress: addr port: 23];
+    }
+    return NO;
+}
+
 - (BOOL) connectToAddress: (NSString *) addr port: (unsigned int) port {
-    [self setConnectionAddress: addr];
     if (!addr) return NO;
+    if (port == 23)
+        [self setConnectionAddress: addr];
+    else
+        [self setConnectionAddress: [NSString stringWithFormat: @"%@:%d", addr, port]];
     _port = port;
     NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys: addr, @"addr", [NSNumber numberWithInt: port], @"port", nil];
     [self performSelectorInBackground: @selector(lookUpDomainName:) withObject: dict];
+
     return YES;
 }
 
@@ -136,11 +157,11 @@ void dump_packet(unsigned char *s, int length) {
             break;
         }
         case NSStreamEventHasBytesAvailable: {
-            uint8_t buf[1024];
+            uint8_t buf[4096];
             while ([(NSInputStream *)stream hasBytesAvailable]) {
-                NSInteger len = [(NSInputStream *)stream read: buf maxLength: 1024];
+                NSInteger len = [(NSInputStream *)stream read: buf maxLength: 4096];
                 if (len > 0) {
-                    [self receiveBytes: buf length: len];                    
+                    [self receiveBytes: buf length: len];
                 }
             }
             break;
@@ -163,7 +184,7 @@ void dump_packet(unsigned char *s, int length) {
             [[self terminal] closeConnection];
             break;
         }
-    }    
+    }
 }
 
 /* Send telnet command */
@@ -172,7 +193,8 @@ void dump_packet(unsigned char *s, int length) {
 	b[0] = IAC;
 	b[1] = _command;
 	b[2] = _opt;
-    [self sendBytes: b length: 3];
+    NSData *d = [NSData dataWithBytes: b length: 3];
+    [self performSelector: @selector(sendMessage:) withObject: d afterDelay: 0.001];
 }
 
 - (void) receiveBytes: (unsigned char *) bytes length: (NSUInteger) length {
@@ -252,7 +274,8 @@ void dump_packet(unsigned char *s, int length) {
 				else if (c == TELOPT_NAWS) {
 					unsigned char b[] = {IAC, SB, TELOPT_NAWS, 0, 80, 0, 24, IAC, SE};
 					[self sendCommand: WILL option: TELOPT_NAWS];
-					[self sendBytes: b length: 9];
+                    [self performSelector: @selector(sendMessage:) withObject: [NSData dataWithBytes:b length:9] afterDelay: 0.001];
+//					[self sendBytes: b length: 9];
 				} else 
 					[self sendCommand: WONT option: c];
 				_state = TOP_LEVEL;
@@ -283,7 +306,8 @@ void dump_packet(unsigned char *s, int length) {
 					const unsigned char *buf = (const unsigned char *)[_sbBuffer bytes];
 					if (_sbOption == TELOPT_TTYPE && [_sbBuffer length] == 1 && buf[0] == TELQUAL_SEND) {
 						unsigned char b[] = {IAC, SB, TELOPT_TTYPE, TELQUAL_IS, 'v', 't', '1', '0', '0', IAC, SE};
-						[self sendBytes: b length: 11];
+                        [self performSelector:@selector(sendMessage:) withObject: [NSData dataWithBytes: b length: 11] afterDelay: 0.001];
+//						[self sendBytes: b length: 11];
 					}
 					_state = TOP_LEVEL;
                     [_sbBuffer release];

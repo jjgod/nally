@@ -602,7 +602,7 @@ BOOL isBlinkCell(cell c) {
             NSMutableString *url = [NSMutableString string];
             for (c = start; c < end; c++)
                 [url appendFormat: @"%c", currRow[c].byte];
-            NSLog(@"URL:%@", url);
+//            NSLog(@"URL:%@", url);
             [[NSWorkspace sharedWorkspace] openURL: [NSURL URLWithString: url]];
         }
     }
@@ -645,7 +645,8 @@ BOOL isBlinkCell(cell c) {
 	
 	if (![self hasMarkedText] && (c == 0x7F || c == NSDeleteFunctionKey)) {
 		buf[0] = buf[1] = 0x08;
-        if ([ds cursorColumn] > 0 && [ds attrAtRow: [ds cursorRow] column: [ds cursorColumn] - 1].f.doubleByte == 2)
+        if ([[NSUserDefaults standardUserDefaults] boolForKey: @"DetectDoubleByte"] &&
+            [ds cursorColumn] > 0 && [ds attrAtRow: [ds cursorRow] column: [ds cursorColumn] - 1].f.doubleByte == 2)
             [[self telnet] sendBytes: buf length: 2];
         else
             [[self telnet] sendBytes: buf length: 1];
@@ -676,7 +677,8 @@ BOOL isBlinkCell(cell c) {
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
 	[self update];
     YLTerminal *ds = [self dataSource];
-	if (_x != ds->_cursorX || _y != ds->_cursorY) {
+
+	if (ds && (_x != ds->_cursorX || _y != ds->_cursorY)) {
 		[self setNeedsDisplayInRect: NSMakeRect(_x * _fontWidth, (gRow - 1 - _y) * _fontHeight, _fontWidth, _fontHeight)];
 		[self setNeedsDisplayInRect: NSMakeRect(ds->_cursorX * _fontWidth, (gRow - 1 - ds->_cursorY) * _fontHeight, _fontWidth, _fontHeight)];
 		_x = ds->_cursorX;
@@ -840,31 +842,35 @@ BOOL isBlinkCell(cell c) {
     YLTerminal *ds = [self dataSource];
 	[_backedImage lockFocus];
 	CGContextRef myCGContext = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
-	
-	/* Draw Background */
-	for (y = 0; y < gRow; y++) {
-		for (x = 0; x < gColumn; x++) {
-			if ([ds isDirtyAtRow: y column: x]) {
-				int startx = x;
-				for (; x < gColumn && [ds isDirtyAtRow:y column:x]; x++) ;
-				[self updateBackgroundForRow: y from: startx to: x];
-			}
-		}
-	}
-	CGContextSaveGState(myCGContext);
-	CGContextSetShouldSmoothFonts(myCGContext, NO);
-
-	/* Draw String row by row */
-	for (y = 0; y < gRow; y++) {
-		[self drawStringForRow: y context: myCGContext];
-	}		
-	CGContextRestoreGState(myCGContext);
-	
-	for (y = 0; y < gRow; y++) {
-		for (x = 0; x < gColumn; x++) {
-			[ds setDirty: NO atRow: y column: x];
-		}
-	}
+	if (ds) {
+        /* Draw Background */
+        for (y = 0; y < gRow; y++) {
+            for (x = 0; x < gColumn; x++) {
+                if ([ds isDirtyAtRow: y column: x]) {
+                    int startx = x;
+                    for (; x < gColumn && [ds isDirtyAtRow:y column:x]; x++) ;
+                    [self updateBackgroundForRow: y from: startx to: x];
+                }
+            }
+        }
+        CGContextSaveGState(myCGContext);
+        CGContextSetShouldSmoothFonts(myCGContext, NO);
+        
+        /* Draw String row by row */
+        for (y = 0; y < gRow; y++) {
+            [self drawStringForRow: y context: myCGContext];
+        }		
+        CGContextRestoreGState(myCGContext);
+        
+        for (y = 0; y < gRow; y++) {
+            for (x = 0; x < gColumn; x++) {
+                [ds setDirty: NO atRow: y column: x];
+            }
+        }
+        
+    } else {
+        CGContextFillRect(myCGContext, CGRectMake(0, 0, gColumn * _fontWidth, gRow * _fontHeight));
+    }
 
 	[_backedImage unlockFocus];
     [pool release];
@@ -1289,7 +1295,8 @@ BOOL isBlinkCell(cell c) {
 }
 
 - (YLTelnet *) telnet {
-    return (YLTelnet *)[[self selectedTabViewItem] identifier];
+    id identifier = [[self selectedTabViewItem] identifier];
+    return (YLTelnet *) identifier;
 }
 
 - (NSString *) selectedPlainString {

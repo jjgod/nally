@@ -337,9 +337,44 @@ static unsigned short gEmptyAttr;
                     } else if (_csArg->size() == 1 && _csArg->front() == 2) {
                         [self clearRow: _cursorY];
                     }
-				} else if (c == 'L') {
-				} else if (c == 'M') {
-				} else if (c == 'm') {
+				} else if (c == 'L') {      // Insert Line
+                    int lineNumber = 0;
+                    if (_csArg->size() == 0) 
+                        lineNumber = 1;
+                    else if (_csArg->size() > 0)
+                        lineNumber = _csArg->front();
+
+                    int i;
+                    for (i = 0; i < lineNumber; i++) {
+                        [self clearRow: _row - 1];
+                        cell *emptyRow = [self cellsOfRow: _row - 1];
+                        int r;
+                        for (r = _row - 1; r > _cursorY; r--)
+                            _grid[r] = _grid[r - 1];
+                        _grid[_cursorY] = emptyRow;
+                    }
+                    for (i = _cursorY; i < _row; i++)
+                        [self setDirtyForRow: i];
+				} else if (c == 'M') {      // Delete Line
+                    int lineNumber = 0;
+                    if (_csArg->size() == 0) 
+                        lineNumber = 1;
+                    else if (_csArg->size() > 0)
+                        lineNumber = _csArg->front();
+                    
+                    int i;
+                    for (i = 0; i < lineNumber; i++) {
+                        [self clearRow: _cursorY];
+                        cell *emptyRow = [self cellsOfRow: _cursorY];
+                        int r;
+                        for (r = _cursorY; r < _row - 1; r++)
+                            _grid[r] = _grid[r + 1];
+                        _grid[_row - 1] = emptyRow;
+                    }
+                    for (i = _cursorY; i < _row; i++)
+                        [self setDirtyForRow: i];
+                    
+				} else if (c == 'm') { 
 					if (_csArg->empty()) { // clear
 						_fgColor = 7;
 						_bgColor = 9;
@@ -428,6 +463,12 @@ static unsigned short gEmptyAttr;
 - (void) setAllDirty {
 	int i, end = _column * _row;
 	for (i = 0; i < end; i++)
+		_dirty[i] = YES;
+}
+
+- (void) setDirtyForRow: (int) r {
+	int i, end = _column * _row;
+	for (i = r * _column; i < end; i++)
 		_dirty[i] = YES;
 }
 

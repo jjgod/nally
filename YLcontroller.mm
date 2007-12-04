@@ -10,6 +10,7 @@
 #import "YLTelnet.h"
 #import "YLTerminal.h"
 #import "YLLGlobalConfig.h"
+#import "DBPrefsWindowController.h"
 
 @implementation YLController
 
@@ -45,9 +46,20 @@
         [s setAddress: [d objectForKey: @"address"]];
         [self insertObject: s inSitesAtIndex: [self countOfSites]];
     }
-    [NSTimer scheduledTimerWithTimeInterval: 180 target: self selector: @selector(antiIdle:) userInfo: nil repeats: YES];
-    [NSTimer scheduledTimerWithTimeInterval: 1 target: self selector: @selector(updateBlinkTicker:) userInfo: nil repeats: YES];
     [self updateSitesMenu];
+    
+    if ([[NSUserDefaults standardUserDefaults] boolForKey: @"RestoreConnection"]) {
+        NSArray *a = [[NSUserDefaults standardUserDefaults] arrayForKey: @"LastConnection"];
+        CGFloat opened = 0;
+        for (NSDictionary *d in a) {
+//            [self performSelector: @selector(newConnectionWithDictionary:) withObject: d afterDelay: 0.1 + opened];
+//            opened += 1;
+            [self newConnectionWithDictionary: d];
+        }
+    }
+    [NSTimer scheduledTimerWithTimeInterval: 120 target: self selector: @selector(antiIdle:) userInfo: nil repeats: YES];
+    [NSTimer scheduledTimerWithTimeInterval: 1 target: self selector: @selector(updateBlinkTicker:) userInfo: nil repeats: YES];
+            
 }
 
 - (void) updateBlinkTicker: (NSTimer *) t {
@@ -61,8 +73,9 @@
     NSArray *a = [_telnetView tabViewItems];
     for (NSTabViewItem *item in a) {
         id telnet = [item identifier];
-        if ([telnet connected] && [telnet lastTouchDate] && [[NSDate date] timeIntervalSinceDate: [telnet lastTouchDate]] >= 179) {
-            unsigned char msg[] = {0x1B, 'O', 'A', 0x1B, 'O', 'B'};
+        if ([telnet connected] && [telnet lastTouchDate] && [[NSDate date] timeIntervalSinceDate: [telnet lastTouchDate]] >= 119) {
+//            unsigned char msg[] = {0x1B, 'O', 'A', 0x1B, 'O', 'B'};
+            unsigned char msg[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
             [telnet sendBytes:msg length:6];
         }
     }
@@ -76,23 +89,45 @@
     [self updateSitesMenu];
 }
 
+- (void) newConnectionWithDictionary: (NSDictionary *) d {
+    [self newConnectionToAddress: [d valueForKey: @"address"] 
+                            name: [d valueForKey: @"name"]];
+}
+                                    
+
 - (void) newConnectionToAddress: (NSString *) addr name: (NSString *) name {
-    id telnet = [YLTelnet new];
+    NSAutoreleasePool *pool = [NSAutoreleasePool new];
 	id terminal = [YLTerminal new];
+    id telnet;
+
+    BOOL emptyTab = [_telnetView telnet] && ([[_telnetView telnet] terminal] == nil);
+
+    if (emptyTab) 
+        telnet = [_telnetView telnet];
+    else 
+        telnet = [[YLTelnet new] autorelease];
+
 	[telnet setTerminal: terminal];
     [telnet setConnectionName: name];
     [telnet setConnectionAddress: addr];
 	[terminal setDelegate: _telnetView];
     
-    NSTabViewItem *tabItem = [[NSTabViewItem alloc] initWithIdentifier: telnet];
+    NSTabViewItem *tabItem;
+    
+    if (emptyTab) {
+        tabItem = [_telnetView selectedTabViewItem];
+    } else {
+        tabItem = [[[NSTabViewItem alloc] initWithIdentifier: telnet] autorelease];
+        [_telnetView addTabViewItem: tabItem];
+    }
+    
     [tabItem setLabel: name];
-    [_telnetView addTabViewItem: tabItem];
 	
-	[telnet connectToAddress: addr port: 23];
+	[telnet connectToAddress: addr];
     [_telnetView selectTabViewItem: tabItem];
-    [tabItem release];
     [terminal release];
-    [telnet release];
+    [self refreshTabLabelNumber: _telnetView];
+    [pool release];
 }
 
 #pragma mark -
@@ -110,6 +145,20 @@
 
 #pragma mark -
 #pragma mark Actions
+- (IBAction) newTab: (id) sender {
+    YLTelnet *telnet = [YLTelnet new];
+    [telnet setConnectionAddress: @""];
+    [telnet setConnectionName: @""];
+    NSTabViewItem *tabItem = [[[NSTabViewItem alloc] initWithIdentifier: telnet] autorelease];
+    [_telnetView addTabViewItem: tabItem];
+    [_telnetView selectTabViewItem: tabItem];
+    
+    [_mainWindow makeKeyAndOrderFront: self];
+	[_telnetView resignFirstResponder];
+	[_addressBar becomeFirstResponder];
+    [telnet release];
+}
+
 - (IBAction) connect: (id) sender {
 	[sender abortEditing];
 	[[_telnetView window] makeFirstResponder: _telnetView];
@@ -139,6 +188,12 @@
         [_telnetView selectLastTabViewItem: self];
     else
         [_telnetView selectPreviousTabViewItem: self];
+}
+
+- (IBAction) selectTabNumber: (int) index {
+    if (index <= [_telnetView numberOfTabViewItems]) {
+        [_telnetView selectTabViewItemAtIndex: index - 1];
+    }
 }
 
 - (IBAction) closeTab: (id) sender {
@@ -206,6 +261,10 @@
     [_telnetView refreshHiddenRegion];
     [_telnetView update];
     [_telnetView setNeedsDisplay: YES];
+}
+
+- (IBAction) openPreferencesWindow: (id) sender {
+    [[DBPrefsWindowController sharedPrefsWindowController] showWindow:nil];
 }
 
 #pragma mark -
@@ -277,6 +336,52 @@
     [_mainWindow makeKeyAndOrderFront: self];
     return NO;
 } 
+
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
+    int tabNumber = [_telnetView numberOfTabViewItems];
+    int i;
+
+    
+    if ([[NSUserDefaults standardUserDefaults] boolForKey: @"RestoreConnection"]) {
+        NSMutableArray *a = [NSMutableArray array];
+        for (i = 0; i < tabNumber; i++) {
+            id connection = [[_telnetView tabViewItemAtIndex: i] identifier];
+            if ([connection terminal])
+                [a addObject: [NSDictionary dictionaryWithObjectsAndKeys: [connection connectionName], @"name", [connection connectionAddress], @"address", nil]];
+        }
+        [[NSUserDefaults standardUserDefaults] setObject: a forKey: @"LastConnection"];
+    }
+    
+    if (![[NSUserDefaults standardUserDefaults] boolForKey: @"ConfirmOnQuit"]) 
+        return YES;
+    
+    BOOL hasConnectedConnetion = NO;
+    for (i = 0; i < tabNumber; i++) {
+        id connection = [[_telnetView tabViewItemAtIndex: i] identifier];
+        if ([connection connected]) 
+            hasConnectedConnetion = YES;
+    }
+    if (!hasConnectedConnetion) return YES;
+    NSBeginAlertSheet(NSLocalizedString(@"Are you sure you want to quit Nally?", @"Sheet Title"), 
+                      NSLocalizedString(@"Quit", @"Default Button"), 
+                      NSLocalizedString(@"Cancel", @"Cancel Button"), 
+                      nil, 
+                      _mainWindow, self, 
+                      @selector(confirmSheetDidEnd:returnCode:contextInfo:), 
+                      @selector(confirmSheetDidDismiss:returnCode:contextInfo:), nil, 
+                      [NSString stringWithFormat: NSLocalizedString(@"There are %d tabs open in Nally. Do you want to quit anyway?", @"Sheet Message"),
+                                tabNumber]);
+    return NSTerminateLater;
+}
+
+- (void) confirmSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void  *)contextInfo {
+    [NSApp replyToApplicationShouldTerminate: (returnCode == NSAlertDefaultReturn)];
+}
+
+- (void) confirmSheetDidDismiss:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void  *)contextInfo {
+    [NSApp replyToApplicationShouldTerminate: (returnCode == NSAlertDefaultReturn)];
+}
+
 #pragma mark -
 #pragma mark Window Delegation
 
@@ -317,8 +422,9 @@
 }
 
 - (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem {
+    id identifier = [tabViewItem identifier];
     [_telnetView update];
-    [_addressBar setStringValue: [[tabViewItem identifier] connectionAddress]];
+    [_addressBar setStringValue: [identifier connectionAddress]];
     [_telnetView setNeedsDisplay: YES];
     [_mainWindow makeFirstResponder: _telnetView];
     if ([[tabViewItem identifier] connected]) {
@@ -331,11 +437,12 @@
 }
 
 - (void)tabView:(NSTabView *)tabView willSelectTabViewItem:(NSTabViewItem *)tabViewItem {
-    [[[tabViewItem identifier] terminal] setAllDirty];
+    id identifier = [tabViewItem identifier];
+    [[identifier terminal] setAllDirty];
 }
 
 - (BOOL)tabView:(NSTabView*)aTabView shouldDragTabViewItem:(NSTabViewItem *)tabViewItem fromTabBar:(PSMTabBarControl *)tabBarControl {
-	return YES;
+	return NO;
 }
 
 - (BOOL)tabView:(NSTabView*)aTabView shouldDropTabViewItem:(NSTabViewItem *)tabViewItem inTabBar:(PSMTabBarControl *)tabBarControl {
@@ -343,6 +450,7 @@
 }
 
 - (void)tabView:(NSTabView*)aTabView didDropTabViewItem:(NSTabViewItem *)tabViewItem inTabBar:(PSMTabBarControl *)tabBarControl {
+//    [self refreshTabLabelNumber: _telnetView];
 }
 
 - (NSImage *)tabView:(NSTabView *)aTabView imageForTabViewItem:(NSTabViewItem *)tabViewItem offset:(NSSize *)offset styleMask:(unsigned int *)styleMask {
@@ -350,6 +458,16 @@
 }
 
 - (void)tabViewDidChangeNumberOfTabViewItems:(NSTabView *)tabView {
+    [self refreshTabLabelNumber: tabView];
+}
+
+- (void) refreshTabLabelNumber: (NSTabView *) tabView {
+    int i, tabNumber;
+    tabNumber = [tabView numberOfTabViewItems];
+    for (i = 0; i < tabNumber; i++) {
+        NSTabViewItem *item = [tabView tabViewItemAtIndex: i];
+        [item setLabel: [NSString stringWithFormat: @"%d. %@", i + 1, [[item identifier] connectionName]]];
+    }
     
 }
 @end
