@@ -30,6 +30,7 @@
 		85AE9DA70CB1597A0045317F /* reload.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 85AE9DA60CB1597A0045317F /* reload.pdf */; };
 		85AE9DAE0CB15D220045317F /* bookmark.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 85AE9DAD0CB15D220045317F /* bookmark.pdf */; };
 		85B247E70CEA1B840090046C /* DragonBall.icns in Resources */ = {isa = PBXBuildFile; fileRef = 85B247E60CEA1B840090046C /* DragonBall.icns */; };
+		85E7825C0D057E8400BDA3FB /* YLEmoticon.m in Sources */ = {isa = PBXBuildFile; fileRef = 85E7825B0D057E8400BDA3FB /* YLEmoticon.m */; };
 		85F702680D033FF90035F600 /* DBPrefsWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 85F702660D033FF90035F600 /* DBPrefsWindowController.m */; };
 		85F7028A0D0346630035F600 /* Preferences.nib in Resources */ = {isa = PBXBuildFile; fileRef = 85F702890D0346630035F600 /* Preferences.nib */; };
 		85F7F2090B06EE36000C4CDF /* YLLGlobalConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 85F7F2080B06EE36000C4CDF /* YLLGlobalConfig.m */; };
@@ -94,13 +95,15 @@
 		85B247E60CEA1B840090046C /* DragonBall.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = DragonBall.icns; sourceTree = "<group>"; };
 		85D9B9CF0C97DF70006C5E0F /* YLBitmapView.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = YLBitmapView.h; sourceTree = "<group>"; };
 		85D9B9D00C97DF70006C5E0F /* YLBitmapView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = YLBitmapView.mm; sourceTree = "<group>"; };
+		85E7825A0D057E8400BDA3FB /* YLEmoticon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLEmoticon.h; sourceTree = "<group>"; };
+		85E7825B0D057E8400BDA3FB /* YLEmoticon.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YLEmoticon.m; sourceTree = "<group>"; };
 		85F702660D033FF90035F600 /* DBPrefsWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBPrefsWindowController.m; sourceTree = "<group>"; };
 		85F702670D033FF90035F600 /* DBPrefsWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBPrefsWindowController.h; sourceTree = "<group>"; };
 		85F702890D0346630035F600 /* Preferences.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; path = Preferences.nib; sourceTree = "<group>"; };
 		85F7F2070B06EE36000C4CDF /* YLLGlobalConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLLGlobalConfig.h; sourceTree = "<group>"; };
 		85F7F2080B06EE36000C4CDF /* YLLGlobalConfig.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YLLGlobalConfig.m; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		8D1107320486CEB800E47090 /* MacBlueTelnet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacBlueTelnet.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D1107320486CEB800E47090 /* Nally.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Nally.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -161,7 +164,7 @@
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8D1107320486CEB800E47090 /* MacBlueTelnet.app */,
+				8D1107320486CEB800E47090 /* Nally.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -240,6 +243,8 @@
 				85145AA00AB40053009FC710 /* YLTelnet.mm */,
 				8579CA280CF21D3D005A8353 /* YLSite.h */,
 				8579CA290CF21D3D005A8353 /* YLSite.m */,
+				85E7825A0D057E8400BDA3FB /* YLEmoticon.h */,
+				85E7825B0D057E8400BDA3FB /* YLEmoticon.m */,
 			);
 			name = Model;
 			sourceTree = "<group>";
@@ -263,7 +268,7 @@
 			name = Nally;
 			productInstallPath = "$(HOME)/Applications";
 			productName = MacBlueTelnet;
-			productReference = 8D1107320486CEB800E47090 /* MacBlueTelnet.app */;
+			productReference = 8D1107320486CEB800E47090 /* Nally.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -322,6 +327,7 @@
 				8579CA2A0CF21D3D005A8353 /* YLSite.m in Sources */,
 				859252F50CFD4F860054E3D6 /* YLContextualMenuManager.m in Sources */,
 				85F702680D033FF90035F600 /* DBPrefsWindowController.m in Sources */,
+				85E7825C0D057E8400BDA3FB /* YLEmoticon.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -15,6 +15,7 @@
 
 @interface YLController : NSObject {
     IBOutlet NSPanel *_sitesWindow;
+    IBOutlet NSPanel *_emoticonsWindow;
     IBOutlet NSWindow *_mainWindow;
 	IBOutlet id _telnetView;
 	IBOutlet id _addressBar;
@@ -22,6 +23,7 @@
     IBOutlet NSMenuItem *_closeWindowMenuItem;
     IBOutlet NSMenuItem *_closeTabMenuItem;
     NSMutableArray *_sites;
+    NSMutableArray *_emoticons;
     IBOutlet NSArrayController *_sitesController;
     IBOutlet NSMenuItem *_sitesMenu;
     IBOutlet NSTableView *_sitesTableView;
@@ -44,6 +46,8 @@
 - (IBAction) openPreferencesWindow: (id) sender ;
 - (void) newConnectionToAddress: (NSString *) addr name: (NSString *) name;
 - (void) newConnectionWithDictionary: (NSDictionary *) d ;
+- (IBAction) closeEmoticons: (id) sender;
+- (IBAction) inputEmoticons: (id) sender;
 
 - (NSArray *)sites;
 - (unsigned)countOfSites;
@@ -54,5 +58,13 @@
 - (void)replaceObjectInSitesAtIndex:(unsigned)theIndex withObject:(id)obj;
 
 - (void) refreshTabLabelNumber: (NSTabView *) tabView ;
+
+- (NSArray *)emoticons;
+- (unsigned)countOfEmoticons;
+- (id)objectInEmoticonsAtIndex:(unsigned)theIndex;
+- (void)getEmoticons:(id *)objsPtr range:(NSRange)range;
+- (void)insertObject:(id)obj inEmoticonsAtIndex:(unsigned)theIndex;
+- (void)removeObjectFromEmoticonsAtIndex:(unsigned)theIndex;
+- (void)replaceObjectInEmoticonsAtIndex:(unsigned)theIndex withObject:(id)obj;
 
 @end

@@ -50,10 +50,7 @@
     
     if ([[NSUserDefaults standardUserDefaults] boolForKey: @"RestoreConnection"]) {
         NSArray *a = [[NSUserDefaults standardUserDefaults] arrayForKey: @"LastConnection"];
-        CGFloat opened = 0;
         for (NSDictionary *d in a) {
-//            [self performSelector: @selector(newConnectionWithDictionary:) withObject: d afterDelay: 0.1 + opened];
-//            opened += 1;
             [self newConnectionWithDictionary: d];
         }
     }
@@ -251,6 +248,8 @@
     [_sitesTableView editColumn: 0 row: [_sitesTableView selectedRow] withEvent: nil select: YES];
 }
 
+
+
 - (IBAction) showHiddenText: (id) sender {
     BOOL show = ([sender state] == NSOnState);
     if ([sender isKindOfClass: [NSMenuItem class]]) {
@@ -317,6 +316,57 @@
         _sites = [[NSMutableArray alloc] init];
     }
 }
+
+- (NSArray *)emoticons {
+    if (!_emoticons) {
+        _emoticons = [[NSMutableArray alloc] init];
+    }
+    return [[_emoticons retain] autorelease];
+}
+
+- (unsigned)countOfEmoticons {
+    if (!_emoticons) {
+        _emoticons = [[NSMutableArray alloc] init];
+    }
+    return [_emoticons count];
+}
+
+- (id)objectInEmoticonsAtIndex:(unsigned)theIndex {
+    if (!_emoticons) {
+        _emoticons = [[NSMutableArray alloc] init];
+    }
+    return [_emoticons objectAtIndex:theIndex];
+}
+
+- (void)getEmoticons:(id *)objsPtr range:(NSRange)range {
+    if (!_emoticons) {
+        _emoticons = [[NSMutableArray alloc] init];
+    }
+    [_emoticons getObjects:objsPtr range:range];
+}
+
+- (void)insertObject:(id)obj inEmoticonsAtIndex:(unsigned)theIndex {
+    if (!_emoticons) {
+        _emoticons = [[NSMutableArray alloc] init];
+    }
+    [_emoticons insertObject:obj atIndex:theIndex];
+}
+
+- (void)removeObjectFromEmoticonsAtIndex:(unsigned)theIndex {
+    if (!_emoticons) {
+        _emoticons = [[NSMutableArray alloc] init];
+    }
+    [_emoticons removeObjectAtIndex:theIndex];
+}
+
+- (void)replaceObjectInEmoticonsAtIndex:(unsigned)theIndex withObject:(id)obj {
+    if (!_emoticons) {
+        _emoticons = [[NSMutableArray alloc] init];
+    }
+    [_emoticons replaceObjectAtIndex:theIndex withObject:obj];
+}
+
+
 
 #pragma mark -
 #pragma mark Application Delegation
