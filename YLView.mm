@@ -42,6 +42,10 @@ static NSBezierPath *gSymbolTrianglePath[4];
 static NSBezierPath *gSymbolTrianglePath1[4];
 static NSBezierPath *gSymbolTrianglePath2[4];
 
+BOOL isEnglishNumberAlphabet(unsigned char c) {
+    return ('0' <= c && c <= '9') || ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z');
+}
+
 BOOL isSpecialSymbol(unichar ch) {
 	if (ch == 0x25FC)  // ◼ BLACK SQUARE
 		return YES;
@@ -512,6 +516,41 @@ BOOL isBlinkCell(cell c) {
     p = [self convertPoint: p toView: nil];
     _selectionLocation = [self convertIndexFromPoint: p];
     _selectionLength = 0;
+    
+    if (([e modifierFlags] & NSCommandKeyMask) == 0x00 &&
+        [e clickCount] == 3) {
+        _selectionLocation = _selectionLocation - (_selectionLocation % gColumn);
+        _selectionLength = gColumn;
+    } else if (([e modifierFlags] & NSCommandKeyMask) == 0x00 &&
+               [e clickCount] == 2) {
+        int r, c;
+        r = _selectionLocation / gColumn;
+        c = _selectionLocation % gColumn;
+        cell *currRow = [[self dataSource] cellsOfRow: r];
+        [[self dataSource] updateDoubleByteStateForRow: r];
+        if (currRow[c].attr.f.doubleByte == 1) { // Double Byte
+            _selectionLength = 2;
+        } else if (currRow[c].attr.f.doubleByte == 2) {
+            _selectionLocation--;
+            _selectionLength = 2;
+        } else if (isEnglishNumberAlphabet(currRow[c].byte)) {
+            for (; c >= 0; c--) {                
+                if (isEnglishNumberAlphabet(currRow[c].byte)) 
+                    _selectionLocation = r * gColumn + c;
+                else 
+                    break;
+            }
+            for (c = c + 1; c < gColumn; c++) {
+                if (isEnglishNumberAlphabet(currRow[c].byte)) 
+                    _selectionLength++;
+                else 
+                    break;
+            }
+        } else {
+            _selectionLength = 1;
+        }
+    }
+    
     [self setNeedsDisplay: YES];
     
     if ([e modifierFlags] & NSCommandKeyMask) {
