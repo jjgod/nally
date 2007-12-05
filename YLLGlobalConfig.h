@@ -42,6 +42,9 @@
 
 + (YLLGlobalConfig *) sharedInstance;
 
+- (NSArray *) encodingArray;
+- (void) setEncodingArray: (NSArray *) a;
+
 - (int)row;
 - (void)setRow:(int)value;
 

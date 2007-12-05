@@ -507,7 +507,7 @@ static unsigned short gEmptyAttr;
             firstByte = _grid[y][x].byte;
         } else if (db == 2 && firstByte) {
             int index = (firstByte << 8) + _grid[y][x].byte - 0x8000;
-            textBuf[bufLength++] = B2U[index];
+            textBuf[bufLength++] = _encoding == YLBig5Encoding ? B2U[index] : G2U[index];
         }
     }
     if (bufLength == 0) return nil;
@@ -589,6 +589,14 @@ static unsigned short gEmptyAttr;
 
 - (int) cursorColumn {
     return _cursorX;
+}
+
+- (YLEncoding)encoding {
+    return _encoding;
+}
+
+- (void)setEncoding:(YLEncoding)encoding {
+    _encoding = encoding;
 }
 
 @end

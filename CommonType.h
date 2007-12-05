@@ -28,3 +28,8 @@ typedef struct {
 } cell;
 
 typedef enum {C0, INTERMEDIATE, ALPHABETIC, DELETE, C1, G1, SPECIAL, ERROR} ASCII_CODE;
+
+typedef enum YLEncoding {
+    YLBig5Encoding, 
+    YLGBKEncoding
+} YLEncoding;

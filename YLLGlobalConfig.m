@@ -9,10 +9,16 @@
 #import "YLLGlobalConfig.h"
 
 static YLLGlobalConfig *sSharedInstance;
+static NSArray *gEncodingArray = nil;
 
 @implementation YLLGlobalConfig
 + (YLLGlobalConfig*) sharedInstance {
 	return sSharedInstance ?: [[YLLGlobalConfig new] autorelease];
+}
+
++ (void) initialize {
+    gEncodingArray = 
+    [[NSArray arrayWithObjects: @"Big5", @"GBK", nil] retain];
 }
 
 - (id) init {
@@ -24,10 +30,10 @@ static YLLGlobalConfig *sSharedInstance;
 		_column = 80;
 		_cellWidth = 12;
 		_cellHeight = 24;
-		[self setEFont: [NSFont fontWithName: @"Monaco" size: 18]];
-        NSFontDescriptor *descriptor = [NSFontDescriptor fontDescriptorWithName: @"Hiragino Kaku Gothic Pro" size: 22];
-        
-		[self setCFont: [NSFont fontWithDescriptor: [descriptor fontDescriptorWithFace: @"W3"] size: 22]];
+//		[self setEFont: [NSFont fontWithName: @"Monaco" size: 18]];
+//        NSFontDescriptor *descriptor = [NSFontDescriptor fontDescriptorWithName: @"Hiragino Kaku Gothic Pro" size: 22];
+//		[self setCFont: [NSFont fontWithDescriptor: [descriptor fontDescriptorWithFace: @"W3"] size: 22]];
+
 		_colorTable[0][0] = [[NSColor colorWithDeviceRed: 0.00 green: 0.00 blue: 0.00 alpha: 1.0] retain];
 		_colorTable[1][0] = [[NSColor colorWithDeviceRed: 0.25 green: 0.25 blue: 0.25 alpha: 1.0] retain];
 		_colorTable[0][1] = [[NSColor colorWithDeviceRed: 0.50 green: 0.00 blue: 0.00 alpha: 1.0] retain];
@@ -75,6 +81,7 @@ static YLLGlobalConfig *sSharedInstance;
 		int i, j;
 		ATSUFontID cATSUFontID, eATSUFontID;
 		char *cATSUFontName = "STHeiti", *eATSUFontName = "Monaco";
+//        char *cATSUFontName = "Hiragino Kaku Gothic Pro", *eATSUFontName = "Monaco";
 		ATSUAttributeTag		tags[2];
 		ByteCount				sizes[2];
 		ATSUAttributeValuePtr	values[2];
@@ -289,4 +296,9 @@ static YLLGlobalConfig *sSharedInstance;
 - (void)updateBlinkTicker {
     [self setBlinkTicker: !_blinkTicker];
 }
+
+- (NSArray *) encodingArray {
+    return gEncodingArray;
+}
+- (void) setEncodingArray: (NSArray *) a {}
 @end

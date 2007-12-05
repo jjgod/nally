@@ -19,4 +19,8 @@
 - (NSString *)name;
 - (void)setName:(NSString *)value;
 
+
++ (YLEmoticon *) emoticonWithDictionary: (NSDictionary *) d ;
+- (NSDictionary *) dictionaryOfEmoticon ;
+
 @end

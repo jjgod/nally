@@ -11,8 +11,31 @@
 #import "YLTerminal.h"
 #import "YLLGlobalConfig.h"
 #import "DBPrefsWindowController.h"
+#import "YLEmoticon.h"
 
 @implementation YLController
+
+- (void) awakeFromNib {
+    [[YLLGlobalConfig sharedInstance] addObserver: self
+                                       forKeyPath: @"showHiddenText"
+                                          options: (NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
+                                          context: NULL];
+    [_tab setStyleNamed: @"Metal"];
+    [_tab setCanCloseOnlyTab: YES];
+    
+    [[YLLGlobalConfig sharedInstance] setShowHiddenText: [[NSUserDefaults standardUserDefaults] boolForKey: @"ShowHiddenText"]];
+    
+    [self loadSites];
+    [self updateSitesMenu];
+    [self loadEmoticons];
+    
+    if ([[NSUserDefaults standardUserDefaults] boolForKey: @"RestoreConnection"]) 
+        [self loadLastConnections];
+    
+    [NSTimer scheduledTimerWithTimeInterval: 120 target: self selector: @selector(antiIdle:) userInfo: nil repeats: YES];
+    [NSTimer scheduledTimerWithTimeInterval: 1 target: self selector: @selector(updateBlinkTicker:) userInfo: nil repeats: YES];
+            
+}
 
 - (void) updateSitesMenu {
     int total = [[_sitesMenu submenu] numberOfItems] ;
@@ -29,34 +52,17 @@
     }
 }
 
-- (void) awakeFromNib {
-    [[YLLGlobalConfig sharedInstance] addObserver: self
-                                       forKeyPath: @"showHiddenText"
-                                          options: (NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
-                                          context: NULL];
-    [_tab setStyleNamed: @"Metal"];
-    [_tab setCanCloseOnlyTab: YES];
-    
-    [[YLLGlobalConfig sharedInstance] setShowHiddenText: [[NSUserDefaults standardUserDefaults] boolForKey: @"ShowHiddenText"]];
-    
-    NSArray *array = [[NSUserDefaults standardUserDefaults] arrayForKey: @"Sites"];
-    for (NSDictionary *d in array) {
-        YLSite *s = [[YLSite new] autorelease];
-        [s setName: [d objectForKey: @"name"]];
-        [s setAddress: [d objectForKey: @"address"]];
-        [self insertObject: s inSitesAtIndex: [self countOfSites]];
+- (void) updateEncodingMenu {
+    // Update encoding menu status
+    NSMenu *m = [_encodingMenuItem submenu];
+    int i;
+    for (i = 0; i < [m numberOfItems]; i++) {
+        NSMenuItem *item = [m itemAtIndex: i];
+        [item setState: NSOffState];
+        if ([_telnetView dataSource] && i == [[_telnetView dataSource] encoding])
+            [item setState: NSOnState];
     }
-    [self updateSitesMenu];
     
-    if ([[NSUserDefaults standardUserDefaults] boolForKey: @"RestoreConnection"]) {
-        NSArray *a = [[NSUserDefaults standardUserDefaults] arrayForKey: @"LastConnection"];
-        for (NSDictionary *d in a) {
-            [self newConnectionWithDictionary: d];
-        }
-    }
-    [NSTimer scheduledTimerWithTimeInterval: 120 target: self selector: @selector(antiIdle:) userInfo: nil repeats: YES];
-    [NSTimer scheduledTimerWithTimeInterval: 1 target: self selector: @selector(updateBlinkTicker:) userInfo: nil repeats: YES];
-            
 }
 
 - (void) updateBlinkTicker: (NSTimer *) t {
@@ -78,21 +84,17 @@
     }
 }
 
-- (void) saveSites {
-    NSMutableArray *a = [NSMutableArray array];
-    for (YLSite *s in _sites) 
-        [a addObject: [NSDictionary dictionaryWithObjectsAndKeys: [s name], @"name", [s address], @"address", nil]];
-    [[NSUserDefaults standardUserDefaults] setObject: a forKey: @"Sites"];
-    [self updateSitesMenu];
+- (void) newConnectionWithSite: (YLSite *) s {
+    [self newConnectionWithDictionary: [s dictionaryOfSite]];
 }
 
 - (void) newConnectionWithDictionary: (NSDictionary *) d {
     [self newConnectionToAddress: [d valueForKey: @"address"] 
-                            name: [d valueForKey: @"name"]];
+                            name: [d valueForKey: @"name"]
+                        encoding: (YLEncoding) [[d valueForKey: @"encoding"] unsignedIntValue]];
 }
-                                    
 
-- (void) newConnectionToAddress: (NSString *) addr name: (NSString *) name {
+- (void) newConnectionToAddress: (NSString *) addr name: (NSString *) name encoding: (YLEncoding) encoding {
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
 	id terminal = [YLTerminal new];
     id telnet;
@@ -104,6 +106,7 @@
     else 
         telnet = [[YLTelnet new] autorelease];
 
+    [terminal setEncoding: encoding];
 	[telnet setTerminal: terminal];
     [telnet setConnectionName: name];
     [telnet setConnectionAddress: addr];
@@ -124,6 +127,7 @@
     [_telnetView selectTabViewItem: tabItem];
     [terminal release];
     [self refreshTabLabelNumber: _telnetView];
+    [self updateEncodingMenu];
     [pool release];
 }
 
@@ -141,7 +145,69 @@
 }
 
 #pragma mark -
+#pragma mark User Defaults
+
+- (void) loadSites {
+    NSArray *array = [[NSUserDefaults standardUserDefaults] arrayForKey: @"Sites"];
+    for (NSDictionary *d in array) 
+        [self insertObject: [YLSite siteWithDictionary: d] inSitesAtIndex: [self countOfSites]];    
+}
+
+- (void) saveSites {
+    NSMutableArray *a = [NSMutableArray array];
+    for (YLSite *s in _sites) 
+        [a addObject: [s dictionaryOfSite]];
+    [[NSUserDefaults standardUserDefaults] setObject: a forKey: @"Sites"];
+    [self updateSitesMenu];
+}
+
+- (void) loadEmoticons {
+    NSArray *a = [[NSUserDefaults standardUserDefaults] arrayForKey: @"Emoticons"];
+    for (NSDictionary *d in a)
+        [self insertObject: [YLEmoticon emoticonWithDictionary: d] inEmoticonsAtIndex: [self countOfEmoticons]];
+}
+
+- (void) saveEmoticons {
+    NSMutableArray *a = [NSMutableArray array];
+    for (YLEmoticon *e in _emoticons) 
+        [a addObject: [e dictionaryOfEmoticon]];
+    [[NSUserDefaults standardUserDefaults] setObject: a forKey: @"Emoticons"];    
+}
+
+- (void) loadLastConnections {
+    NSArray *a = [[NSUserDefaults standardUserDefaults] arrayForKey: @"LastConnections"];
+    for (NSDictionary *d in a) {
+        [self newConnectionWithDictionary: d];
+    }    
+}
+
+- (void) saveLastConnections {
+    int tabNumber = [_telnetView numberOfTabViewItems];
+    int i;
+    NSMutableArray *a = [NSMutableArray array];
+    for (i = 0; i < tabNumber; i++) {
+        id connection = [[_telnetView tabViewItemAtIndex: i] identifier];
+        if ([connection terminal]) // not empty tab
+            [a addObject: [NSDictionary dictionaryWithObjectsAndKeys: [connection connectionName], @"name", 
+                           [connection connectionAddress], @"address", 
+                           [NSNumber numberWithUnsignedInt: [[connection terminal] encoding]], @"encoding", nil]];
+    }
+    [[NSUserDefaults standardUserDefaults] setObject: a forKey: @"LastConnections"];
+}
+
+#pragma mark -
 #pragma mark Actions
+- (IBAction) setEncoding: (id) sender {
+    int index = [[_encodingMenuItem submenu] indexOfItem: sender];
+    if ([_telnetView dataSource]) {
+        [[_telnetView dataSource] setEncoding: (YLEncoding)index];
+        [[_telnetView dataSource] setAllDirty];
+        [_telnetView update];
+        [_telnetView setNeedsDisplay: YES];
+        [self updateEncodingMenu];
+    }
+}
+
 - (IBAction) newTab: (id) sender {
     YLTelnet *telnet = [YLTelnet new];
     [telnet setConnectionAddress: @""];
@@ -160,7 +226,9 @@
 	[sender abortEditing];
 	[[_telnetView window] makeFirstResponder: _telnetView];
 
-	[self newConnectionToAddress: [sender stringValue] name: [sender stringValue]];
+	[self newConnectionToAddress: [sender stringValue] 
+                            name: [sender stringValue] 
+                        encoding: (YLEncoding) [(NSNumber *)[[NSUserDefaults standardUserDefaults] objectForKey: @"DefaultEncoding"] unsignedShortValue]];
 }
 
 - (IBAction) openLocation: (id) sender {
@@ -215,13 +283,13 @@
     
     if ([a count] == 1) {
         YLSite *s = [a objectAtIndex: 0];
-        [self newConnectionToAddress: [s address] name: [s name]];
+        [self newConnectionWithSite: s];
     }
 }
 
 - (IBAction) openSiteMenu: (id) sender {
     YLSite *s = [sender representedObject];
-    [self newConnectionToAddress: [s address] name: [s name]];
+    [self newConnectionWithSite: s];
 }
 
 - (IBAction) closeSites: (id) sender {
@@ -242,6 +310,7 @@
     YLSite *s = [[YLSite new] autorelease];
     [s setName: address];
     [s setAddress: address];
+    [s setEncoding: [[_telnetView dataSource] encoding]];
     [_sitesController addObject: s];
     [_sitesController setSelectedObjects: [NSArray arrayWithObject: s]];
     [self performSelector: @selector(editSites:) withObject: sender afterDelay: 0.1];
@@ -264,6 +333,30 @@
 
 - (IBAction) openPreferencesWindow: (id) sender {
     [[DBPrefsWindowController sharedPrefsWindowController] showWindow:nil];
+}
+
+- (IBAction) openEmoticonsWindow: (id) sender {
+    [_emoticonsWindow makeKeyAndOrderFront: self];
+}
+
+- (IBAction) closeEmoticons: (id) sender {
+    [_emoticonsWindow endEditingFor: nil];
+    [_emoticonsWindow makeFirstResponder: _emoticonsWindow];
+    [_emoticonsWindow orderOut: self];
+    [self saveEmoticons];
+}
+
+- (IBAction) inputEmoticons: (id) sender {
+    [self closeEmoticons: sender];
+    
+    if ([[_telnetView telnet] connected]) {
+        NSArray *a = [_emoticonsController selectedObjects];
+        
+        if ([a count] == 1) {
+            YLEmoticon *e = [a objectAtIndex: 0];
+            [_telnetView insertText: [e content]];
+        }
+    }
 }
 
 #pragma mark -
@@ -378,6 +471,8 @@
          action == @selector(selectPrevTab:) )
         && [_telnetView numberOfTabViewItems] == 0) {
         return NO;
+    } else if (action == @selector(setEncoding:) && [_telnetView numberOfTabViewItems] == 0) {
+        return NO;
     }
     return YES;
 }
@@ -390,17 +485,9 @@
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
     int tabNumber = [_telnetView numberOfTabViewItems];
     int i;
-
     
-    if ([[NSUserDefaults standardUserDefaults] boolForKey: @"RestoreConnection"]) {
-        NSMutableArray *a = [NSMutableArray array];
-        for (i = 0; i < tabNumber; i++) {
-            id connection = [[_telnetView tabViewItemAtIndex: i] identifier];
-            if ([connection terminal])
-                [a addObject: [NSDictionary dictionaryWithObjectsAndKeys: [connection connectionName], @"name", [connection connectionAddress], @"address", nil]];
-        }
-        [[NSUserDefaults standardUserDefaults] setObject: a forKey: @"LastConnection"];
-    }
+    if ([[NSUserDefaults standardUserDefaults] boolForKey: @"RestoreConnection"]) 
+        [self saveLastConnections];
     
     if (![[NSUserDefaults standardUserDefaults] boolForKey: @"ConfirmOnQuit"]) 
         return YES;
@@ -480,6 +567,7 @@
     if ([[tabViewItem identifier] connected]) {
         [[tabViewItem identifier] setIcon: [NSImage imageNamed: @"connect.pdf"]];
     }
+    [self updateEncodingMenu];
 }
 
 - (BOOL)tabView:(NSTabView *)tabView shouldSelectTabViewItem:(NSTabViewItem *)tabViewItem {

@@ -8,13 +8,13 @@
 
 #import "YLView.h"
 #import "YLTerminal.h"
-#import "encoding.h"
 #import "YLTelnet.h"
 #import "YLLGLobalConfig.h"
 #import "YLMarkedTextView.h"
 #import "YLContextualMenuManager.h"
 
-#include<deque>
+#include <deque>
+#include "encoding.h"
 
 using namespace std;
 
@@ -352,12 +352,7 @@ BOOL isBlinkCell(cell c) {
     NSArray *types = [pb types];
     if ([types containsObject: NSStringPboardType]) {
         NSString *str = [pb stringForType: NSStringPboardType];
-        NSMutableString *mStr = [NSMutableString stringWithString: str];
-        [mStr replaceOccurrencesOfString: @"\n"
-                              withString: @"\r"
-                                 options: NSLiteralSearch
-                                   range: NSMakeRange(0, [str length])];
-        [self insertText: mStr];
+        [self insertText: str];
     }
 }
 
@@ -854,7 +849,7 @@ BOOL isBlinkCell(cell c) {
             }
         }
         CGContextSaveGState(myCGContext);
-        CGContextSetShouldSmoothFonts(myCGContext, NO);
+        CGContextSetShouldSmoothFonts(myCGContext, false);
         
         /* Draw String row by row */
         for (y = 0; y < gRow; y++) {
@@ -919,7 +914,8 @@ BOOL isBlinkCell(cell c) {
 		} else if (db == 1) {
 			continue;
 		} else if (db == 2) {
-			unichar ch = B2U[(((currRow + x - 1)->byte) << 8) + ((currRow + x)->byte) - 0x8000];
+			unsigned short code = (((currRow + x - 1)->byte) << 8) + ((currRow + x)->byte) - 0x8000;
+			unichar ch = [ds encoding] == YLBig5Encoding ? B2U[code] : G2U[code];
 			if (isSpecialSymbol(ch)) {
 				[self drawSpecialSymbol: ch forRow: r column: (x - 1) leftAttribute: (currRow + x - 1)->attr rightAttribute: (currRow + x)->attr];
 				isDoubleByte[bufLength] = isDoubleByte[bufLength + 1] = NO;
@@ -1076,7 +1072,7 @@ BOOL isBlinkCell(cell c) {
                                          [tempColor blueComponent], 
                                          1.0);
 //                CGContextSetAllowsAntialiasing(tempContext, false);
-                CGContextSetShouldSmoothFonts (tempContext, false);
+//                CGContextSetShouldSmoothFonts (tempContext, false);
 //                CGContextSetShouldAntialias(tempContext, false);
                 CGContextShowGlyphsAtPoint(tempContext, cPaddingLeft, CTFontGetDescent(gConfig->_cCTFont) + cPaddingBottom, &glyph, 1);
                 [gLeftImage unlockFocus];
@@ -1335,18 +1331,25 @@ BOOL isBlinkCell(cell c) {
 	[_markedText release];
 	_markedText = nil;	
 	
+    NSMutableString *mStr = [NSMutableString stringWithString: aString];
+    [mStr replaceOccurrencesOfString: @"\n"
+                          withString: @"\r"
+                             options: NSLiteralSearch
+                               range: NSMakeRange(0, [aString length])];
+    
 	int i;
 	NSMutableData *data = [NSMutableData data];
-	for (i = 0; i < [aString length]; i++) {
-		unichar ch = [aString characterAtIndex: i];
+	for (i = 0; i < [mStr length]; i++) {
+		unichar ch = [mStr characterAtIndex: i];
 		unsigned char buf[2];
 		if (ch < 0x007F) {
 			buf[0] = ch;
 			[data appendBytes: buf length: 1];
 		} else {
-			unichar big5 = U2B[ch];
-			buf[0] = big5 >> 8;
-			buf[1] = big5 & 0xFF;
+            YLEncoding encoding = [[self dataSource] encoding];
+            unichar code = (encoding == YLBig5Encoding ? U2B[ch] : U2G[ch]);
+			buf[0] = code >> 8;
+			buf[1] = code & 0xFF;
 			[data appendBytes: buf length: 2];
 		}
 	}

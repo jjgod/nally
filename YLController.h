@@ -25,10 +25,19 @@
     NSMutableArray *_sites;
     NSMutableArray *_emoticons;
     IBOutlet NSArrayController *_sitesController;
+    IBOutlet NSArrayController *_emoticonsController;
     IBOutlet NSMenuItem *_sitesMenu;
     IBOutlet NSTableView *_sitesTableView;
     IBOutlet NSMenuItem *_showHiddenTextMenuItem;
+    IBOutlet NSMenuItem *_encodingMenuItem;
 }
+
+- (void) updateSitesMenu ;
+- (void) loadSites ;
+- (void) loadEmoticons ;
+- (void) loadLastConnections;
+
+- (IBAction) setEncoding: (id) sender ;
 
 - (IBAction) newTab: (id) sender ;
 - (IBAction) connect: (id) sender;
@@ -44,10 +53,13 @@
 - (IBAction) addSites: (id) sender;
 - (IBAction) showHiddenText: (id) sender;
 - (IBAction) openPreferencesWindow: (id) sender ;
-- (void) newConnectionToAddress: (NSString *) addr name: (NSString *) name;
+- (void) newConnectionToAddress: (NSString *) addr name: (NSString *) name encoding: (YLEncoding) encoding;
 - (void) newConnectionWithDictionary: (NSDictionary *) d ;
+- (void) newConnectionWithSite: (YLSite *) s ;
+
 - (IBAction) closeEmoticons: (id) sender;
 - (IBAction) inputEmoticons: (id) sender;
+- (IBAction) openEmoticonsWindow: (id) sender;
 
 - (NSArray *)sites;
 - (unsigned)countOfSites;

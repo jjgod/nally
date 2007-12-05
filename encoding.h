@@ -7,7 +7,9 @@
  *
  */
 
+extern unsigned short G2U[32768];
 extern unsigned short B2U[32768];
 extern unsigned short U2B[65536];
+extern unsigned short U2G[65536];
 
 extern void init_table();

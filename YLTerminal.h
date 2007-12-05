@@ -33,6 +33,8 @@
 	char *_dirty;
 	
 	enum { TP_NORMAL, TP_ESCAPE, TP_CONTROL } _state;
+    
+    YLEncoding _encoding;
 
 	std::deque<unsigned char> *_csBuf;
 	std::deque<int> *_csArg;
@@ -68,5 +70,8 @@
 
 - (int) cursorRow;
 - (int) cursorColumn;
+
+- (YLEncoding) encoding;
+- (void) setEncoding: (YLEncoding) encoding;
 
 @end

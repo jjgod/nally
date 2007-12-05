@@ -187,7 +187,8 @@ enum {
     NSString        * _connectionName;
     NSString        * _connectionAddress;
     NSImage         * _icon;
-
+    BOOL              _processing;
+    
     NSDate          * _lastTouchDate;
     
 	unsigned int	  _optStates[NUM_OPTS];
@@ -245,6 +246,8 @@ enum {
 - (void)setIcon:(NSImage *)value;
 - (NSString *)connectionAddress;
 - (void)setConnectionAddress:(NSString *)value;
+- (BOOL)isProcessing;
+- (void)setIsProcessing:(BOOL)value;
 
 - (NSDate *) lastTouchDate;
 @end

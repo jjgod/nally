@@ -75,12 +75,13 @@ void dump_packet(unsigned char *s, int length) {
         NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys: host, @"host", [NSNumber numberWithInt: port], @"port", nil];
         [self performSelectorOnMainThread: @selector(connectWithDictionary:) withObject: dict waitUntilDone: NO];
     } else {
-
+        [self setIsProcessing: NO];
     }
     [pool release];
 }
 
 - (void) close {
+    [self setIsProcessing: NO];
     [_inputStream close];
     [_inputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
     [_inputStream release];
@@ -138,6 +139,7 @@ void dump_packet(unsigned char *s, int length) {
 
 - (BOOL) connectToAddress: (NSString *) addr port: (unsigned int) port {
     if (!addr) return NO;
+    [self setIsProcessing: YES];
     if (port == 23)
         [self setConnectionAddress: addr];
     else
@@ -153,6 +155,7 @@ void dump_packet(unsigned char *s, int length) {
     switch(eventCode) {
         case NSStreamEventOpenCompleted: {
             [self setConnected: YES];
+            [self setIsProcessing: NO];
             [[self terminal] startConnection];
             break;
         }
@@ -170,9 +173,11 @@ void dump_packet(unsigned char *s, int length) {
             break;
         }
         case NSStreamEventErrorOccurred: {
+            [self setIsProcessing: NO];
             NSLog(@"Error: %@", [stream streamError]);
         }
         case NSStreamEventEndEncountered: {
+            [self setIsProcessing: NO];
             [stream close];
             [stream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
             [stream release];
@@ -426,6 +431,14 @@ void dump_packet(unsigned char *s, int length) {
         [_connectionAddress release];
         _connectionAddress = [value retain];
     }
+}
+
+- (BOOL)isProcessing {
+    return _processing;
+}
+
+- (void)setIsProcessing:(BOOL)value {
+    _processing = value;
 }
 
 - (NSDate *) lastTouchDate {
