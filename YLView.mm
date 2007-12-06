@@ -668,7 +668,7 @@ BOOL isBlinkCell(cell c) {
         [ds updateDoubleByteStateForRow: [ds cursorRow]];
         if ((c == NSRightArrowFunctionKey && [ds attrAtRow: [ds cursorRow] column: [ds cursorColumn]].f.doubleByte == 1) || 
             (c == NSLeftArrowFunctionKey && [ds cursorColumn] > 0 && [ds attrAtRow: [ds cursorRow] column: [ds cursorColumn] - 1].f.doubleByte == 2))
-            if ([[NSUserDefaults standardUserDefaults] boolForKey: @"DetectDoubleByte"]) {
+            if ([[YLLGlobalConfig sharedInstance] detectDoubleByte]) {
                 [[self telnet] sendBytes: arrow length: 6];
                 return;
             }
@@ -679,7 +679,7 @@ BOOL isBlinkCell(cell c) {
 	
 	if (![self hasMarkedText] && (c == 0x7F || c == NSDeleteFunctionKey)) {
 		buf[0] = buf[1] = 0x08;
-        if ([[NSUserDefaults standardUserDefaults] boolForKey: @"DetectDoubleByte"] &&
+        if ([[YLLGlobalConfig sharedInstance] detectDoubleByte] &&
             [ds cursorColumn] > 0 && [ds attrAtRow: [ds cursorRow] column: [ds cursorColumn] - 1].f.doubleByte == 2)
             [[self telnet] sendBytes: buf length: 2];
         else
@@ -888,7 +888,8 @@ BOOL isBlinkCell(cell c) {
             }
         }
         CGContextSaveGState(myCGContext);
-        CGContextSetShouldSmoothFonts(myCGContext, false);
+        CGContextSetShouldSmoothFonts(myCGContext, 
+                                      gConfig->_shouldSmoothFonts == YES ? true : false);
         
         /* Draw String row by row */
         for (y = 0; y < gRow; y++) {

@@ -22,9 +22,7 @@
                                           context: NULL];
     [_tab setStyleNamed: @"Metal"];
     [_tab setCanCloseOnlyTab: YES];
-    
-    [[YLLGlobalConfig sharedInstance] setShowHiddenText: [[NSUserDefaults standardUserDefaults] boolForKey: @"ShowHiddenText"]];
-    
+        
     [self loadSites];
     [self updateSitesMenu];
     [self loadEmoticons];

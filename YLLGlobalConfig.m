@@ -25,6 +25,10 @@ static NSArray *gEncodingArray = nil;
 	if(sSharedInstance) {
 		[self release];
 	} else if(self = sSharedInstance = [[super init] retain]) {
+        [self setShowHiddenText: [[NSUserDefaults standardUserDefaults] boolForKey: @"ShowHiddenText"]];
+        [self setShouldSmoothFonts: [[NSUserDefaults standardUserDefaults] boolForKey: @"ShouldSmoothFonts"]];
+        [self setDetectDoubleByte: [[NSUserDefaults standardUserDefaults] boolForKey: @"DetectDoubleByte"]];
+
 		/* init code */
 		_row = 24;
 		_column = 80;
@@ -77,10 +81,27 @@ static NSArray *gEncodingArray = nil;
 		_bitmapColorTable[1][8] = 0xFFFFFF00;
 		_bitmapColorTable[0][9] = 0x00000000;
 		_bitmapColorTable[1][9] = 0x00000000;
-		
+
+        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+
+        NSString *eFontName = [defaults stringForKey: @"EnglishFontName"];
+        NSString *cFontName = [defaults stringForKey: @"ChineseFontName"];
+
+        if (! eFontName)
+            eFontName = @"Monaco";
+
+        if (! cFontName)
+            cFontName = @"STHeiti";
+
+        [defaults setObject: eFontName forKey: @"EnglishFontName"];
+        [defaults setObject: cFontName forKey: @"ChineseFontName"];
+
+        [defaults synchronize];
+
 		int i, j;
 		ATSUFontID cATSUFontID, eATSUFontID;
-		char *cATSUFontName = "STHeiti", *eATSUFontName = "Monaco";
+		char *cATSUFontName = (char *)[cFontName UTF8String];
+        char *eATSUFontName = (char *)[eFontName UTF8String];
 //        char *cATSUFontName = "Hiragino Kaku Gothic Pro", *eATSUFontName = "Monaco";
 		ATSUAttributeTag		tags[2];
 		ByteCount				sizes[2];
@@ -284,6 +305,24 @@ static NSArray *gEncodingArray = nil;
 - (void)setShowHiddenText:(BOOL)value {
     _showHiddenText = value;
     [[NSUserDefaults standardUserDefaults] setBool: value forKey: @"ShowHiddenText"];
+}
+
+- (BOOL)shouldSmoothFonts {
+    return _shouldSmoothFonts;
+}
+
+- (void)setShouldSmoothFonts:(BOOL)value {
+    _shouldSmoothFonts = value;
+    [[NSUserDefaults standardUserDefaults] setBool: value forKey: @"ShouldSmoothFonts"];
+}
+
+- (BOOL)detectDoubleByte {
+    return _detectDoubleByte;
+}
+
+- (void)setDetectDoubleByte:(BOOL)value {
+    _detectDoubleByte = value;
+    [[NSUserDefaults standardUserDefaults] setBool: value forKey: @"DetectDoubleByte"];
 }
 
 - (BOOL)blinkTicker {

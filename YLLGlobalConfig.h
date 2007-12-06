@@ -20,6 +20,8 @@
     
     BOOL _showHiddenText;
 	BOOL _blinkTicker;
+    BOOL _shouldSmoothFonts;
+    BOOL _detectDoubleByte;
     
 	NSFont *_eFont;
 	NSFont *_cFont;
@@ -53,6 +55,12 @@
 
 - (BOOL)showHiddenText;
 - (void)setShowHiddenText:(BOOL)value;
+
+- (BOOL)shouldSmoothFonts;
+- (void)setShouldSmoothFonts:(BOOL)value;
+
+- (BOOL)detectDoubleByte;
+- (void)setDetectDoubleByte:(BOOL)value;
 
 - (int)cellWidth;
 - (void)setCellWidth:(int)value;
