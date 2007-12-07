@@ -45,32 +45,38 @@
     int _scrollEndRow;
 }
 
+/* Input Interface */
 - (void) feedData: (NSData *) data connection: (id) connection;
 - (void) feedBytes: (const unsigned char *) bytes length: (int) len connection: (id) connection;
+
+/* Start / Stop */
 - (void) startConnection ;
 - (void) closeConnection ;
 
+/* Clear */
 - (void) clearRow: (int) r ;
 - (void) clearRow: (int) r fromStart: (int) s toEnd: (int) e ;
 
+/* Dirty */
 - (BOOL) isDirtyAtRow: (int) r column:(int) c;
-- (attribute) attrAtRow: (int) r column: (int) c ;
-
-- (NSString *) stringFromIndex: (int) begin length: (int) length ;
-
-- (cell *) cellsOfRow: (int) r ;
-- (void) updateURLStateForRow: (int) r ;
-- (void) updateDoubleByteStateForRow: (int) r ;
 - (void) setAllDirty ;
 - (void) setDirty: (BOOL) d atRow: (int) r column: (int) c ;
 - (void) setDirtyForRow: (int) r ;
 
+/* Access Data */
+- (attribute) attrAtRow: (int) r column: (int) c ;
+- (NSString *) stringFromIndex: (int) begin length: (int) length ;
+- (cell *) cellsOfRow: (int) r ;
+
+/* Update State */
+- (void) updateURLStateForRow: (int) r ;
+- (void) updateDoubleByteStateForRow: (int) r ;
+
+/* Accessor */
 - (void) setDelegate: (id) d;
 - (id) delegate;
-
 - (int) cursorRow;
 - (int) cursorColumn;
-
 - (YLEncoding) encoding;
 - (void) setEncoding: (YLEncoding) encoding;
 

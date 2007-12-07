@@ -24,7 +24,6 @@ static int gColumn;
 static NSImage *gLeftImage;
 static CGSize *gSingleAdvance;
 static CGSize *gDoubleAdvance;
-static NSCharacterSet *gBopomofoCharSet = nil;
 static NSCursor *gMoveCursor = nil;
 
 NSString *ANSIColorPBoardType = @"ANSIColorPBoardType";
@@ -43,7 +42,7 @@ static NSBezierPath *gSymbolTrianglePath1[4];
 static NSBezierPath *gSymbolTrianglePath2[4];
 
 BOOL isEnglishNumberAlphabet(unsigned char c) {
-    return ('0' <= c && c <= '9') || ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z');
+    return ('0' <= c && c <= '9') || ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z') || (c == '-') || (c == '_');
 }
 
 BOOL isSpecialSymbol(unichar ch) {
@@ -56,17 +55,6 @@ BOOL isSpecialSymbol(unichar ch) {
 	if (ch >= 0x25E2 && ch <= 0x25E5) // TRIANGLE ◢◣◤◥
 		return YES;
 	return NO;
-}
-
-BOOL isHiddenAttribute(attribute a) {
-    return (!a.f.bold && ((a.f.fgColor == a.f.bgColor) ||
-                          (a.f.fgColor == 0 && a.f.bgColor == NUM_COLOR - 1))); 
-}
-
-BOOL isBlinkCell(cell c) {
-    if (c.attr.f.blink && (c.attr.f.doubleByte != 0 || (c.byte != ' ' && c.byte != '\0')))
-        return YES;
-    return NO;
 }
 
 @implementation YLView
@@ -98,14 +86,9 @@ BOOL isBlinkCell(cell c) {
     [path setLineWidth: 1];
     [[NSColor blackColor] set];
     [path stroke];
-        //		[NSBezierPath strokeRect: NSMakeRect(0.5, 0.5, 9, 19)];
     [cursorImage unlockFocus];
     gMoveCursor = [[NSCursor alloc] initWithImage: cursorImage hotSpot: NSMakePoint(5.5, 9.5)];
     [cursorImage release];
-    
-    gBopomofoCharSet = [[NSCharacterSet characterSetWithCharactersInString: 
-                         [NSString stringWithUTF8String: "ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙㄧㄨㄩㄚㄛㄜㄝㄞㄟㄠㄡㄢㄣㄤㄥㄦ【】、"]] retain];
-
 }
 
 - (void) createSymbolPath {
@@ -167,42 +150,54 @@ BOOL isBlinkCell(cell c) {
     }
 }
 
-- (id)initWithFrame:(NSRect)frame {
-	if (!gConfig) gConfig = [YLLGlobalConfig sharedInstance];
+- (void) configure {
+    if (!gConfig) gConfig = [YLLGlobalConfig sharedInstance];
 	gColumn = [gConfig column];
-	gRow = [gConfig row];	
+	gRow = [gConfig row];
+    _fontWidth = [gConfig cellWidth];
+    _fontHeight = [gConfig cellHeight];
 	
+    NSRect frame = [self frame];
 	frame.size = NSMakeSize(gColumn * [gConfig cellWidth], gRow * [gConfig cellHeight]);
+    [self setFrame: frame];
+
+    [self createSymbolPath];
+    
+    _selectionLength = 0;
+    _selectionLocation = 0;
+
+    [_backedImage release];
+    _backedImage = [[NSImage alloc] initWithSize: frame.size];
+    [_backedImage setFlipped: NO];
+    [_backedImage lockFocus];
+    [[gConfig colorAtIndex: gConfig->_bgColorIndex hilite: NO] set];
+    [NSBezierPath fillRect: NSMakeRect(0, 0, frame.size.width, frame.size.height)];
+    [_backedImage unlockFocus];
+    
+    if (!gLeftImage) 
+        gLeftImage = [[NSImage alloc] initWithSize: NSMakeSize(_fontWidth, _fontHeight)];			
+
+    if (!gSingleAdvance) gSingleAdvance = (CGSize *) malloc(sizeof(CGSize) * gColumn);
+    if (!gDoubleAdvance) gDoubleAdvance = (CGSize *) malloc(sizeof(CGSize) * gColumn);
+
+    int i;
+    for (i = 0; i < gColumn; i++) {
+        gSingleAdvance[i] = CGSizeMake(_fontWidth * 1.0, 0.0);
+        gDoubleAdvance[i] = CGSizeMake(_fontWidth * 2.0, 0.0);
+    }
+    [_markedText release];
+    _markedText = nil;
+
+    _selectedRange = NSMakeRange(NSNotFound, 0);
+    _markedRange = NSMakeRange(NSNotFound, 0);
+    
+    [_textField setHidden: YES];
+}
+
+- (id)initWithFrame:(NSRect)frame {
     self = [super initWithFrame: frame];
     if (self) {
-		_fontWidth = [gConfig cellWidth];
-		_fontHeight = [gConfig cellHeight];
-        [self createSymbolPath];
-		
-        _selectionLength = 0;
-        _selectionLocation = 0;
-        
-		_backedImage = [[NSImage alloc] initWithSize: frame.size];
-		[_backedImage setFlipped: NO];
-		[_backedImage lockFocus];
-		[[gConfig colorAtIndex: 9 hilite: NO] set];
-		[NSBezierPath fillRect: NSMakeRect(0, 0, frame.size.width, frame.size.height)];
-		[_backedImage unlockFocus];
-
-		if (!gLeftImage) 
-			gLeftImage = [[NSImage alloc] initWithSize: NSMakeSize(_fontWidth, _fontHeight)];			
-		
-		gSingleAdvance = (CGSize *) malloc(sizeof(CGSize) * gColumn);
-		gDoubleAdvance = (CGSize *) malloc(sizeof(CGSize) * gColumn);
-		int i;
-		for (i = 0; i < gColumn; i++) {
-			gSingleAdvance[i] = CGSizeMake(_fontWidth * 1.0, 0.0);
-			gDoubleAdvance[i] = CGSizeMake(_fontWidth * 2.0, 0.0);
-		}
-		_markedText = nil;
-		_selectedRange = NSMakeRange(NSNotFound, 0);
-		_markedRange = NSMakeRange(NSNotFound, 0);
-		[_textField setHidden: YES];
+        [self configure];
     }
     return self;
 }
@@ -215,6 +210,7 @@ BOOL isBlinkCell(cell c) {
 #pragma mark -
 #pragma mark Actions
 
+/* TODO: Truncate the extra spaces at end of line */
 - (void) copy: (id) sender {
     if (![self connected]) return;
     if (_selectionLength == 0) return;
@@ -279,8 +275,8 @@ BOOL isBlinkCell(cell c) {
 	int bufferLength = [[pb dataForType: ANSIColorPBoardType] length] / sizeof(cell);
 		
 	attribute defaultANSI;
-	defaultANSI.f.bgColor = 0;
-	defaultANSI.f.fgColor = 7;
+	defaultANSI.f.bgColor = gConfig->_bgColorIndex;
+	defaultANSI.f.fgColor = gConfig->_fgColorIndex;
 	defaultANSI.f.blink = 0;
 	defaultANSI.f.bold = 0;
 	defaultANSI.f.underline = 0;
@@ -321,8 +317,8 @@ BOOL isBlinkCell(cell c) {
 			if (currentANSI.f.bold == 1) strcat(tmp, ";1");
 			if (currentANSI.f.underline == 1) strcat(tmp, ";4");
 			if (currentANSI.f.reverse == 1) strcat(tmp, ";7");
-			if (currentANSI.f.fgColor != 7) sprintf(tmp, "%s;%d", tmp, currentANSI.f.fgColor + 30);
-			if (currentANSI.f.bgColor != 0) sprintf(tmp, "%s;%d", tmp, currentANSI.f.bgColor + 40);
+			if (currentANSI.f.fgColor != gConfig->_fgColorIndex) sprintf(tmp, "%s;%d", tmp, currentANSI.f.fgColor + 30);
+			if (currentANSI.f.bgColor != gConfig->_bgColorIndex) sprintf(tmp, "%s;%d", tmp, currentANSI.f.bgColor + 40);
 			strcat(tmp, "m");
 			[writeBuffer appendBytes: tmp length: strlen(tmp)];
 			[writeBuffer appendBytes: &(buffer[i].byte) length: 1];
@@ -533,15 +529,15 @@ BOOL isBlinkCell(cell c) {
         } else if (currRow[c].attr.f.doubleByte == 2) {
             _selectionLocation--;
             _selectionLength = 2;
-        } else if (isEnglishNumberAlphabet(currRow[c].byte)) {
-            for (; c >= 0; c--) {                
-                if (isEnglishNumberAlphabet(currRow[c].byte)) 
+        } else if (isEnglishNumberAlphabet(currRow[c].byte)) { // Not Double Byte
+            for (; c >= 0; c--) {
+                if (isEnglishNumberAlphabet(currRow[c].byte) && currRow[c].attr.f.doubleByte == 0) 
                     _selectionLocation = r * gColumn + c;
                 else 
                     break;
             }
             for (c = c + 1; c < gColumn; c++) {
-                if (isEnglishNumberAlphabet(currRow[c].byte)) 
+                if (isEnglishNumberAlphabet(currRow[c].byte) && currRow[c].attr.f.doubleByte == 0) 
                     _selectionLength++;
                 else 
                     break;
@@ -553,6 +549,7 @@ BOOL isBlinkCell(cell c) {
     
     [self setNeedsDisplay: YES];
     
+    /* Click to move cursor, I need better algorithm to support China BBS! */
     if ([e modifierFlags] & NSCommandKeyMask) {
         unsigned char cmd[gRow * gColumn + 1];
         unsigned int cmdLength = 0;
@@ -636,7 +633,6 @@ BOOL isBlinkCell(cell c) {
             NSMutableString *url = [NSMutableString string];
             for (c = start; c < end; c++)
                 [url appendFormat: @"%c", currRow[c].byte];
-//            NSLog(@"URL:%@", url);
             [[NSWorkspace sharedWorkspace] openURL: [NSURL URLWithString: url]];
         }
     }
@@ -646,7 +642,6 @@ BOOL isBlinkCell(cell c) {
 	unichar c = [[e characters] characterAtIndex: 0];
 	unsigned char arrow[6] = {0x1B, 0x4F, 0x00, 0x1B, 0x4F, 0x00};
 	unsigned char buf[10];
-//	NSLog(@"%02X %02X", [[e characters] characterAtIndex: 0], c);
 
 	if ([e modifierFlags] & NSControlKeyMask) {
 		buf[0] = c;
@@ -686,9 +681,7 @@ BOOL isBlinkCell(cell c) {
             [[self telnet] sendBytes: buf length: 1];
         return;
 	}
-//	
-//	unsigned char ch = (unsigned char) c;
-//	[_telnet sendBytes: &ch length: 1];
+
 	[self interpretKeyEvents: [NSArray arrayWithObject: e]];
 }
 
@@ -709,7 +702,7 @@ BOOL isBlinkCell(cell c) {
 
 - (void) tick: (NSTimer *) t {
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
-	[self update];
+	[self updateBackedImage];
     YLTerminal *ds = [self dataSource];
 
 	if (ds && (_x != ds->_cursorX || _y != ds->_cursorY)) {
@@ -733,6 +726,8 @@ BOOL isBlinkCell(cell c) {
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
     YLTerminal *ds = [self dataSource];
 	if ([self connected]) {
+        
+        /* Draw the backed image */
 		NSRect imgRect = rect;
 		imgRect.origin.y = (_fontHeight * gRow) - rect.origin.y - rect.size.height;
 		[_backedImage compositeToPoint: rect.origin
@@ -740,10 +735,11 @@ BOOL isBlinkCell(cell c) {
 							 operation: NSCompositeCopy];
 
         [self drawBlink];
+        
+        /* Draw the url underline */
         int c, r;
         [[NSColor orangeColor] set];
         [NSBezierPath setDefaultLineWidth: 1.0];
-        /* Draw the url underline */
         for (r = 0; r < gRow; r++) {
             [ds updateURLStateForRow: r];
             cell *currRow = [ds cellsOfRow: r];
@@ -756,28 +752,22 @@ BOOL isBlinkCell(cell c) {
                 }
             }
         }
+        
 		/* Draw the cursor */
-		
 		[[NSColor whiteColor] set];
 		[NSBezierPath setDefaultLineWidth: 2.0];
 		[NSBezierPath strokeLineFromPoint: NSMakePoint(ds->_cursorX * _fontWidth, (gRow - 1 - ds->_cursorY) * _fontHeight + 1) 
 								  toPoint: NSMakePoint((ds->_cursorX + 1) * _fontWidth, (gRow - 1 - ds->_cursorY) * _fontHeight + 1) ];
         [NSBezierPath setDefaultLineWidth: 1.0];
-		/* Draw the input buffer */
-		
+
+        /* Draw the selection */
         if (_selectionLength != 0) 
             [self drawSelection];
 	} else {
-		[[gConfig colorAtIndex: NUM_COLOR - 1 hilite: 0] set];
+		[[gConfig colorAtIndex: gConfig->_bgColorIndex hilite: 0] set];
 		[NSBezierPath fillRect: [self bounds]];
 	}
 	
-//	int x, y;
-//	[[NSColor whiteColor] set];
-//	for (y = 0; y < gRow; y++) 
-//		[NSBezierPath strokeLineFromPoint: NSMakePoint(0, y * _fontHeight + 0.5) toPoint: NSMakePoint(gColumn * _fontWidth, y * _fontHeight + 0.5)];
-//	for (x = 0; x < gColumn; x++) 
-//		[NSBezierPath strokeLineFromPoint: NSMakePoint(x * _fontWidth + 0.5, 0) toPoint: NSMakePoint(x * _fontWidth + 0.5, gRow * _fontHeight)];	
     [pool release];
 }
 
@@ -826,10 +816,6 @@ BOOL isBlinkCell(cell c) {
     }
 }
 
-- (void) clearScreen: (int) opt atRow: (int) r column: (int) c {
-	
-}
-
 /* 
 	Extend Bottom:
  
@@ -845,7 +831,7 @@ BOOL isBlinkCell(cell c) {
 						  fromRect: NSMakeRect(0, (gRow - end - 1) * _fontHeight, gColumn * _fontWidth, (end - start) * _fontHeight) 
 						 operation: NSCompositeCopy];
 
-	[gConfig->_colorTable[0][NUM_COLOR - 1] set];
+	[gConfig->_colorTable[0][gConfig->_bgColorIndex] set];
 	[NSBezierPath fillRect: NSMakeRect(0, (gRow - end - 1) * _fontHeight, gColumn * _fontWidth, _fontHeight)];
 	[_backedImage unlockFocus];
 }
@@ -853,7 +839,6 @@ BOOL isBlinkCell(cell c) {
 
 /* 
 	Extend Top:
- 
 		AAAAAAAAAAA			...........
 		BBBBBBBBBBB			AAAAAAAAAAA
 		CCCCCCCCCCC   ->	BBBBBBBBBBB
@@ -865,12 +850,12 @@ BOOL isBlinkCell(cell c) {
 						  fromRect: NSMakeRect(0, (gRow - end) * _fontHeight, gColumn * _fontWidth, (end - start) * _fontHeight) 
 						 operation: NSCompositeCopy];
 	
-	[gConfig->_colorTable[0][NUM_COLOR - 1] set];
+	[gConfig->_colorTable[0][gConfig->_bgColorIndex] set];
 	[NSBezierPath fillRect: NSMakeRect(0, (gRow - start - 1) * _fontHeight, gColumn * _fontWidth, _fontHeight)];
 	[_backedImage unlockFocus];
 }
 
-- (void) update {
+- (void) updateBackedImage {
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
 	int x, y;
     YLTerminal *ds = [self dataSource];
@@ -1155,10 +1140,10 @@ BOOL isBlinkCell(cell c) {
 	int length = 0;
 	unsigned int currentBackgroundColor;
     BOOL currentBold;
-	unsigned int lastBackgroundColor = lastAttr.f.reverse ? lastAttr.f.fgColor : lastAttr.f.bgColor;
-	BOOL lastBold = (lastAttr.f.reverse && lastAttr.f.bold);
-	/* TODO: optimize the number of fillRect method. */
+	unsigned int lastBackgroundColor = bgColorIndexOfAttribute(lastAttr);
+	BOOL lastBold = bgBoldOfAttribute(lastAttr);
 	/* 
+        Optimization Idea:
 		for example: 
 		
 		  BBBBBBBBBBBWWWWWWWWWWBBBBBBBBBBB
@@ -1169,18 +1154,23 @@ BOOL isBlinkCell(cell c) {
 		2. BBBBBBBBBBBWWWWWWWWWW
 		3. BBBBBBBBBBBWWWWWWWWWWBBBBBBBBBBB
 		
-		but we can use only two fillRect:
+		but we can use only two fillRect: 
 	 
 		1. BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
 		2. BBBBBBBBBBBWWWWWWWWWWBBBBBBBBBBB
 	 
 		If further optimization of background drawing is needed, consider the 2D reduction.
+     
+        NOTE: 2007/12/07
+        
+        We don't have to reduce the number of fillRect. We should reduce the number of pixels it draws.
+        Obviously, the current method draws less pixels than the second one. So it's optimized already!
 	 */
 	for (c = start; c <= end; c++) {
 		if (c < end) {
 			currAttr = (currRow + c)->attr;
-			currentBackgroundColor = currAttr.f.reverse ? currAttr.f.fgColor : currAttr.f.bgColor;
-            currentBold = (currAttr.f.reverse && currAttr.f.bold);
+			currentBackgroundColor = bgColorIndexOfAttribute(currAttr);
+            currentBold = bgBoldOfAttribute(currAttr);
 		}
 		
 		if (currentBackgroundColor != lastBackgroundColor || currentBold != lastBold || c == end) {
@@ -1204,16 +1194,16 @@ BOOL isBlinkCell(cell c) {
 }
 
 - (void) drawSpecialSymbol: (unichar) ch forRow: (int) r column: (int) c leftAttribute: (attribute) attr1 rightAttribute: (attribute) attr2 {
-	int colorIndex1 = attr1.f.reverse ? attr1.f.bgColor : attr1.f.fgColor;
-	int colorIndex2 = attr2.f.reverse ? attr2.f.bgColor : attr2.f.fgColor;
+	int colorIndex1 = fgColorIndexOfAttribute(attr1);
+	int colorIndex2 = fgColorIndexOfAttribute(attr2);
 	NSPoint origin = NSMakePoint(c * _fontWidth, (gRow - 1 - r) * _fontHeight);
 
 	NSAffineTransform *xform = [NSAffineTransform transform]; 
 	[xform translateXBy: origin.x yBy: origin.y];
 	[xform concat];
 	
-	if (colorIndex1 == colorIndex2 && attr1.f.bold == attr2.f.bold) {
-		NSColor *color = [gConfig colorAtIndex: colorIndex1 hilite: attr1.f.bold];
+	if (colorIndex1 == colorIndex2 && fgBoldOfAttribute(attr1) == fgBoldOfAttribute(attr2)) {
+		NSColor *color = [gConfig colorAtIndex: colorIndex1 hilite: fgBoldOfAttribute(attr1)];
 		
 		if (ch == 0x25FC) { // ◼ BLACK SQUARE
 			[color set];
@@ -1230,8 +1220,8 @@ BOOL isBlinkCell(cell c) {
 		} else if (ch == 0x0) {
 		}
 	} else { // double color
-		NSColor *color1 = [gConfig colorAtIndex: colorIndex1 hilite: attr1.f.bold];
-		NSColor *color2 = [gConfig colorAtIndex: colorIndex2 hilite: attr2.f.bold];
+		NSColor *color1 = [gConfig colorAtIndex: colorIndex1 hilite: fgBoldOfAttribute(attr1)];
+		NSColor *color2 = [gConfig colorAtIndex: colorIndex2 hilite: fgBoldOfAttribute(attr2)];
 		if (ch == 0x25FC) { // ◼ BLACK SQUARE
 			[color1 set];
 			[NSBezierPath fillRect: gSymbolBlackSquareRect1];
@@ -1300,6 +1290,7 @@ BOOL isBlinkCell(cell c) {
     return menu;
 }
 
+/* Otherwise, it will return the subview. */
 - (NSView *) hitTest: (NSPoint) p {
     return self;
 }
@@ -1428,7 +1419,7 @@ BOOL isBlinkCell(cell c) {
 // setMarkedText: cannot take a nil first argument. aString can be NSString or NSAttributedString
 - (void) setMarkedText:(id)aString selectedRange:(NSRange)selRange {
     YLTerminal *ds = [self dataSource];
-	if ([aString isKindOfClass: [NSString class]])
+	if (![aString respondsToSelector: @selector(isEqualToAttributedString:)] && [aString isMemberOfClass: [NSString class]])
 		aString = [[[NSAttributedString alloc] initWithString: aString] autorelease];
 
 	if ([aString length] == 0) {
@@ -1524,44 +1515,5 @@ BOOL isBlinkCell(cell c) {
 - (NSArray*) validAttributesForMarkedText {
 	return [NSArray array];
 }
-
-/*
-#pragma mark -
-#pragma mark NSTabVIew
-- (void)addTabViewItem:(NSTabViewItem *)tabViewItem {
-    [_tabItems addObject: tabViewItem];
-}
-
-- (void)insertTabViewItem:(NSTabViewItem *)tabViewItem atIndex:(NSInteger)index {
-    [_tabItems insertObject: tabViewItem atIndex: index];
-}
-
-- (void)removeTabViewItem:(NSTabViewItem *)tabViewItem {
-    [_tabItems removeObject: tabViewItem];
-}
-
-- (NSInteger)indexOfTabViewItem:(NSTabViewItem *)tabViewItem {
-    return [_tabItems indexOfObject: tabViewItem];
-}
-
-- (NSInteger)indexOfTabViewItemWithIdentifier:(id)identifier {
-    for (NSTabViewItem *item in _tabItems) {
-        if ([item identifier] == identifier) return [_tabItems indexOfObject: item];
-    }
-    return NSNotFound;
-}
-
-- (NSInteger)numberOfTabViewItems {
-    return [_tabItems count];
-}
-
-- (NSTabViewItem *)tabViewItemAtIndex:(NSInteger)index {
-    return [_tabItems objectAtIndex: index];
-}
-
-- (NSArray *)tabViewItems {
-    return _tabItems;
-}
-*/
 
 @end

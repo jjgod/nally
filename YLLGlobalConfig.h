@@ -14,9 +14,11 @@
 @public
 	int _row;
 	int _column;
-	
 	int _cellWidth;
 	int _cellHeight;
+    
+    int _bgColorIndex;
+    int _fgColorIndex;
     
     BOOL _showHiddenText;
 	BOOL _blinkTicker;

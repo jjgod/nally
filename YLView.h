@@ -7,7 +7,10 @@
 //
 
 #import <Cocoa/Cocoa.h>
-#import "CommonType.h"
+
+extern "C" {
+    #import "CommonType.h"
+}
 
 @class YLTerminal;
 @class YLTelnet;
@@ -37,7 +40,7 @@
 - (void) paste: (id) sender ;
 - (void) pasteColor: (id) sender ;
 
-- (void) update;
+- (void) updateBackedImage;
 - (void) drawSpecialSymbol: (unichar) ch forRow: (int) r column: (int) c leftAttribute: (attribute) attr1 rightAttribute: (attribute) attr2 ;
 - (void) drawSelection ;
 - (void) drawBlink ;
@@ -49,7 +52,6 @@
 
 - (void) extendBottomFrom: (int) start to: (int) end;
 - (void) extendTopFrom: (int) start to: (int) end ;
-- (void) clearScreen: (int) opt atRow: (int) r column: (int) c ;
 
 - (void) drawStringForRow: (int) r context: (CGContextRef) myCGContext ;
 - (void) updateBackgroundForRow: (int) r from: (int) start to: (int) end ;

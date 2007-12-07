@@ -16,6 +16,7 @@
 									if (_cursorY < 0) _cursorY = 0; if (_cursorY >= _row) _cursorY = _row - 1;\
 								} while(0);
 
+
 BOOL isC0Control(unsigned char c) { return (c <= 0x1F); }
 BOOL isSPACE(unsigned char c) { return (c == 0x20 || c == 0xA0); }
 BOOL isIntermediate(unsigned char c) { return (c >= 0x20 && c <= 0x2F); }
@@ -39,63 +40,14 @@ ASCII_CODE asciiCodeFamily(unsigned char c) {
 	return ERROR;
 }
 
-static SEL normal_table[256];
+
 static unsigned short gEmptyAttr;
 
+@interface YLTerminal (Private) 
+- (void) clearAll ;
+@end
+
 @implementation YLTerminal
-
-+ (void) initialize {
-	int i;
-	/* C0 control character */
-	for (i = 0x00; i <= 0x1F; i++)
-		normal_table[i] = NULL;
-	normal_table[0x07] = @selector(beep);
-	normal_table[0x08] = @selector(backspace);
-	normal_table[0x0A] = @selector(lf);
-	normal_table[0x0D] = @selector(cr);
-	normal_table[0x1B] = @selector(beginESC);
-	
-	/* C1 control character */
-	for (i = 0x80; i <=0x9F; i++)
-		normal_table[i] = NULL;
-	normal_table[0x85] = @selector(newline);
-	normal_table[0x9B] = @selector(beginControl);
-	
-}
-
-- (void) clearAll {
-    _cursorX = _cursorY = 0;
-    attribute t;
-    t.f.fgColor = 7;
-    t.f.bgColor = 9;
-    t.f.bold = 0;
-    t.f.underline = 0;
-    t.f.blink = 0;
-    t.f.reverse = 0;
-    t.f.url = 0;
-    t.f.nothing = 0;
-    gEmptyAttr = t.v;
-    int i;
-    for (i = 0; i < _row; i++) 
-        [self clearRow: i];
-
-    if (_csBuf)
-        _csBuf->clear();
-    else
-        _csBuf = new std::deque<unsigned char>();
-    if (_csArg)
-        _csArg->clear();
-    else
-        _csArg = new std::deque<int>();
-    _fgColor = 7;
-    _bgColor = 9;
-    _csTemp = 0;
-    _state = TP_NORMAL;
-    _bold = NO;
-	_underline = NO;
-	_blink = NO;
-	_reverse = NO;
-}
 
 - (id) init {
 	if (self = [super init]) {
@@ -122,10 +74,6 @@ static unsigned short gEmptyAttr;
     free(_grid);
 	[super dealloc];
 }
-
-# pragma mark -
-# pragma mark Cursor Movement
-
 
 # pragma mark -
 # pragma mark Input Interface
@@ -158,7 +106,7 @@ static unsigned short gEmptyAttr;
 				if (_cursorY == _scrollEndRow) {
                     if ((i != len - 1 && bytes[i + 1] != 0x0A) || 
                         (i != 0 && bytes[i - 1] != 0x0A)) {
-                        [_delegate update];
+                        [_delegate updateBackedImage];
                         [_delegate extendBottomFrom: _scrollBeginRow to: _scrollEndRow];
                     }
                     cell *emptyLine = _grid[_scrollBeginRow];
@@ -201,7 +149,7 @@ static unsigned short gEmptyAttr;
 				_state = TP_CONTROL;
 			} else if (c == 'M') { // scroll down (cursor up)
 				if (_cursorY == _scrollBeginRow) {
-					[_delegate update];
+					[_delegate updateBackedImage];
 					[_delegate extendTopFrom: _scrollBeginRow to: _scrollEndRow];
                     cell *emptyLine = _grid[_scrollEndRow];
                     [self clearRow: _scrollEndRow];
@@ -217,7 +165,7 @@ static unsigned short gEmptyAttr;
 				_state = TP_NORMAL;
             } else if (c == 'D') { // scroll up (cursor down)
                 if (_cursorY == _scrollEndRow) {
-					[_delegate update];
+					[_delegate updateBackedImage];
 					[_delegate extendBottomFrom: _scrollBeginRow to: _scrollEndRow];
                     cell *emptyLine = _grid[_scrollBeginRow];
                     [self clearRow: _scrollBeginRow];
@@ -432,19 +380,57 @@ static unsigned short gEmptyAttr;
 		}
 	}
 
-//	[_delegate update];
+//	[_delegate updateBackedImage];
 }
 
 # pragma mark -
-# pragma mark 
+# pragma mark Start / Stop
 
 - (void) startConnection {
     [self clearAll];
+    [_delegate updateBackedImage];
 	[_delegate setNeedsDisplay: YES];
 }
 
 - (void) closeConnection {
 	[_delegate setNeedsDisplay: YES];
+}
+
+# pragma mark -
+# pragma mark Clear
+
+- (void) clearAll {
+    _cursorX = _cursorY = 0;
+    attribute t;
+    t.f.fgColor = [YLLGlobalConfig sharedInstance]->_fgColorIndex;
+    t.f.bgColor = [YLLGlobalConfig sharedInstance]->_bgColorIndex;
+    t.f.bold = 0;
+    t.f.underline = 0;
+    t.f.blink = 0;
+    t.f.reverse = 0;
+    t.f.url = 0;
+    t.f.nothing = 0;
+    gEmptyAttr = t.v;
+    int i;
+    for (i = 0; i < _row; i++) 
+        [self clearRow: i];
+    
+    if (_csBuf)
+        _csBuf->clear();
+    else
+        _csBuf = new std::deque<unsigned char>();
+    if (_csArg)
+        _csArg->clear();
+    else
+        _csArg = new std::deque<int>();
+    _fgColor = [YLLGlobalConfig sharedInstance]->_fgColorIndex;
+    _bgColor = [YLLGlobalConfig sharedInstance]->_bgColorIndex;
+    _csTemp = 0;
+    _state = TP_NORMAL;
+    _bold = NO;
+	_underline = NO;
+	_blink = NO;
+	_reverse = NO;
 }
 
 - (void) clearRow: (int) r {
@@ -459,6 +445,9 @@ static unsigned short gEmptyAttr;
         _dirty[r * _column + i] = YES;
     }
 }
+
+# pragma mark -
+# pragma mark Dirty
 
 - (void) setAllDirty {
 	int i, end = _column * _row;
@@ -480,8 +469,11 @@ static unsigned short gEmptyAttr;
 	_dirty[(r) * _column + (c)] = d;
 }
 
+# pragma mark -
+# pragma mark Access Data
+
 - (attribute) attrAtRow: (int) r column: (int) c {
-	return _grid[(r + _offset) % _row][c].attr;
+	return _grid[r][c].attr;
 }
 
 - (NSString *) stringFromIndex: (int) begin length: (int) length {
@@ -517,6 +509,9 @@ static unsigned short gEmptyAttr;
 - (cell *) cellsOfRow: (int) r {
 	return _grid[r];
 }
+
+# pragma mark -
+# pragma mark Update State
 
 - (void) updateDoubleByteStateForRow: (int) r {
 	cell *currRow = _grid[r];
@@ -574,6 +569,9 @@ static unsigned short gEmptyAttr;
         }
 	}
 }
+
+# pragma mark -
+# pragma mark Accessor
 
 - (void) setDelegate: (id) d {
 	_delegate = d; // Yes, this is delegation. We shouldn't own the delegation object.

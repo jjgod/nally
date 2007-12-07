@@ -33,3 +33,10 @@ typedef enum YLEncoding {
     YLBig5Encoding, 
     YLGBKEncoding
 } YLEncoding;
+
+int isHiddenAttribute(attribute a) ;
+int isBlinkCell(cell c) ;
+int bgColorIndexOfAttribute(attribute a) ;
+int fgColorIndexOfAttribute(attribute a) ;
+int bgBoldOfAttribute(attribute a) ;
+int fgBoldOfAttribute(attribute a) ;

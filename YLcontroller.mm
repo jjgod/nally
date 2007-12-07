@@ -200,7 +200,7 @@
     if ([_telnetView dataSource]) {
         [[_telnetView dataSource] setEncoding: (YLEncoding)index];
         [[_telnetView dataSource] setAllDirty];
-        [_telnetView update];
+        [_telnetView updateBackedImage];
         [_telnetView setNeedsDisplay: YES];
         [self updateEncodingMenu];
     }
@@ -325,7 +325,7 @@
 
     [[YLLGlobalConfig sharedInstance] setShowHiddenText: show];
     [_telnetView refreshHiddenRegion];
-    [_telnetView update];
+    [_telnetView updateBackedImage];
     [_telnetView setNeedsDisplay: YES];
 }
 
@@ -558,7 +558,7 @@
 
 - (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem {
     id identifier = [tabViewItem identifier];
-    [_telnetView update];
+    [_telnetView updateBackedImage];
     [_addressBar setStringValue: [identifier connectionAddress]];
     [_telnetView setNeedsDisplay: YES];
     [_mainWindow makeFirstResponder: _telnetView];
