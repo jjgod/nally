@@ -34,6 +34,7 @@
 		85E7825C0D057E8400BDA3FB /* YLEmoticon.m in Sources */ = {isa = PBXBuildFile; fileRef = 85E7825B0D057E8400BDA3FB /* YLEmoticon.m */; };
 		85EA93230D0791180098C94B /* Preferences.nib in Resources */ = {isa = PBXBuildFile; fileRef = 85EA93210D0791180098C94B /* Preferences.nib */; };
 		85ED52290D0920E6003296D4 /* CommonType.c in Sources */ = {isa = PBXBuildFile; fileRef = 85ED52280D0920E6003296D4 /* CommonType.c */; };
+		85ED53220D092B5F003296D4 /* YLConnection.mm in Sources */ = {isa = PBXBuildFile; fileRef = 85ED53210D092B5F003296D4 /* YLConnection.mm */; };
 		85F702680D033FF90035F600 /* DBPrefsWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 85F702660D033FF90035F600 /* DBPrefsWindowController.m */; };
 		85F7F2090B06EE36000C4CDF /* YLLGlobalConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 85F7F2080B06EE36000C4CDF /* YLLGlobalConfig.m */; };
 		8D11072A0486CEB800E47090 /* MainMenu.nib in Resources */ = {isa = PBXBuildFile; fileRef = 29B97318FDCFA39411CA2CEA /* MainMenu.nib */; };
@@ -104,6 +105,8 @@
 		85EA93260D0791240098C94B /* zh_TW */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = zh_TW; path = zh_TW.lproj/Preferences.nib; sourceTree = "<group>"; };
 		85EA93270D0791240098C94B /* zh_TW */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = zh_TW; path = zh_TW.lproj/MainMenu.nib; sourceTree = "<group>"; };
 		85ED52280D0920E6003296D4 /* CommonType.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = CommonType.c; sourceTree = "<group>"; };
+		85ED53200D092B5F003296D4 /* YLConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLConnection.h; sourceTree = "<group>"; };
+		85ED53210D092B5F003296D4 /* YLConnection.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = YLConnection.mm; sourceTree = "<group>"; };
 		85F702660D033FF90035F600 /* DBPrefsWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBPrefsWindowController.m; sourceTree = "<group>"; };
 		85F702670D033FF90035F600 /* DBPrefsWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBPrefsWindowController.h; sourceTree = "<group>"; };
 		85F7F2070B06EE36000C4CDF /* YLLGlobalConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLLGlobalConfig.h; sourceTree = "<group>"; };
@@ -247,6 +250,8 @@
 				85145AAD0AB40192009FC710 /* YLTerminal.mm */,
 				85145A9F0AB40053009FC710 /* YLTelnet.h */,
 				85145AA00AB40053009FC710 /* YLTelnet.mm */,
+				85ED53200D092B5F003296D4 /* YLConnection.h */,
+				85ED53210D092B5F003296D4 /* YLConnection.mm */,
 				8579CA280CF21D3D005A8353 /* YLSite.h */,
 				8579CA290CF21D3D005A8353 /* YLSite.m */,
 				85E7825A0D057E8400BDA3FB /* YLEmoticon.h */,
@@ -343,6 +348,7 @@
 				85F702680D033FF90035F600 /* DBPrefsWindowController.m in Sources */,
 				85E7825C0D057E8400BDA3FB /* YLEmoticon.m in Sources */,
 				85ED52290D0920E6003296D4 /* CommonType.c in Sources */,
+				85ED53220D092B5F003296D4 /* YLConnection.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

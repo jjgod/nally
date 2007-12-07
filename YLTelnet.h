@@ -9,7 +9,7 @@
 // Copied from Putty: telnet.c. Simon Tatham, thanks. 
 
 #import <Cocoa/Cocoa.h>
-@class YLTerminal;
+#import "YLConnection.h"
 
 #define	IAC	255		       /* interpret as command: */
 #define	DONT	254		       /* you are not to use option */
@@ -178,25 +178,17 @@ enum {
     NUM_OPTS
 };
 
-@interface YLTelnet : NSObject {
+@interface YLTelnet : YLConnection <YLConnectionProtocol> {
     NSHost          * _host;
     int               _port;
     NSInputStream   * _inputStream;
     NSOutputStream  * _outputStream;
-	YLTerminal		* _terminal;
-    NSString        * _connectionName;
-    NSString        * _connectionAddress;
-    NSImage         * _icon;
-    BOOL              _processing;
-    
-    NSDate          * _lastTouchDate;
     
 	unsigned int	  _optStates[NUM_OPTS];
 	BOOL _echoing;
 	BOOL _editing;
 	BOOL _activated;
 	BOOL _synch;
-	BOOL _connected;
 
 	unsigned char	  _typeOfOperation;
 	
@@ -229,25 +221,6 @@ enum {
 /* return the last error message. */
 - (NSString *) lastError;
 
-- (YLTerminal *) terminal ;
-- (void) setTerminal: (YLTerminal *) term;
-
-- (void) receiveBytes: (unsigned char *) bytes length: (NSUInteger) length ;
-- (void) sendBytes: (unsigned char *) msg length: (NSInteger) length ;
-- (void) sendMessage: (NSData *) msg;
-
 - (NSHost *)host;
 - (void)setHost:(NSHost *)value;
-- (BOOL)connected;
-- (void)setConnected:(BOOL)value;
-- (NSString *)connectionName;
-- (void)setConnectionName:(NSString *)value;
-- (NSImage *)icon;
-- (void)setIcon:(NSImage *)value;
-- (NSString *)connectionAddress;
-- (void)setConnectionAddress:(NSString *)value;
-- (BOOL)isProcessing;
-- (void)setIsProcessing:(BOOL)value;
-
-- (NSDate *) lastTouchDate;
 @end
