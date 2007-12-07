@@ -1111,9 +1111,10 @@ BOOL isBlinkCell(cell c) {
                                          [tempColor greenComponent], 
                                          [tempColor blueComponent], 
                                          1.0);
-//                CGContextSetAllowsAntialiasing(tempContext, false);
-//                CGContextSetShouldSmoothFonts (tempContext, false);
-//                CGContextSetShouldAntialias(tempContext, false);
+
+                CGContextSetShouldSmoothFonts(myCGContext, 
+                                              gConfig->_shouldSmoothFonts == YES ? true : false);
+                
                 CGContextShowGlyphsAtPoint(tempContext, cPaddingLeft, CTFontGetDescent(gConfig->_cCTFont) + cPaddingBottom, &glyph, 1);
                 [gLeftImage unlockFocus];
                 [gLeftImage drawAtPoint: NSMakePoint(index * _fontWidth, (gRow - 1 - r) * _fontHeight) fromRect: rect operation: NSCompositeCopy fraction: 1.0];

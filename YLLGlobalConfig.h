@@ -23,23 +23,15 @@
     BOOL _shouldSmoothFonts;
     BOOL _detectDoubleByte;
     
-	NSFont *_eFont;
-	NSFont *_cFont;
 	CTFontRef _cCTFont;
 	CTFontRef _eCTFont;
 	CGFontRef _cCGFont;
 	CGFontRef _eCGFont;
 	
-	unsigned int _bitmapColorTable[2][NUM_COLOR];
 	NSColor *_colorTable[2][NUM_COLOR];
-	NSDictionary *_cDictTable[2][NUM_COLOR];
-	NSDictionary *_eDictTable[2][NUM_COLOR];
 
 	CFDictionaryRef _cCTAttribute[2][NUM_COLOR];
 	CFDictionaryRef _eCTAttribute[2][NUM_COLOR];
-	
-	ATSUStyle _cATSUStyle[2][NUM_COLOR];
-	ATSUStyle _eATSUStyle[2][NUM_COLOR];
 }
 
 + (YLLGlobalConfig *) sharedInstance;
@@ -68,19 +60,8 @@
 - (int)cellHeight;
 - (void)setCellHeight:(int)value;
 
-- (NSFont *)eFont;
-- (void)setEFont:(NSFont *)value;
-
-- (NSFont *)cFont;
-- (void)setCFont:(NSFont *)value;
-
 - (NSColor *) colorAtIndex: (int) i hilite: (BOOL) h ;
 - (void) setColor: (NSColor *) c hilite: (BOOL) h atIndex: (int) i ;
-
-- (unsigned short) bitmapColorAtIndex: (int) i hilite: (BOOL) h ;
-
-- (NSDictionary *) cFontAttributeForColorIndex: (int) i hilite: (BOOL) h ;
-- (NSDictionary *) eFontAttributeForColorIndex: (int) i hilite: (BOOL) h ;
 
 - (BOOL)blinkTicker;
 - (void)setBlinkTicker:(BOOL)value;
