@@ -88,4 +88,15 @@
     return _lastTouchDate;
 }
 
+/* Empty */
+- (void) close {}
+- (void) reconnect {}
+
+- (BOOL) connectToAddress: (NSString *) addr { return YES; }
+- (BOOL) connectToAddress: (NSString *) addr port: (unsigned int) port { return YES;}
+
+- (void) receiveBytes: (unsigned char *) bytes length: (NSUInteger) length { }
+- (void) sendBytes: (unsigned char *) msg length: (NSInteger) length { }
+- (void) sendMessage: (NSData *) msg { }
+
 @end

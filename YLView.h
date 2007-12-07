@@ -13,7 +13,7 @@ extern "C" {
 }
 
 @class YLTerminal;
-@class YLTelnet;
+@class YLConnection;
 @class YLMarkedTextView;
 
 @interface YLView : NSTabView <NSTextInput> {	
@@ -46,8 +46,8 @@ extern "C" {
 - (void) drawBlink ;
 - (void) refreshHiddenRegion;
 
-- (YLTerminal *)dataSource;
-- (YLTelnet *)telnet;
+- (YLTerminal *) frontMostTerminal;
+- (YLConnection *) frontMostConnection;
 - (BOOL)connected;
 
 - (void) extendBottomFrom: (int) start to: (int) end;

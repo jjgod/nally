@@ -33,14 +33,17 @@ void dump_packet(unsigned char *s, int length) {
 }
 #endif
 
-@implementation YLTelnet
+@interface YLTelnet (Private)
+- (void) close ;
+- (void) reconnect ;
+- (void) connectWithDictionary: (NSDictionary *) d ;
+- (void) stream: (NSStream *) stream handleEvent: (NSStreamEvent) eventCode ;
+- (NSString *) lastError;
+- (NSHost *)host;
+- (void)setHost:(NSHost *)value;
+@end
 
-- (id) init {
-    if (self = [super init]) {
-        // init code
-    }
-    return self;
-}
+@implementation YLTelnet
 
 - (void) dealloc {
     [self close];

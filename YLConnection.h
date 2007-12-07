@@ -20,6 +20,7 @@
 - (void) receiveBytes: (unsigned char *) bytes length: (NSUInteger) length ;
 - (void) sendBytes: (unsigned char *) msg length: (NSInteger) length ;
 - (void) sendMessage: (NSData *) msg;
+
 - (YLTerminal *) terminal ;
 - (void) setTerminal: (YLTerminal *) term;
 
@@ -38,7 +39,7 @@
 
 @end
 
-@interface YLConnection : NSObject {
+@interface YLConnection : NSObject <YLConnectionProtocol> {
     NSString        * _connectionName;
     NSString        * _connectionAddress;
     NSImage         * _icon;

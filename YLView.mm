@@ -8,7 +8,7 @@
 
 #import "YLView.h"
 #import "YLTerminal.h"
-#import "YLTelnet.h"
+#import "YLConnection.h"
 #import "YLLGLobalConfig.h"
 #import "YLMarkedTextView.h"
 #import "YLContextualMenuManager.h"
@@ -230,7 +230,7 @@ BOOL isSpecialSymbol(unichar ch) {
     cell *buffer = (cell *) malloc((length + gRow + gColumn + 1) * sizeof(cell));
     int i;
     int bufferLength = 0;
-    id ds = [self dataSource];
+    id ds = [self frontMostTerminal];
 
     for (i = 0; i < length; i++) {
         int index = location + i;
@@ -343,7 +343,7 @@ BOOL isSpecialSymbol(unichar ch) {
 		continue;
 	}
 	[writeBuffer appendBytes: "\x15[m" length: 3];
-    [[self telnet] sendMessage: writeBuffer];
+    [[self frontMostConnection] sendMessage: writeBuffer];
 }
 
 - (void) paste: (id) sender {
@@ -481,10 +481,10 @@ BOOL isSpecialSymbol(unichar ch) {
     if (![self connected]) return;
     int i, j;
     for (i = 0; i < gRow; i++) {
-        cell *currRow = [[self dataSource] cellsOfRow: i];
+        cell *currRow = [[self frontMostTerminal] cellsOfRow: i];
         for (j = 0; j < gColumn; j++)
             if (isHiddenAttribute(currRow[j].attr)) 
-                [[self dataSource] setDirty: YES atRow: i column: j];
+                [[self frontMostTerminal] setDirty: YES atRow: i column: j];
     }
 }
 
@@ -522,8 +522,8 @@ BOOL isSpecialSymbol(unichar ch) {
         int r, c;
         r = _selectionLocation / gColumn;
         c = _selectionLocation % gColumn;
-        cell *currRow = [[self dataSource] cellsOfRow: r];
-        [[self dataSource] updateDoubleByteStateForRow: r];
+        cell *currRow = [[self frontMostTerminal] cellsOfRow: r];
+        [[self frontMostTerminal] updateDoubleByteStateForRow: r];
         if (currRow[c].attr.f.doubleByte == 1) { // Double Byte
             _selectionLength = 2;
         } else if (currRow[c].attr.f.doubleByte == 2) {
@@ -555,7 +555,7 @@ BOOL isSpecialSymbol(unichar ch) {
         unsigned int cmdLength = 0;
         int moveToRow = _selectionLocation / gColumn;
         int moveToCol = _selectionLocation % gColumn;
-        id ds = [self dataSource];
+        id ds = [self frontMostTerminal];
         BOOL home = NO;
 		int i;
 		if (moveToRow > [ds cursorRow]) {
@@ -596,7 +596,7 @@ BOOL isSpecialSymbol(unichar ch) {
 			}
 		}
 		if (cmdLength > 0) 
-            [[self telnet] sendBytes: cmd length: cmdLength];
+            [[self frontMostConnection] sendBytes: cmd length: cmdLength];
     }
     
     [super mouseDown: e];
@@ -622,7 +622,7 @@ BOOL isSpecialSymbol(unichar ch) {
         int index = [self convertIndexFromPoint: p];
         int r = index / gColumn;
         int c = index % gColumn;
-        cell *currRow = [[self dataSource] cellsOfRow: r];
+        cell *currRow = [[self frontMostTerminal] cellsOfRow: r];
         if (currRow[c].attr.f.url) {
             int start = c;
             for (start = c; start >= 0 && currRow[start].attr.f.url; start--) ;
@@ -645,7 +645,7 @@ BOOL isSpecialSymbol(unichar ch) {
 
 	if ([e modifierFlags] & NSControlKeyMask) {
 		buf[0] = c;
-		[[self telnet] sendBytes: buf length: 1];
+		[[self frontMostConnection] sendBytes: buf length: 1];
 	}
 	
 	if (c == NSUpArrowFunctionKey) arrow[2] = arrow[5] = 'A';
@@ -653,7 +653,7 @@ BOOL isSpecialSymbol(unichar ch) {
 	if (c == NSRightArrowFunctionKey) arrow[2] = arrow[5] = 'C';
 	if (c == NSLeftArrowFunctionKey) arrow[2] = arrow[5] = 'D';
 
-    YLTerminal *ds = [self dataSource];
+    YLTerminal *ds = [self frontMostTerminal];
 	
 	if (![self hasMarkedText] && 
 		(c == NSUpArrowFunctionKey ||
@@ -664,11 +664,11 @@ BOOL isSpecialSymbol(unichar ch) {
         if ((c == NSRightArrowFunctionKey && [ds attrAtRow: [ds cursorRow] column: [ds cursorColumn]].f.doubleByte == 1) || 
             (c == NSLeftArrowFunctionKey && [ds cursorColumn] > 0 && [ds attrAtRow: [ds cursorRow] column: [ds cursorColumn] - 1].f.doubleByte == 2))
             if ([[YLLGlobalConfig sharedInstance] detectDoubleByte]) {
-                [[self telnet] sendBytes: arrow length: 6];
+                [[self frontMostConnection] sendBytes: arrow length: 6];
                 return;
             }
         
-		[[self telnet] sendBytes: arrow length: 3];
+		[[self frontMostConnection] sendBytes: arrow length: 3];
 		return;
 	}
 	
@@ -676,9 +676,9 @@ BOOL isSpecialSymbol(unichar ch) {
 		buf[0] = buf[1] = 0x08;
         if ([[YLLGlobalConfig sharedInstance] detectDoubleByte] &&
             [ds cursorColumn] > 0 && [ds attrAtRow: [ds cursorRow] column: [ds cursorColumn] - 1].f.doubleByte == 2)
-            [[self telnet] sendBytes: buf length: 2];
+            [[self frontMostConnection] sendBytes: buf length: 2];
         else
-            [[self telnet] sendBytes: buf length: 1];
+            [[self frontMostConnection] sendBytes: buf length: 1];
         return;
 	}
 
@@ -703,7 +703,7 @@ BOOL isSpecialSymbol(unichar ch) {
 - (void) tick: (NSTimer *) t {
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
 	[self updateBackedImage];
-    YLTerminal *ds = [self dataSource];
+    YLTerminal *ds = [self frontMostTerminal];
 
 	if (ds && (_x != ds->_cursorX || _y != ds->_cursorY)) {
 		[self setNeedsDisplayInRect: NSMakeRect(_x * _fontWidth, (gRow - 1 - _y) * _fontHeight, _fontWidth, _fontHeight)];
@@ -724,7 +724,7 @@ BOOL isSpecialSymbol(unichar ch) {
 
 - (void)drawRect:(NSRect)rect {
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
-    YLTerminal *ds = [self dataSource];
+    YLTerminal *ds = [self frontMostTerminal];
 	if ([self connected]) {
         
         /* Draw the backed image */
@@ -774,7 +774,7 @@ BOOL isSpecialSymbol(unichar ch) {
 - (void) drawBlink {
     int c, r;
     if (![gConfig blinkTicker]) return;
-    id ds = [self dataSource];
+    id ds = [self frontMostTerminal];
     if (!ds) return;
     for (r = 0; r < gRow; r++) {
         cell *currRow = [ds cellsOfRow: r];
@@ -858,7 +858,7 @@ BOOL isSpecialSymbol(unichar ch) {
 - (void) updateBackedImage {
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
 	int x, y;
-    YLTerminal *ds = [self dataSource];
+    YLTerminal *ds = [self frontMostTerminal];
 	[_backedImage lockFocus];
 	CGContextRef myCGContext = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
 	if (ds) {
@@ -910,7 +910,7 @@ BOOL isSpecialSymbol(unichar ch) {
     CGFloat ePaddingLeft = 1.0, ePaddingBottom = 2.0;
     CGFloat cPaddingLeft = 1.0, cPaddingBottom = 1.0;
     
-    YLTerminal *ds = [self dataSource];
+    YLTerminal *ds = [self frontMostTerminal];
     [ds updateDoubleByteStateForRow: r];
 	
     cell *currRow = [ds cellsOfRow: r];
@@ -991,9 +991,9 @@ BOOL isSpecialSymbol(unichar ch) {
 		
 		CFDictionaryRef attr;
 		if (db) 
-			attr = gConfig->_cCTAttribute[!lastAttr.f.reverse && lastAttr.f.bold][lastAttr.f.reverse ? lastAttr.f.bgColor : lastAttr.f.fgColor];
+			attr = gConfig->_cCTAttribute[fgBoldOfAttribute(lastAttr)][fgColorIndexOfAttribute(lastAttr)];
 		else
-			attr = gConfig->_eCTAttribute[!lastAttr.f.reverse && lastAttr.f.bold][lastAttr.f.reverse ? lastAttr.f.bgColor : lastAttr.f.fgColor];
+			attr = gConfig->_eCTAttribute[fgBoldOfAttribute(lastAttr)][fgColorIndexOfAttribute(lastAttr)];
 		CFAttributedStringSetAttributes(mutableAttributedString, CFRangeMake(location, length), attr, YES);
 	}
     
@@ -1069,6 +1069,7 @@ BOOL isSpecialSymbol(unichar ch) {
             lastIndex = index;
         }
         
+        
 		/* Double Color */
 		for (runGlyphIndex = 0; runGlyphIndex < runGlyphCount; runGlyphIndex++) {
             if (isDoubleColor[glyphOffset + runGlyphIndex]) {
@@ -1077,18 +1078,19 @@ BOOL isSpecialSymbol(unichar ch) {
                 CTRunGetGlyphs(run, glyphRange, &glyph);
                 
                 int index = bufIndex[glyphOffset + runGlyphIndex] - 1;
-                unsigned int bgColor = currRow[index].attr.f.reverse ? currRow[index].attr.f.fgColor : currRow[index].attr.f.bgColor;
-                unsigned int fgColor = currRow[index].attr.f.reverse ? currRow[index].attr.f.bgColor : currRow[index].attr.f.fgColor;
+                unsigned int bgColor = bgColorIndexOfAttribute(currRow[index].attr);
+                unsigned int fgColor = fgColorIndexOfAttribute(currRow[index].attr);
                 
                 [gLeftImage lockFocus];
-                [[gConfig colorAtIndex: bgColor hilite: currRow[index].attr.f.reverse && currRow[index].attr.f.bold] set];
+                [[gConfig colorAtIndex: bgColor hilite: bgBoldOfAttribute(currRow[index].attr)] set];
                 NSRect rect;
                 rect.size = [gLeftImage size];
                 rect.origin = NSZeroPoint;
                 [NSBezierPath fillRect: rect];
                 
                 CGContextRef tempContext = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
-                NSColor *tempColor = [gConfig colorAtIndex: fgColor hilite: !currRow[index].attr.f.reverse && currRow[index].attr.f.bold];
+                CGContextSetShouldSmoothFonts(tempContext, gConfig->_shouldSmoothFonts == YES ? true : false);
+                NSColor *tempColor = [gConfig colorAtIndex: fgColor hilite: fgBoldOfAttribute(currRow[index].attr)];
                 CGContextSetFont(tempContext, cgFont);
                 CGContextSetFontSize(tempContext, CTFontGetSize(runFont));
                 CGContextSetRGBFillColor(tempContext, 
@@ -1096,9 +1098,6 @@ BOOL isSpecialSymbol(unichar ch) {
                                          [tempColor greenComponent], 
                                          [tempColor blueComponent], 
                                          1.0);
-
-                CGContextSetShouldSmoothFonts(myCGContext, 
-                                              gConfig->_shouldSmoothFonts == YES ? true : false);
                 
                 CGContextShowGlyphsAtPoint(tempContext, cPaddingLeft, CTFontGetDescent(gConfig->_cCTFont) + cPaddingBottom, &glyph, 1);
                 [gLeftImage unlockFocus];
@@ -1133,7 +1132,7 @@ BOOL isSpecialSymbol(unichar ch) {
 
 - (void) updateBackgroundForRow: (int) r from: (int) start to: (int) end {
 	int c;
-	cell *currRow = [[self dataSource] cellsOfRow: r];
+	cell *currRow = [[self frontMostTerminal] cellsOfRow: r];
 	NSRect rowRect = NSMakeRect(start * _fontWidth, (gRow - 1 - r) * _fontHeight, (end - start) * _fontWidth, _fontHeight);
 
 	attribute currAttr, lastAttr = (currRow + start)->attr;
@@ -1315,16 +1314,16 @@ BOOL isSpecialSymbol(unichar ch) {
 }
 
 - (BOOL) connected {
-	return [[self telnet] connected];
+	return [[self frontMostConnection] connected];
 }
 
-- (YLTerminal *) dataSource {
-    return (YLTerminal *)[[self telnet] terminal];
+- (YLTerminal *) frontMostTerminal {
+    return (YLTerminal *)[[self frontMostConnection] terminal];
 }
 
-- (YLTelnet *) telnet {
+- (YLConnection *) frontMostConnection {
     id identifier = [[self selectedTabViewItem] identifier];
-    return (YLTelnet *) identifier;
+    return (YLConnection *) identifier;
 }
 
 - (NSString *) selectedPlainString {
@@ -1337,12 +1336,12 @@ BOOL isSpecialSymbol(unichar ch) {
         location = _selectionLocation + _selectionLength;
         length = 0 - (int)_selectionLength;
     }
-    return [[self dataSource] stringFromIndex: location length: length];
+    return [[self frontMostTerminal] stringFromIndex: location length: length];
 }
 
 - (BOOL) hasBlinkCell {
     int c, r;
-    id ds = [self dataSource];
+    id ds = [self frontMostTerminal];
     if (!ds) return NO;
     for (r = 0; r < gRow; r++) {
         [ds updateDoubleByteStateForRow: r];
@@ -1378,14 +1377,14 @@ BOOL isSpecialSymbol(unichar ch) {
 			buf[0] = ch;
 			[data appendBytes: buf length: 1];
 		} else {
-            YLEncoding encoding = [[self dataSource] encoding];
+            YLEncoding encoding = [[self frontMostTerminal] encoding];
             unichar code = (encoding == YLBig5Encoding ? U2B[ch] : U2G[ch]);
 			buf[0] = code >> 8;
 			buf[1] = code & 0xFF;
 			[data appendBytes: buf length: 2];
 		}
 	}
-	[[self telnet] sendMessage: data];
+	[[self frontMostConnection] sendMessage: data];
 }
 
 - (void) doCommandBySelector:(SEL)aSelector {
@@ -1395,30 +1394,30 @@ BOOL isSpecialSymbol(unichar ch) {
     
 	if (strcmp((char *) aSelector, "insertNewline:") == 0) {
 		ch[0] = 0x0D;
-		[[self telnet] sendBytes: ch length: 1];
+		[[self frontMostConnection] sendBytes: ch length: 1];
 	} else if (strcmp((char *) aSelector, "cancelOperation:") == 0) {
 	} else if (strcmp((char *) aSelector, "cancel:") == 0) {
 	} else if (strcmp((char *) aSelector, "scrollToBeginningOfDocument:") == 0) {
         ch[0] = 0x1B; ch[1] = '['; ch[2] = '1'; ch[3] = '~';
-		[[self telnet] sendBytes: ch length: 4];		
+		[[self frontMostConnection] sendBytes: ch length: 4];		
 	} else if (strcmp((char *) aSelector, "scrollToEndOfDocument:") == 0) {
         ch[0] = 0x1B; ch[1] = '['; ch[2] = '4'; ch[3] = '~';
-		[[self telnet] sendBytes: ch length: 4];		
+		[[self frontMostConnection] sendBytes: ch length: 4];		
 	} else if (strcmp((char *) aSelector, "scrollPageUp:") == 0) {
 		ch[0] = 0x1B; ch[1] = '['; ch[2] = '5'; ch[3] = '~';
-		[[self telnet] sendBytes: ch length: 4];
+		[[self frontMostConnection] sendBytes: ch length: 4];
 	} else if (strcmp((char *) aSelector, "scrollPageDown:") == 0) {
 		ch[0] = 0x1B; ch[1] = '['; ch[2] = '6'; ch[3] = '~';
-		[[self telnet] sendBytes: ch length: 4];		
+		[[self frontMostConnection] sendBytes: ch length: 4];		
 	} else if (strcmp((char *) aSelector, "insertTab:") == 0) {
         ch[0] = 0x09;
-		[[self telnet] sendBytes: ch length: 1];
+		[[self frontMostConnection] sendBytes: ch length: 1];
     }
 }
 
 // setMarkedText: cannot take a nil first argument. aString can be NSString or NSAttributedString
 - (void) setMarkedText:(id)aString selectedRange:(NSRange)selRange {
-    YLTerminal *ds = [self dataSource];
+    YLTerminal *ds = [self frontMostTerminal];
 	if (![aString respondsToSelector: @selector(isEqualToAttributedString:)] && [aString isMemberOfClass: [NSString class]])
 		aString = [[[NSAttributedString alloc] initWithString: aString] autorelease];
 

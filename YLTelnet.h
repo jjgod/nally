@@ -209,18 +209,4 @@ enum {
 	} _state;
 }
 
-/* return YES if successful, NO otherwise. */
-- (void) close ;
-- (void) reconnect ;
-- (void) connectWithDictionary: (NSDictionary *) d ;
-- (BOOL) connectToAddress: (NSString *) addr;
-- (BOOL) connectToAddress: (NSString *) addr port: (unsigned int) port ;
-
-- (void) stream: (NSStream *) stream handleEvent: (NSStreamEvent) eventCode ;
-
-/* return the last error message. */
-- (NSString *) lastError;
-
-- (NSHost *)host;
-- (void)setHost:(NSHost *)value;
 @end

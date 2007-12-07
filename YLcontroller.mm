@@ -57,7 +57,7 @@
     for (i = 0; i < [m numberOfItems]; i++) {
         NSMenuItem *item = [m itemAtIndex: i];
         [item setState: NSOffState];
-        if ([_telnetView dataSource] && i == [[_telnetView dataSource] encoding])
+        if ([_telnetView frontMostTerminal] && i == [[_telnetView frontMostTerminal] encoding])
             [item setState: NSOnState];
     }
     
@@ -97,10 +97,10 @@
 	id terminal = [YLTerminal new];
     id telnet;
 
-    BOOL emptyTab = [_telnetView telnet] && ([[_telnetView telnet] terminal] == nil);
+    BOOL emptyTab = [_telnetView frontMostConnection] && ([_telnetView frontMostTerminal] == nil);
 
     if (emptyTab) 
-        telnet = [_telnetView telnet];
+        telnet = [_telnetView frontMostConnection];
     else 
         telnet = [[YLTelnet new] autorelease];
 
@@ -236,7 +236,7 @@
 }
 
 - (IBAction) reconnect: (id) sender {
-    [[_telnetView telnet] reconnect];
+    [[_telnetView frontMostConnection] reconnect];
 }
 
 - (IBAction) selectNextTab: (id) sender {
@@ -299,7 +299,7 @@
 
 - (IBAction) addSites: (id) sender {
     if ([_telnetView numberOfTabViewItems] == 0) return;
-    NSString *address = [[_telnetView telnet] connectionAddress];
+    NSString *address = [[_telnetView frontMostConnection] connectionAddress];
     
     for (YLSite *s in _sites) 
         if ([[s address] isEqualToString: address]) 
@@ -347,7 +347,7 @@
 - (IBAction) inputEmoticons: (id) sender {
     [self closeEmoticons: sender];
     
-    if ([[_telnetView telnet] connected]) {
+    if ([[_telnetView frontMostConnection] connected]) {
         NSArray *a = [_emoticonsController selectedObjects];
         
         if ([a count] == 1) {
