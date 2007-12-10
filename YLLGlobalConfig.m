@@ -11,6 +11,26 @@
 static YLLGlobalConfig *sSharedInstance;
 static NSArray *gEncodingArray = nil;
 
+@interface NSUserDefaults(myColorSupport)
+- (void)setMyColor:(NSColor *)aColor forKey:(NSString *)aKey;
+- (NSColor *)myColorForKey:(NSString *)aKey;
+@end
+@implementation NSUserDefaults(myColorSupport)
+
+- (void)setMyColor:(NSColor *)aColor forKey:(NSString *)aKey {
+    NSData *theData=[NSArchiver archivedDataWithRootObject:aColor];
+    [self setObject:theData forKey:aKey];
+}
+
+- (NSColor *)myColorForKey:(NSString *)aKey {
+    NSColor *theColor=nil;
+    NSData *theData=[self dataForKey:aKey];
+    if (theData != nil)
+        theColor=(NSColor *)[NSUnarchiver unarchiveObjectWithData:theData];
+    return theColor;
+}
+@end
+
 @implementation YLLGlobalConfig
 + (YLLGlobalConfig*) sharedInstance {
 	return sSharedInstance ?: [[YLLGlobalConfig new] autorelease];
@@ -25,9 +45,11 @@ static NSArray *gEncodingArray = nil;
 	if(sSharedInstance) {
 		[self release];
 	} else if(self = sSharedInstance = [[super init] retain]) {
-        [self setShowHiddenText: [[NSUserDefaults standardUserDefaults] boolForKey: @"ShowHiddenText"]];
-        [self setShouldSmoothFonts: [[NSUserDefaults standardUserDefaults] boolForKey: @"ShouldSmoothFonts"]];
-        [self setDetectDoubleByte: [[NSUserDefaults standardUserDefaults] boolForKey: @"DetectDoubleByte"]];
+        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+
+        [self setShowHiddenText: [defaults boolForKey: @"ShowHiddenText"]];
+        [self setShouldSmoothFonts: [defaults boolForKey: @"ShouldSmoothFonts"]];
+        [self setDetectDoubleByte: [defaults boolForKey: @"DetectDoubleByte"]];
 
 		/* init code */
 		_row = 24;
@@ -35,32 +57,32 @@ static NSArray *gEncodingArray = nil;
 		_cellWidth = 12;
 		_cellHeight = 24;
 
-		_colorTable[0][0] = [[NSColor colorWithDeviceRed: 0.00 green: 0.00 blue: 0.00 alpha: 1.0] retain];
-		_colorTable[1][0] = [[NSColor colorWithDeviceRed: 0.25 green: 0.25 blue: 0.25 alpha: 1.0] retain];
-		_colorTable[0][1] = [[NSColor colorWithDeviceRed: 0.50 green: 0.00 blue: 0.00 alpha: 1.0] retain];
-		_colorTable[1][1] = [[NSColor colorWithDeviceRed: 1.00 green: 0.00 blue: 0.00 alpha: 1.0] retain];
-		_colorTable[0][2] = [[NSColor colorWithDeviceRed: 0.00 green: 0.50 blue: 0.00 alpha: 1.0] retain];
-		_colorTable[1][2] = [[NSColor colorWithDeviceRed: 0.00 green: 1.00 blue: 0.00 alpha: 1.0] retain];
-		_colorTable[0][3] = [[NSColor colorWithDeviceRed: 0.50 green: 0.50 blue: 0.00 alpha: 1.0] retain];
-		_colorTable[1][3] = [[NSColor colorWithDeviceRed: 1.00 green: 1.00 blue: 0.00 alpha: 1.0] retain];
-		_colorTable[0][4] = [[NSColor colorWithDeviceRed: 0.00 green: 0.00 blue: 0.50 alpha: 1.0] retain];
-		_colorTable[1][4] = [[NSColor colorWithDeviceRed: 0.00 green: 0.00 blue: 1.00 alpha: 1.0] retain];
-		_colorTable[0][5] = [[NSColor colorWithDeviceRed: 0.50 green: 0.00 blue: 0.50 alpha: 1.0] retain];
-		_colorTable[1][5] = [[NSColor colorWithDeviceRed: 1.00 green: 0.00 blue: 1.00 alpha: 1.0] retain];
-		_colorTable[0][6] = [[NSColor colorWithDeviceRed: 0.00 green: 0.50 blue: 0.50 alpha: 1.0] retain];
-		_colorTable[1][6] = [[NSColor colorWithDeviceRed: 0.00 green: 1.00 blue: 1.00 alpha: 1.0] retain];
-		_colorTable[0][7] = [[NSColor colorWithDeviceRed: 0.50 green: 0.50 blue: 0.50 alpha: 1.0] retain];
-		_colorTable[1][7] = [[NSColor colorWithDeviceRed: 1.00 green: 1.00 blue: 1.00 alpha: 1.0] retain];  // Foreground Color
-		_colorTable[0][8] = [[NSColor colorWithDeviceRed: 0.75 green: 0.75 blue: 0.75 alpha: 1.0] retain];
-		_colorTable[1][8] = [[NSColor colorWithDeviceRed: 1.00 green: 1.00 blue: 1.00 alpha: 1.0] retain];
-		_colorTable[0][9] = [[NSColor colorWithDeviceRed: 0.00 green: 0.00 blue: 0.00 alpha: 1.0] retain];
-		_colorTable[1][9] = [[NSColor colorWithDeviceRed: 0.00 green: 0.00 blue: 0.00 alpha: 1.0] retain];  // Background Color
+        [self setColorBlack: [defaults myColorForKey: @"ColorBlack"]];
+        [self setColorBlackHilite: [defaults myColorForKey: @"ColorBlackHilite"]]; 
+        [self setColorRed: [defaults myColorForKey: @"ColorRed"]];
+        [self setColorRedHilite: [defaults myColorForKey: @"ColorRedHilite"]]; 
+        [self setColorBlack: [defaults myColorForKey: @"ColorBlack"]];
+        [self setColorBlackHilite: [defaults myColorForKey: @"ColorBlackHilite"]]; 
+        [self setColorGreen: [defaults myColorForKey: @"ColorGreen"]];
+        [self setColorGreenHilite: [defaults myColorForKey: @"ColorGreenHilite"]]; 
+        [self setColorYellow: [defaults myColorForKey: @"ColorYellow"]];
+        [self setColorYellowHilite: [defaults myColorForKey: @"ColorYellowHilite"]]; 
+        [self setColorBlue: [defaults myColorForKey: @"ColorBlue"]];
+        [self setColorBlueHilite: [defaults myColorForKey: @"ColorBlueHilite"]]; 
+        [self setColorMagenta: [defaults myColorForKey: @"ColorMagenta"]];
+        [self setColorMagentaHilite: [defaults myColorForKey: @"ColorMagentaHilite"]]; 
+        [self setColorCyan: [defaults myColorForKey: @"ColorCyan"]];
+        [self setColorCyanHilite: [defaults myColorForKey: @"ColorCyanHilite"]]; 
+        [self setColorWhite: [defaults myColorForKey: @"ColorWhite"]];
+        [self setColorWhiteHilite: [defaults myColorForKey: @"ColorWhiteHilite"]]; // Foreground Color
+        [self setColorBG: [defaults myColorForKey: @"ColorBG"]];
+        [self setColorBGHilite: [defaults myColorForKey: @"ColorBGHilite"]]; 
+        _colorTable[0][8] = [[NSColor colorWithDeviceRed: 0.75 green: 0.75 blue: 0.75 alpha: 1.0] retain];
+        _colorTable[1][8] = [[NSColor colorWithDeviceRed: 1.00 green: 1.00 blue: 1.00 alpha: 1.0] retain];
 
         _bgColorIndex = 9;
         _fgColorIndex = 7;
         
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-
         NSString *eFontName = [defaults stringForKey: @"EnglishFontName"];
         NSString *cFontName = [defaults stringForKey: @"ChineseFontName"];
 
@@ -204,4 +226,179 @@ static NSArray *gEncodingArray = nil;
     return gEncodingArray;
 }
 - (void) setEncodingArray: (NSArray *) a {}
+
+#pragma mark -
+#pragma mark Colors
+- (NSColor *) colorBlack { return _colorTable[0][0]; }
+- (void) setColorBlack: (NSColor *) c {
+    if (!c) c = [NSColor colorWithDeviceRed: 0.00 green: 0.00 blue: 0.00 alpha: 1.0];
+    if (c != _colorTable[0][0]) {
+        [_colorTable[0][0] release];
+        _colorTable[0][0] = [c retain];
+    }
+    [[NSUserDefaults standardUserDefaults] setMyColor: c forKey: @"ColorBlack"];
+}
+- (NSColor *) colorBlackHilite { return _colorTable[1][0]; }
+- (void) setColorBlackHilite: (NSColor *) c {
+    if (!c) c = [NSColor colorWithDeviceRed: 0.25 green: 0.25 blue: 0.25 alpha: 1.0];
+    if (c != _colorTable[1][0]) {
+        [_colorTable[1][0] release];
+        _colorTable[1][0] = [c retain];
+    }
+    [[NSUserDefaults standardUserDefaults] setMyColor: c forKey: @"ColorBlackHilite"];
+}
+
+- (NSColor *) colorRed { return _colorTable[0][1]; }
+- (void) setColorRed: (NSColor *) c {
+    if (!c) c = [NSColor colorWithDeviceRed: 0.50 green: 0.00 blue: 0.00 alpha: 1.0];
+    if (c != _colorTable[0][1]) {
+        [_colorTable[0][1] release];
+        _colorTable[0][1] = [c retain];
+    }
+    [[NSUserDefaults standardUserDefaults] setMyColor: c forKey: @"ColorRed"];
+}
+- (NSColor *) colorRedHilite { return _colorTable[1][1]; }
+- (void) setColorRedHilite: (NSColor *) c {
+    if (!c) c = [NSColor colorWithDeviceRed: 1.00 green: 0.00 blue: 0.00 alpha: 1.0];
+    if (c != _colorTable[1][1]) {
+        [_colorTable[1][1] release];
+        _colorTable[1][1] = [c retain];
+    }
+    [[NSUserDefaults standardUserDefaults] setMyColor: c forKey: @"ColorRedHilite"];
+}
+
+- (NSColor *) colorGreen { return _colorTable[0][2]; }
+- (void) setColorGreen: (NSColor *) c {
+    if (!c) c = [NSColor colorWithDeviceRed: 0.00 green: 0.50 blue: 0.00 alpha: 1.0];
+    if (c != _colorTable[0][2]) {
+        [_colorTable[0][2] release];
+        _colorTable[0][2] = [c retain];
+    }
+    [[NSUserDefaults standardUserDefaults] setMyColor: c forKey: @"ColorGreen"];
+}
+- (NSColor *) colorGreenHilite { return _colorTable[1][2]; }
+- (void) setColorGreenHilite: (NSColor *) c {
+    if (!c) c = [NSColor colorWithDeviceRed: 0.00 green: 1.00 blue: 0.00 alpha: 1.0];
+    if (c != _colorTable[1][2]) {
+        [_colorTable[1][2] release];
+        _colorTable[1][2] = [c retain];
+    }
+    [[NSUserDefaults standardUserDefaults] setMyColor: c forKey: @"ColorGreenHilite"];
+}
+
+- (NSColor *) colorYellow { return _colorTable[0][3]; }
+- (void) setColorYellow: (NSColor *) c {
+    if (!c) c = [NSColor colorWithDeviceRed: 0.50 green: 0.50 blue: 0.00 alpha: 1.0];
+    if (c != _colorTable[0][3]) {
+        [_colorTable[0][3] release];
+        _colorTable[0][3] = [c retain];
+    }
+    [[NSUserDefaults standardUserDefaults] setMyColor: c forKey: @"ColorYellow"];
+}
+- (NSColor *) colorYellowHilite { return _colorTable[1][3]; }
+- (void) setColorYellowHilite: (NSColor *) c {
+    if (!c) c = [NSColor colorWithDeviceRed: 1.00 green: 1.00 blue: 0.00 alpha: 1.0];
+    if (c != _colorTable[1][3]) {
+        [_colorTable[1][3] release];
+        _colorTable[1][3] = [c retain];
+    }
+    [[NSUserDefaults standardUserDefaults] setMyColor: c forKey: @"ColorYellowHilite"];
+}
+
+- (NSColor *) colorBlue { return _colorTable[0][4]; }
+- (void) setColorBlue: (NSColor *) c {
+    if (!c) c = [NSColor colorWithDeviceRed: 0.00 green: 0.00 blue: 0.50 alpha: 1.0];
+    if (c != _colorTable[0][4]) {
+        [_colorTable[0][4] release];
+        _colorTable[0][4] = [c retain];
+    }
+    [[NSUserDefaults standardUserDefaults] setMyColor: c forKey: @"ColorBlue"];
+}
+- (NSColor *) colorBlueHilite { return _colorTable[1][4]; }
+- (void) setColorBlueHilite: (NSColor *) c {
+    if (!c) c = [NSColor colorWithDeviceRed: 0.00 green: 0.00 blue: 1.00 alpha: 1.0];
+    if (c != _colorTable[1][4]) {
+        [_colorTable[1][4] release];
+        _colorTable[1][4] = [c retain];
+    }
+    [[NSUserDefaults standardUserDefaults] setMyColor: c forKey: @"ColorBlueHilite"];
+}
+
+- (NSColor *) colorMagenta { return _colorTable[0][5]; }
+- (void) setColorMagenta: (NSColor *) c {
+    if (!c) c = [NSColor colorWithDeviceRed: 0.50 green: 0.00 blue: 0.50 alpha: 1.0];
+    if (c != _colorTable[0][5]) {
+        [_colorTable[0][5] release];
+        _colorTable[0][5] = [c retain];
+    }
+    [[NSUserDefaults standardUserDefaults] setMyColor: c forKey: @"ColorMagenta"];
+}
+- (NSColor *) colorMagentaHilite { return _colorTable[1][5]; }
+- (void) setColorMagentaHilite: (NSColor *) c {
+    if (!c) c = [NSColor colorWithDeviceRed: 1.00 green: 0.00 blue: 1.00 alpha: 1.0];
+    if (c != _colorTable[1][5]) {
+        [_colorTable[1][5] release];
+        _colorTable[1][5] = [c retain];
+    }
+    [[NSUserDefaults standardUserDefaults] setMyColor: c forKey: @"ColorMagentaHilite"];
+}
+
+- (NSColor *) colorCyan { return _colorTable[0][6]; }
+- (void) setColorCyan: (NSColor *) c {
+    if (!c) c = [NSColor colorWithDeviceRed: 0.00 green: 0.50 blue: 0.50 alpha: 1.0];
+    if (c != _colorTable[0][6]) {
+        [_colorTable[0][6] release];
+        _colorTable[0][6] = [c retain];
+    }
+    [[NSUserDefaults standardUserDefaults] setMyColor: c forKey: @"ColorCyan"];
+}
+- (NSColor *) colorCyanHilite { return _colorTable[1][6]; }
+- (void) setColorCyanHilite: (NSColor *) c {
+    if (!c) c = [NSColor colorWithDeviceRed: 0.00 green: 1.00 blue: 1.00 alpha: 1.0];
+    if (c != _colorTable[1][6]) {
+        [_colorTable[1][6] release];
+        _colorTable[1][6] = [c retain];
+    }
+    [[NSUserDefaults standardUserDefaults] setMyColor: c forKey: @"ColorCyanHilite"];
+}
+
+- (NSColor *) colorWhite { return _colorTable[0][7]; }
+- (void) setColorWhite: (NSColor *) c {
+    if (!c) c = [NSColor colorWithDeviceRed: 0.50 green: 0.50 blue: 0.50 alpha: 1.0];
+    if (c != _colorTable[0][7]) {
+        [_colorTable[0][7] release];
+        _colorTable[0][7] = [c retain];
+    }
+    [[NSUserDefaults standardUserDefaults] setMyColor: c forKey: @"ColorWhite"];
+}
+- (NSColor *) colorWhiteHilite { return _colorTable[1][7]; }
+- (void) setColorWhiteHilite: (NSColor *) c {
+    if (!c) c = [NSColor colorWithDeviceRed: 1.00 green: 1.00 blue: 1.00 alpha: 1.0];
+    if (c != _colorTable[1][7]) {
+        [_colorTable[1][7] release];
+        _colorTable[1][7] = [c retain];
+    }
+    [[NSUserDefaults standardUserDefaults] setMyColor: c forKey: @"ColorWhiteHilite"];
+}
+
+- (NSColor *) colorBG { return _colorTable[0][9]; }
+- (void) setColorBG: (NSColor *) c {
+    if (!c) c = [NSColor colorWithDeviceRed: 0.00 green: 0.00 blue: 0.00 alpha: 1.0];
+    if (c != _colorTable[0][9]) {
+        [_colorTable[0][9] release];
+        _colorTable[0][9] = [c retain];
+        if ([self colorBGHilite] != c) [self setColorBGHilite: c];
+    }
+    [[NSUserDefaults standardUserDefaults] setMyColor: c forKey: @"ColorBG"];
+}
+- (NSColor *) colorBGHilite { return _colorTable[1][9]; }
+- (void) setColorBGHilite: (NSColor *) c {
+    if (!c) c = [NSColor colorWithDeviceRed: 0.00 green: 0.00 blue: 0.00 alpha: 1.0];
+    if (c != _colorTable[1][9]) {
+        [_colorTable[1][9] release];
+        _colorTable[1][9] = [c retain];
+        if ([self colorBG] != c) [self setColorBG: c];
+    }
+    [[NSUserDefaults standardUserDefaults] setMyColor: c forKey: @"ColorBGHilite"];
+}
 @end

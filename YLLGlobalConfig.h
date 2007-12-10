@@ -68,4 +68,51 @@
 - (BOOL)blinkTicker;
 - (void)setBlinkTicker:(BOOL)value;
 - (void)updateBlinkTicker;
+
+/* Color */
+- (NSColor *) colorBlack ;
+- (void) setColorBlack: (NSColor *) c;
+- (NSColor *) colorBlackHilite ;
+- (void) setColorBlackHilite: (NSColor *) c;
+
+- (NSColor *) colorRed ;
+- (void) setColorRed: (NSColor *) c;
+- (NSColor *) colorRedHilite ;
+- (void) setColorRedHilite: (NSColor *) c;
+
+- (NSColor *) colorGreen ;
+- (void) setColorGreen: (NSColor *) c;
+- (NSColor *) colorGreenHilite ;
+- (void) setColorGreenHilite: (NSColor *) c;
+
+- (NSColor *) colorYellow ;
+- (void) setColorYellow: (NSColor *) c;
+- (NSColor *) colorYellowHilite ;
+- (void) setColorYellowHilite: (NSColor *) c;
+
+- (NSColor *) colorBlue ;
+- (void) setColorBlue: (NSColor *) c;
+- (NSColor *) colorBlueHilite ;
+- (void) setColorBlueHilite: (NSColor *) c;
+
+- (NSColor *) colorMagenta ;
+- (void) setColorMagenta: (NSColor *) c;
+- (NSColor *) colorMagentaHilite ;
+- (void) setColorMagentaHilite: (NSColor *) c;
+
+- (NSColor *) colorCyan ;
+- (void) setColorCyan: (NSColor *) c;
+- (NSColor *) colorCyanHilite ;
+- (void) setColorCyanHilite: (NSColor *) c;
+
+- (NSColor *) colorWhite ;
+- (void) setColorWhite: (NSColor *) c;
+- (NSColor *) colorWhiteHilite;
+- (void) setColorWhiteHilite: (NSColor *) c;
+
+- (NSColor *) colorBG ;
+- (void) setColorBG: (NSColor *) c;
+- (NSColor *) colorBGHilite ;
+- (void) setColorBGHilite: (NSColor *) c;
+
 @end

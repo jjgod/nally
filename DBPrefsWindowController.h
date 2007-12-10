@@ -52,6 +52,7 @@
 	
     IBOutlet NSView *_generalPrefView;
     IBOutlet NSView *_fontsPrefView;
+    IBOutlet NSView *_colorsPrefView;
     
 	NSView *contentSubview;
 	NSViewAnimation *viewAnimation;
