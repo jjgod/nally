@@ -943,21 +943,9 @@ BOOL isSpecialSymbol(unichar ch) {
 			unichar ch = [ds encoding] == YLBig5Encoding ? B2U[code] : G2U[code];
 			if (isSpecialSymbol(ch)) {
 				[self drawSpecialSymbol: ch forRow: r column: (x - 1) leftAttribute: (currRow + x - 1)->attr rightAttribute: (currRow + x)->attr];
-				isDoubleByte[bufLength] = isDoubleByte[bufLength + 1] = NO;
-				textBuf[bufLength] = 0x3000; // full-width space
-				position[bufLength] = CGPointMake((x - 1) * _fontWidth + cPaddingLeft, (gRow - 1 - r) * _fontHeight + CTFontGetDescent(gConfig->_cCTFont) + cPaddingBottom);
-				bufIndex[bufLength] = x;
-                isDoubleColor[bufLength] = NO;
-				bufLength++;
 			} else {
-                unsigned int fgIndex1, fgIndex2;
-                BOOL bold1, bold2;
-                fgIndex1 = currRow[x - 1].attr.f.reverse ? currRow[x - 1].attr.f.bgColor : currRow[x - 1].attr.f.fgColor;
-                fgIndex2 = currRow[x].attr.f.reverse ? currRow[x].attr.f.bgColor : currRow[x].attr.f.fgColor;
-                bold1 = !currRow[x - 1].attr.f.reverse && currRow[x - 1].attr.f.bold;
-                bold2 = !currRow[x].attr.f.reverse && currRow[x].attr.f.bold;
-                if (fgIndex1 != fgIndex2 || bold1 != bold2) isDoubleColor[bufLength] = YES;
-                else isDoubleColor[bufLength] = NO;
+                isDoubleColor[bufLength] = (fgColorIndexOfAttribute(currRow[x - 1].attr) != fgColorIndexOfAttribute(currRow[x].attr) || 
+                                            fgBoldOfAttribute(currRow[x - 1].attr) != fgBoldOfAttribute(currRow[x].attr));
 				isDoubleByte[bufLength] = YES;
 				textBuf[bufLength] = ch;
 				bufIndex[bufLength] = x;
@@ -1045,12 +1033,7 @@ BOOL isSpecialSymbol(unichar ch) {
                 (!isDoubleByte[runGlyphIndex] && index != lastIndex + 1)) {
                 int len = runGlyphIndex - location;
                 
-                if (gConfig->_showHiddenText && hidden) {
-                    CGContextSetTextDrawingMode(myCGContext, kCGTextStroke);
-                } else {
-                    CGContextSetTextDrawingMode(myCGContext, kCGTextFill);                        
-                }
-
+                CGContextSetTextDrawingMode(myCGContext, ([gConfig showHiddenText] && hidden) ? kCGTextStroke : kCGTextFill);
                 CGGlyph glyph[gColumn];
                 CFRange glyphRange = CFRangeMake(location, len);
                 CTRunGetGlyphs(run, glyphRange, glyph);
@@ -1089,7 +1072,9 @@ BOOL isSpecialSymbol(unichar ch) {
                 [NSBezierPath fillRect: rect];
                 
                 CGContextRef tempContext = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
+                
                 CGContextSetShouldSmoothFonts(tempContext, gConfig->_shouldSmoothFonts == YES ? true : false);
+                
                 NSColor *tempColor = [gConfig colorAtIndex: fgColor hilite: fgBoldOfAttribute(currRow[index].attr)];
                 CGContextSetFont(tempContext, cgFont);
                 CGContextSetFontSize(tempContext, CTFontGetSize(runFont));

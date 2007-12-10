@@ -7,8 +7,7 @@
 //
 
 #import <Cocoa/Cocoa.h>
-
-@class YLTerminal;
+#import "YLTerminal.h"
 
 @protocol YLConnectionProtocol 
 - (void) close ;
@@ -50,6 +49,8 @@
     
     YLTerminal		* _terminal;
 }
+
++ (YLConnection *) connectionWithAddress: (NSString *) addr;
 
 - (YLTerminal *) terminal ;
 - (void) setTerminal: (YLTerminal *) term;

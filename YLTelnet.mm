@@ -94,7 +94,7 @@ void dump_packet(unsigned char *s, int length) {
     
     if (!host) return;
     [self setHost: host];
-    NSLog(@"CONNECT: %@ %d", [host address], port);
+    [_terminal clearAll];
     [NSStream getStreamsToHost: host 
                           port: port 
                    inputStream: &_inputStream

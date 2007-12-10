@@ -43,10 +43,6 @@ ASCII_CODE asciiCodeFamily(unsigned char c) {
 
 static unsigned short gEmptyAttr;
 
-@interface YLTerminal (Private) 
-- (void) clearAll ;
-@end
-
 @implementation YLTerminal
 
 - (id) init {
@@ -90,6 +86,8 @@ static unsigned short gEmptyAttr;
 	
 	for (i = 0; i < len; i++) {
 		c = bytes[i];
+        if (c == 0x00) continue;
+        
 		if (_state == TP_NORMAL) {
             if (c == 0x00) {
                 // do nothing

@@ -56,6 +56,7 @@
 /* Clear */
 - (void) clearRow: (int) r ;
 - (void) clearRow: (int) r fromStart: (int) s toEnd: (int) e ;
+- (void) clearAll ;
 
 /* Dirty */
 - (BOOL) isDirtyAtRow: (int) r column:(int) c;

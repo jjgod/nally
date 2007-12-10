@@ -3,13 +3,23 @@
 //  MacBlueTelnet
 //
 //  Created by Lan Yung-Luen on 12/7/07.
-//  Copyright 2007 __MyCompanyName__. All rights reserved.
+//  Copyright 2007 yllan.org. All rights reserved.
 //
 
 #import "YLConnection.h"
 
 
 @implementation YLConnection
+
++ (YLConnection *) connectionWithAddress: (NSString *) addr {
+    Class c; 
+    if ([addr hasPrefix: @"ssh://"])
+        c = NSClassFromString(@"YLSSH");
+    else
+        c = NSClassFromString(@"YLTelnet");
+//    NSLog(@"CONNECTION wih addr: %@ %@", addr, c);
+    return (YLConnection *)[[[c alloc] init] autorelease];
+}
 
 - (void) dealloc {
     [_lastTouchDate release];
