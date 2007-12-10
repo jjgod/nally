@@ -80,13 +80,14 @@ static unsigned short gEmptyAttr;
 - (void) feedBytes: (const unsigned char *) bytes length: (int) len connection: (id) connection {
 	int i, x;
 	unsigned char c;
+
 	[_delegate performSelector: @selector(tick:)
 					withObject: nil
 					afterDelay: 0.02];
-	
+
 	for (i = 0; i < len; i++) {
 		c = bytes[i];
-        if (c == 0x00) continue;
+//        if (c == 0x00) continue;
         
 		if (_state == TP_NORMAL) {
             if (c == 0x00) {
@@ -138,6 +139,8 @@ static unsigned short gEmptyAttr;
                 _grid[_cursorY][_cursorX].attr.f.url = NO;
 				[self setDirty: YES atRow: _cursorY column: _cursorX];
 				_cursorX++;
+                if (_cursorX >= _column)  /* FIXME: wrap or squeeze at the last column? */
+                    _cursorX = _column - 1;
 			}
 		} else if (_state == TP_ESCAPE) {
 			if (c == 0x5B) { // 0x5B == '['
@@ -377,7 +380,6 @@ static unsigned short gEmptyAttr;
 			}
 		}
 	}
-
 //	[_delegate updateBackedImage];
 }
 

@@ -210,7 +210,7 @@ BOOL isSpecialSymbol(unichar ch) {
 #pragma mark -
 #pragma mark Actions
 
-/* TODO: Truncate the extra spaces at end of line */
+/* FIXME: Truncate the extra spaces at end of line */
 - (void) copy: (id) sender {
     if (![self connected]) return;
     if (_selectionLength == 0) return;
@@ -241,15 +241,15 @@ BOOL isSpecialSymbol(unichar ch) {
             buffer[bufferLength].attr = buffer[bufferLength - 1].attr;
             bufferLength++;
         }
-        buffer[bufferLength] = currentRow[index % gColumn];
-        if (buffer[bufferLength].byte == '\0') 
-            buffer[bufferLength].byte = ' ';
-        /* Clear non-ANSI related properties. */
-        buffer[bufferLength].attr.f.doubleByte = 0;
-        buffer[bufferLength].attr.f.url = 0;
-        buffer[bufferLength].attr.f.nothing = 0;
-        
-        bufferLength++;
+        if (currentRow[index % gColumn].byte != '\0') {
+            buffer[bufferLength] = currentRow[index % gColumn];
+            /* Clear non-ANSI related properties. */
+            buffer[bufferLength].attr.f.doubleByte = 0;
+            buffer[bufferLength].attr.f.url = 0;
+            buffer[bufferLength].attr.f.nothing = 0;
+            
+            bufferLength++;            
+        }
     }
     
     NSPasteboard *pb = [NSPasteboard generalPasteboard];
@@ -289,12 +289,15 @@ BOOL isSpecialSymbol(unichar ch) {
 	for (i = 0; i < bufferLength; i++) {
 		if (buffer[i].byte == '\n' ) {
 			previousANSI = defaultANSI;
-			[writeBuffer appendBytes: "\x15[m\n\r" length: 5];
+			[writeBuffer appendBytes: "\x15[m\r" length: 5];
 			continue;
 		}
 		
 		attribute currentANSI = buffer[i].attr;
 		
+        char tmp[100];
+        tmp[0] = '\0';
+        
 		/* Unchanged */
 		if ((currentANSI.f.blink == previousANSI.f.blink) &&
 			(currentANSI.f.bold == previousANSI.f.bold) &&
@@ -306,12 +309,12 @@ BOOL isSpecialSymbol(unichar ch) {
 			continue;
 		}
 		
-		/* Clear */
+		/* Clear */        
 		if ((currentANSI.f.blink == 0 && previousANSI.f.blink == 1) ||
 			(currentANSI.f.bold == 0 && previousANSI.f.bold == 1) ||
 			(currentANSI.f.underline == 0 && previousANSI.f.underline == 1) ||
-			(currentANSI.f.reverse == 0 && previousANSI.f.reverse == 1)) {
-			char tmp[100];
+			(currentANSI.f.reverse == 0 && previousANSI.f.reverse == 1) ||
+            (currentANSI.f.bgColor ==  gConfig->_bgColorIndex && previousANSI.f.reverse != gConfig->_bgColorIndex) ) {
 			strcpy(tmp, "\x15[0");
 			if (currentANSI.f.blink == 1) strcat(tmp, ";5");
 			if (currentANSI.f.bold == 1) strcat(tmp, ";1");
@@ -327,9 +330,7 @@ BOOL isSpecialSymbol(unichar ch) {
 		}
 		
 		/* Add attribute */
-		char tmp[100];
 		strcpy(tmp, "\x15[");
-		
 		if (currentANSI.f.blink == 1 && previousANSI.f.blink == 0) strcat(tmp, "5;");
 		if (currentANSI.f.bold == 1 && previousANSI.f.bold == 0) strcat(tmp, "1;");
 		if (currentANSI.f.underline == 1 && previousANSI.f.underline == 0) strcat(tmp, "4;");

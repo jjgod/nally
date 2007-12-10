@@ -122,7 +122,7 @@
     } else { /* parent */
         int one = 1;
         ioctl(_fileDescriptor, TIOCPKT, &one);
-        [NSThread detachNewThreadSelector: @selector(readLoop) toTarget:self withObject: nil];
+        [NSThread detachNewThreadSelector: @selector(readLoop:) toTarget:[self class] withObject: self];
     }
     
     [self setConnected: YES];
@@ -180,7 +180,7 @@
 #pragma mark -
 #pragma mark 
 
-- (void) readLoop {
++ (void) readLoop: (YLSSH *) boss {
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
     fd_set readFileDescriptorSet, errorFileDescriptorSet;
     BOOL exit = NO;
@@ -199,38 +199,39 @@
         FD_ZERO(&readFileDescriptorSet);
         FD_ZERO(&errorFileDescriptorSet);
         
-        FD_SET(_fileDescriptor, &readFileDescriptorSet);
-        FD_SET(_fileDescriptor, &errorFileDescriptorSet);
-        
-        result = select(_fileDescriptor + 1, &readFileDescriptorSet, NULL, &errorFileDescriptorSet, NULL);
+        FD_SET(boss->_fileDescriptor, &readFileDescriptorSet);
+        FD_SET(boss->_fileDescriptor, &errorFileDescriptorSet);
+
+        result = select(boss->_fileDescriptor + 1, &readFileDescriptorSet, NULL, &errorFileDescriptorSet, NULL);
+
         if (result < 0) { /* error */
             break;
-        } else if (FD_ISSET(_fileDescriptor, &errorFileDescriptorSet)) {
-            result = read(_fileDescriptor, buf, 1);
+        } else if (FD_ISSET(boss->_fileDescriptor, &errorFileDescriptorSet)) {
+            result = read(boss->_fileDescriptor, buf, 1);
             if (result == 0) { // session close
                 exit = YES;
             }
-        } else if (FD_ISSET(_fileDescriptor, &readFileDescriptorSet)) {
-            result = read(_fileDescriptor, buf, sizeof(buf));
-            if (result > 0) {
-                [self performSelectorOnMainThread: @selector(receiveData:) 
-                                       withObject: [NSData dataWithBytes: buf length: result] 
-                                    waitUntilDone: YES];
+        } else if (FD_ISSET(boss->_fileDescriptor, &readFileDescriptorSet)) {
+            result = read(boss->_fileDescriptor, buf, sizeof(buf));
+            if (result > 1) {
+                [boss performSelectorOnMainThread: @selector(receiveData:) 
+                                       withObject: [NSData dataWithBytes: buf + 1 length: result - 1]
+                                    waitUntilDone: NO];
             }
             if (result == 0) {
                 exit = YES;
             }
         }
         
-        if (iterationCount % 10) {
+        if (iterationCount % 5000 == 0) {
             [pool release];
             pool = [NSAutoreleasePool new];
-            iterationCount = 0;
+            iterationCount = 1;
         }
     }
     
     if (result >= 0) {
-        [self performSelectorOnMainThread: @selector(close) withObject:nil waitUntilDone:NO];
+        [boss performSelectorOnMainThread: @selector(close) withObject:nil waitUntilDone:NO];
     }
     
     [pool release];
