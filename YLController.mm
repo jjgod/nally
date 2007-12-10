@@ -20,7 +20,7 @@
                                        forKeyPath: @"showHiddenText"
                                           options: (NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
                                           context: NULL];
-    [_tab setStyleNamed: @"Metal"];
+//    [_tab setStyleNamed: @"Metal"];
     [_tab setCanCloseOnlyTab: YES];
         
     [self loadSites];
@@ -95,33 +95,29 @@
 - (void) newConnectionToAddress: (NSString *) addr name: (NSString *) name encoding: (YLEncoding) encoding {
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
 	id terminal = [YLTerminal new];
-    id telnet;
+    YLConnection *connection = [YLConnection connectionWithAddress: addr];
 
     BOOL emptyTab = [_telnetView frontMostConnection] && ([_telnetView frontMostTerminal] == nil);
 
-    if (emptyTab) 
-        telnet = [_telnetView frontMostConnection];
-    else 
-        telnet = [[YLTelnet new] autorelease];
-
     [terminal setEncoding: encoding];
-	[telnet setTerminal: terminal];
-    [telnet setConnectionName: name];
-    [telnet setConnectionAddress: addr];
+	[connection setTerminal: terminal];
+    [connection setConnectionName: name];
+    [connection setConnectionAddress: addr];
 	[terminal setDelegate: _telnetView];
     
     NSTabViewItem *tabItem;
     
     if (emptyTab) {
         tabItem = [_telnetView selectedTabViewItem];
+        [tabItem setIdentifier: connection];
     } else {
-        tabItem = [[[NSTabViewItem alloc] initWithIdentifier: telnet] autorelease];
+        tabItem = [[[NSTabViewItem alloc] initWithIdentifier: connection] autorelease];
         [_telnetView addTabViewItem: tabItem];
     }
     
     [tabItem setLabel: name];
 	
-	[telnet connectToAddress: addr];
+	[connection connectToAddress: addr];
     [_telnetView selectTabViewItem: tabItem];
     [terminal release];
     [self refreshTabLabelNumber: _telnetView];
@@ -197,9 +193,9 @@
 #pragma mark Actions
 - (IBAction) setEncoding: (id) sender {
     int index = [[_encodingMenuItem submenu] indexOfItem: sender];
-    if ([_telnetView dataSource]) {
-        [[_telnetView dataSource] setEncoding: (YLEncoding)index];
-        [[_telnetView dataSource] setAllDirty];
+    if ([_telnetView frontMostTerminal]) {
+        [[_telnetView frontMostTerminal] setEncoding: (YLEncoding)index];
+        [[_telnetView frontMostTerminal] setAllDirty];
         [_telnetView updateBackedImage];
         [_telnetView setNeedsDisplay: YES];
         [self updateEncodingMenu];
@@ -308,7 +304,7 @@
     YLSite *s = [[YLSite new] autorelease];
     [s setName: address];
     [s setAddress: address];
-    [s setEncoding: [[_telnetView dataSource] encoding]];
+    [s setEncoding: [[_telnetView frontMostTerminal] encoding]];
     [_sitesController addObject: s];
     [_sitesController setSelectedObjects: [NSArray arrayWithObject: s]];
     [self performSelector: @selector(editSites:) withObject: sender afterDelay: 0.1];
