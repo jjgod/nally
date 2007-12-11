@@ -172,8 +172,8 @@ BOOL isSpecialSymbol(unichar ch) {
     [NSBezierPath fillRect: NSMakeRect(0, 0, frame.size.width, frame.size.height)];
     [_backedImage unlockFocus];
     
-    if (!gLeftImage) 
-        gLeftImage = [[NSImage alloc] initWithSize: NSMakeSize(_fontWidth, _fontHeight)];			
+    [gLeftImage release]; 
+    gLeftImage = [[NSImage alloc] initWithSize: NSMakeSize(_fontWidth, _fontHeight)];			
 
     if (!gSingleAdvance) gSingleAdvance = (CGSize *) malloc(sizeof(CGSize) * gColumn);
     if (!gDoubleAdvance) gDoubleAdvance = (CGSize *) malloc(sizeof(CGSize) * gColumn);

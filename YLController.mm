@@ -36,7 +36,8 @@
                                               context: NULL];
 
     [_tab setCanCloseOnlyTab: YES];
-        
+    
+    
     [self loadSites];
     [self updateSitesMenu];
     [self loadEmoticons];
@@ -46,7 +47,9 @@
     
     [NSTimer scheduledTimerWithTimeInterval: 120 target: self selector: @selector(antiIdle:) userInfo: nil repeats: YES];
     [NSTimer scheduledTimerWithTimeInterval: 1 target: self selector: @selector(updateBlinkTicker:) userInfo: nil repeats: YES];
-            
+
+    [self observeValueForKeyPath: @"cellWidth" ofObject: [YLLGlobalConfig sharedInstance]
+                          change: [NSDictionary dictionary] context: NULL];
 }
 
 - (void) updateSitesMenu {
@@ -163,7 +166,12 @@
         YLLGlobalConfig *config = [YLLGlobalConfig sharedInstance];
         NSRect r = [_mainWindow frame];
         CGFloat topLeftCorner = r.origin.y + r.size.height;
-        CGFloat shift = r.size.height - [_telnetView frame].size.height;
+
+        CGFloat shift = 0.0;
+
+        /* Calculate the toolbar height */
+        shift = NSHeight([_mainWindow frame]) - NSHeight([[_mainWindow contentView] frame]) + 22;
+
         r.size.width = [config cellWidth] * [config column];
         r.size.height = [config cellHeight] * [config row] + shift;
         r.origin.y = topLeftCorner - r.size.height;
@@ -171,7 +179,10 @@
         [_telnetView configure];
         [[[[_telnetView selectedTabViewItem] identifier] terminal] setAllDirty];
         [_telnetView updateBackedImage];
-        [_telnetView setNeedsDisplay: YES];        
+        [_telnetView setNeedsDisplay: YES];
+        NSRect tabRect = [_tab frame];
+        tabRect.size.width = r.size.width;
+        [_tab setFrame: tabRect];
     } else if ([keyPath hasPrefix: @"chineseFont"] || [keyPath hasPrefix: @"englishFont"] || [keyPath hasPrefix: @"color"]) {
         [[YLLGlobalConfig sharedInstance] refreshFont];
         [[[[_telnetView selectedTabViewItem] identifier] terminal] setAllDirty];
