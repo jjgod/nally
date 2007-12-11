@@ -180,7 +180,7 @@ static NSArray *gEncodingArray = nil;
 - (void) setColor: (NSColor *) c hilite: (BOOL) h atIndex: (int) i {
 	if (i >= 0 && i < NUM_COLOR) {
 		[_colorTable[h][i] autorelease];
-		_colorTable[h][i] = [c retain];
+		_colorTable[h][i] = [[c colorUsingColorSpaceName:NSCalibratedRGBColorSpace] retain];
 	}
 }
 
@@ -386,8 +386,8 @@ static NSArray *gEncodingArray = nil;
     if (!c) c = [NSColor colorWithDeviceRed: 0.00 green: 0.00 blue: 0.00 alpha: 1.0];
     if (c != _colorTable[0][9]) {
         [_colorTable[0][9] release];
-        _colorTable[0][9] = [c retain];
-        if ([self colorBGHilite] != c) [self setColorBGHilite: c];
+        _colorTable[0][9] = [[c colorUsingColorSpaceName:NSCalibratedRGBColorSpace] retain];
+//        if ([self colorBGHilite] != c) [self setColorBGHilite: c];
     }
     [[NSUserDefaults standardUserDefaults] setMyColor: c forKey: @"ColorBG"];
 }
@@ -397,7 +397,7 @@ static NSArray *gEncodingArray = nil;
     if (c != _colorTable[1][9]) {
         [_colorTable[1][9] release];
         _colorTable[1][9] = [c retain];
-        if ([self colorBG] != c) [self setColorBG: c];
+//        if ([self colorBG] != c) [self setColorBG: c];
     }
     [[NSUserDefaults standardUserDefaults] setMyColor: c forKey: @"ColorBGHilite"];
 }

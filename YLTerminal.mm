@@ -477,29 +477,38 @@ static unsigned short gEmptyAttr;
 }
 
 - (NSString *) stringFromIndex: (int) begin length: (int) length {
-    int i;
+    int i, j;
     unichar textBuf[_row * (_column + 1) + 1];
     unichar firstByte = 0;
     int bufLength = 0;
+    int spacebuf = 0;
     for (i = begin; i < begin + length; i++) {
         int x = i % _column;
         int y = i / _column;
-        if (x == 0 && i != begin && i - 1 < begin + length) {
+        if (x == 0 && i != begin && i - 1 < begin + length) { // newline
             [self updateDoubleByteStateForRow: y];
             unichar cr = 0x000D;
             textBuf[bufLength++] = cr;
+            spacebuf = 0;
         }
         int db = _grid[y][x].attr.f.doubleByte;
         if (db == 0) {
-            if (_grid[y][x].byte == '\0')
-                textBuf[bufLength++] = ' ';
-            else
+            if (_grid[y][x].byte == '\0' || _grid[y][x].byte == ' ')
+                spacebuf++;
+            else {
+                for (j = 0; j < spacebuf; j++)
+                    textBuf[bufLength++] = ' ';
                 textBuf[bufLength++] = _grid[y][x].byte;
+                spacebuf = 0;
+            }
         } else if (db == 1) {
             firstByte = _grid[y][x].byte;
         } else if (db == 2 && firstByte) {
             int index = (firstByte << 8) + _grid[y][x].byte - 0x8000;
+            for (j = 0; j < spacebuf; j++)
+                textBuf[bufLength++] = ' ';
             textBuf[bufLength++] = _encoding == YLBig5Encoding ? B2U[index] : G2U[index];
+            spacebuf = 0;
         }
     }
     if (bufLength == 0) return nil;

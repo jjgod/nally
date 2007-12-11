@@ -203,25 +203,31 @@
 }
 
 - (IBAction) newTab: (id) sender {
-    YLTelnet *telnet = [YLTelnet new];
-    [telnet setConnectionAddress: @""];
-    [telnet setConnectionName: @""];
-    NSTabViewItem *tabItem = [[[NSTabViewItem alloc] initWithIdentifier: telnet] autorelease];
+    YLConnection *connection = [YLConnection new];
+    [connection setConnectionAddress: @""];
+    [connection setConnectionName: @""];
+    NSTabViewItem *tabItem = [[[NSTabViewItem alloc] initWithIdentifier: connection] autorelease];
     [_telnetView addTabViewItem: tabItem];
     [_telnetView selectTabViewItem: tabItem];
     
     [_mainWindow makeKeyAndOrderFront: self];
 	[_telnetView resignFirstResponder];
 	[_addressBar becomeFirstResponder];
-    [telnet release];
+    [connection release];
 }
 
 - (IBAction) connect: (id) sender {
 	[sender abortEditing];
 	[[_telnetView window] makeFirstResponder: _telnetView];
 
+    NSString *name = [sender stringValue];
+    if ([[name lowercaseString] hasPrefix: @"ssh://"])
+        name = [name substringFromIndex: 6];
+    if ([[name componentsSeparatedByString: @"@"] count] == 2)
+        name = [[name componentsSeparatedByString: @"@"] objectAtIndex: 1];
+    
 	[self newConnectionToAddress: [sender stringValue] 
-                            name: [sender stringValue] 
+                            name: name
                         encoding: (YLEncoding) [(NSNumber *)[[NSUserDefaults standardUserDefaults] objectForKey: @"DefaultEncoding"] unsignedShortValue]];
 }
 

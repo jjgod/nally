@@ -60,6 +60,13 @@
                    [[event characters] isEqualToString: @"r"]) {
             [_controller reconnect: self];
             return;
+        } else if (([event modifierFlags] & NSCommandKeyMask) == NSCommandKeyMask && 
+                   ([event modifierFlags] & NSAlternateKeyMask) == 0 && 
+                   ([event modifierFlags] & NSControlKeyMask) == 0 && 
+                   ([event modifierFlags] & NSShiftKeyMask) == 0 && 
+                   [[event characters] isEqualToString: @"n"]) {
+            [_controller editSites: self];
+            return;
         }
     }
     
