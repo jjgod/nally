@@ -120,17 +120,11 @@ static NSArray *gEncodingArray = nil;
 
 - (void) refreshFont {
     int i, j;
-    ATSUFontID cATSUFontID, eATSUFontID;
-    char *cATSUFontName = (char *)[_chineseFontName UTF8String];
-    char *eATSUFontName = (char *)[_englishFontName UTF8String];
-    
-    ATSUFindFontFromName(cATSUFontName, strlen(cATSUFontName), kFontFullName, kFontNoPlatform, kFontNoScript, kFontNoLanguage, &cATSUFontID);
-    ATSUFindFontFromName(eATSUFontName, strlen(eATSUFontName), kFontFullName, kFontNoPlatform, kFontNoScript, kFontNoLanguage, &eATSUFontID);
     
     if (_cCTFont) CFRelease(_cCTFont);
-    _cCTFont = CTFontCreateWithPlatformFont(cATSUFontID, _chineseFontSize, NULL, NULL);
+    _cCTFont = CTFontCreateWithName((CFStringRef)_chineseFontName, _chineseFontSize, NULL);
     if (_eCTFont) CFRelease(_eCTFont);
-    _eCTFont = CTFontCreateWithPlatformFont(eATSUFontID, _englishFontSize, NULL, NULL);
+    _eCTFont = CTFontCreateWithName((CFStringRef)_englishFontName, _englishFontSize, NULL);
     if (_cCGFont) CFRelease(_cCGFont);
     _cCGFont = CTFontCopyGraphicsFont(_cCTFont, NULL);
     if (_eCGFont) CFRelease(_eCGFont);

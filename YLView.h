@@ -36,6 +36,8 @@ extern "C" {
     int _selectionLength;
 }
 
+- (void) configure ;
+
 - (void) pasteWrap: (id) sender ;
 - (void) paste: (id) sender ;
 - (void) pasteColor: (id) sender ;

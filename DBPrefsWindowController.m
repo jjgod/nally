@@ -108,7 +108,7 @@ static DBPrefsWindowController *_sharedPrefsWindowController = nil;
 - (void)setupToolbar
 {
     [self addView: _generalPrefView label: NSLocalizedString(@"General", @"Preferences") image: [NSImage imageNamed: @"NSApplicationIcon"]];
-    [self addView: _fontsPrefView label: @"Fonts" image: [NSImage imageNamed: @"NSFontPanel"]];
+    [self addView: _fontsPrefView label: NSLocalizedString(@"Fonts", @"Preferences") image: [NSImage imageNamed: @"NSFontPanel"]];
     [self addView: _colorsPrefView label: NSLocalizedString(@"Colors", @"Preferences") image: [NSImage imageNamed: @"NSColorPanel"]];
 }
 

@@ -23,7 +23,7 @@
 @implementation YLController
 
 - (void) awakeFromNib {
-    NSArray *observeKeys = [NSArray arrayWithObjects: @"showHiddenText", @"messageCount", @"cellWidth", @"cellHeight", 
+    NSArray *observeKeys = [NSArray arrayWithObjects: @"shouldSmoothFonts", @"showHiddenText", @"messageCount", @"cellWidth", @"cellHeight", 
                             @"chineseFontName", @"chineseFontSize", @"chineseFontPaddingLeft", @"chineseFontPaddingBottom",
                             @"englishFontName", @"englishFontSize", @"englishFontPaddingLeft", @"englishFontPaddingBottom", 
                             @"colorBlack", @"colorBlackHilite", @"colorRed", @"colorRedHilite", @"colorGreen", @"colorGreenHilite",
@@ -155,8 +155,23 @@
         CTBadge *myBadge = [[CTBadge alloc] init];
         [myBadge badgeApplicationDockIconWithValue: [[YLLGlobalConfig sharedInstance] messageCount] insetX: 5.0 y: 5.0];
         [myBadge release];
+    } else if ([keyPath isEqualToString: @"shouldSmoothFonts"]) {
+        [[[[_telnetView selectedTabViewItem] identifier] terminal] setAllDirty];
+        [_telnetView updateBackedImage];
+        [_telnetView setNeedsDisplay: YES];
     } else if ([keyPath hasPrefix: @"cell"]) {
-        
+        YLLGlobalConfig *config = [YLLGlobalConfig sharedInstance];
+        NSRect r = [_mainWindow frame];
+        CGFloat topLeftCorner = r.origin.y + r.size.height;
+        CGFloat shift = r.size.height - [_telnetView frame].size.height;
+        r.size.width = [config cellWidth] * [config column];
+        r.size.height = [config cellHeight] * [config row] + shift;
+        r.origin.y = topLeftCorner - r.size.height;
+        [_mainWindow setFrame: r display: YES animate: NO];
+        [_telnetView configure];
+        [[[[_telnetView selectedTabViewItem] identifier] terminal] setAllDirty];
+        [_telnetView updateBackedImage];
+        [_telnetView setNeedsDisplay: YES];        
     } else if ([keyPath hasPrefix: @"chineseFont"] || [keyPath hasPrefix: @"englishFont"] || [keyPath hasPrefix: @"color"]) {
         [[YLLGlobalConfig sharedInstance] refreshFont];
         [[[[_telnetView selectedTabViewItem] identifier] terminal] setAllDirty];

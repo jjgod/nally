@@ -159,12 +159,10 @@ BOOL isSpecialSymbol(unichar ch) {
 	
     NSRect frame = [self frame];
 	frame.size = NSMakeSize(gColumn * [gConfig cellWidth], gRow * [gConfig cellHeight]);
+    frame.origin = NSZeroPoint;
     [self setFrame: frame];
 
     [self createSymbolPath];
-    
-    _selectionLength = 0;
-    _selectionLocation = 0;
 
     [_backedImage release];
     _backedImage = [[NSImage alloc] initWithSize: frame.size];
@@ -198,6 +196,8 @@ BOOL isSpecialSymbol(unichar ch) {
     self = [super initWithFrame: frame];
     if (self) {
         [self configure];
+        _selectionLength = 0;
+        _selectionLocation = 0;
     }
     return self;
 }
@@ -909,8 +909,8 @@ BOOL isSpecialSymbol(unichar ch) {
 	CGPoint position[gColumn];
 	int bufLength = 0;
     
-    CGFloat ePaddingLeft = 1.0, ePaddingBottom = 2.0;
-    CGFloat cPaddingLeft = 1.0, cPaddingBottom = 1.0;
+    CGFloat ePaddingLeft = [gConfig englishFontPaddingLeft], ePaddingBottom = [gConfig englishFontPaddingBottom];
+    CGFloat cPaddingLeft = [gConfig chineseFontPaddingLeft], cPaddingBottom = [gConfig chineseFontPaddingBottom];
     
     YLTerminal *ds = [self frontMostTerminal];
     [ds updateDoubleByteStateForRow: r];
