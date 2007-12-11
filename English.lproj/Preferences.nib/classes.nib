@@ -5,6 +5,13 @@
 	<key>IBClasses</key>
 	<array>
 		<dict>
+			<key>ACTIONS</key>
+			<dict>
+				<key>setChineseFont</key>
+				<string>id</string>
+				<key>setEnglishFont</key>
+				<string>id</string>
+			</dict>
 			<key>CLASS</key>
 			<string>YLLGlobalConfig</string>
 			<key>LANGUAGE</key>

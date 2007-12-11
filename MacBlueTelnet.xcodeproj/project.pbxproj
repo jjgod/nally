@@ -22,6 +22,12 @@
 		85834C100CFEC3F30015E348 /* Whit.aiff in Resources */ = {isa = PBXBuildFile; fileRef = 85834C0F0CFEC3F30015E348 /* Whit.aiff */; };
 		85899C7B0CEED4E40031907F /* YLApplication.mm in Sources */ = {isa = PBXBuildFile; fileRef = 85899C7A0CEED4E40031907F /* YLApplication.mm */; };
 		858A54E60CAE78C8000E1AA7 /* YLMarkedTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 858A54E50CAE78C8000E1AA7 /* YLMarkedTextView.m */; };
+		858F4DF60D0E7E4400D1AFF0 /* CTBadge.m in Sources */ = {isa = PBXBuildFile; fileRef = 858F4DF20D0E7E4400D1AFF0 /* CTBadge.m */; };
+		858F4DF70D0E7E4400D1AFF0 /* CTGradient.m in Sources */ = {isa = PBXBuildFile; fileRef = 858F4DF50D0E7E4400D1AFF0 /* CTGradient.m */; };
+		858F4DFC0D0E7E6100D1AFF0 /* CTBadge_1.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 858F4DF80D0E7E6100D1AFF0 /* CTBadge_1.pdf */; };
+		858F4DFD0D0E7E6100D1AFF0 /* CTBadge_3.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 858F4DF90D0E7E6100D1AFF0 /* CTBadge_3.pdf */; };
+		858F4DFE0D0E7E6100D1AFF0 /* CTBadge_4.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 858F4DFA0D0E7E6100D1AFF0 /* CTBadge_4.pdf */; };
+		858F4DFF0D0E7E6100D1AFF0 /* CTBadge_5.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 858F4DFB0D0E7E6100D1AFF0 /* CTBadge_5.pdf */; };
 		859252F50CFD4F860054E3D6 /* YLContextualMenuManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 859252F40CFD4F860054E3D6 /* YLContextualMenuManager.m */; };
 		85957EAF0CFF1176006E5E08 /* sleep.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 85957EAE0CFF1176006E5E08 /* sleep.pdf */; };
 		859CB7DB0CEF43C300B27180 /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 859CB7DA0CEF43C300B27180 /* Sparkle.framework */; };
@@ -88,6 +94,14 @@
 		85899C7A0CEED4E40031907F /* YLApplication.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = YLApplication.mm; sourceTree = "<group>"; };
 		858A54E40CAE78C8000E1AA7 /* YLMarkedTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLMarkedTextView.h; sourceTree = "<group>"; };
 		858A54E50CAE78C8000E1AA7 /* YLMarkedTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YLMarkedTextView.m; sourceTree = "<group>"; };
+		858F4DF20D0E7E4400D1AFF0 /* CTBadge.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CTBadge.m; sourceTree = "<group>"; };
+		858F4DF30D0E7E4400D1AFF0 /* CTBadge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CTBadge.h; sourceTree = "<group>"; };
+		858F4DF40D0E7E4400D1AFF0 /* CTGradient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CTGradient.h; sourceTree = "<group>"; };
+		858F4DF50D0E7E4400D1AFF0 /* CTGradient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CTGradient.m; sourceTree = "<group>"; };
+		858F4DF80D0E7E6100D1AFF0 /* CTBadge_1.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = CTBadge_1.pdf; sourceTree = "<group>"; };
+		858F4DF90D0E7E6100D1AFF0 /* CTBadge_3.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = CTBadge_3.pdf; sourceTree = "<group>"; };
+		858F4DFA0D0E7E6100D1AFF0 /* CTBadge_4.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = CTBadge_4.pdf; sourceTree = "<group>"; };
+		858F4DFB0D0E7E6100D1AFF0 /* CTBadge_5.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = CTBadge_5.pdf; sourceTree = "<group>"; };
 		859252F30CFD4F860054E3D6 /* YLContextualMenuManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLContextualMenuManager.h; sourceTree = "<group>"; };
 		859252F40CFD4F860054E3D6 /* YLContextualMenuManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YLContextualMenuManager.m; sourceTree = "<group>"; };
 		85957EAE0CFF1176006E5E08 /* sleep.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = sleep.pdf; sourceTree = "<group>"; };
@@ -115,7 +129,7 @@
 		85F7F2070B06EE36000C4CDF /* YLLGlobalConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLLGlobalConfig.h; sourceTree = "<group>"; };
 		85F7F2080B06EE36000C4CDF /* YLLGlobalConfig.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YLLGlobalConfig.m; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		8D1107320486CEB800E47090 /* MacBlueTelnet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacBlueTelnet.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D1107320486CEB800E47090 /* Nally.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Nally.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -177,7 +191,7 @@
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8D1107320486CEB800E47090 /* MacBlueTelnet.app */,
+				8D1107320486CEB800E47090 /* Nally.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -206,6 +220,10 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				858F4DF80D0E7E6100D1AFF0 /* CTBadge_1.pdf */,
+				858F4DF90D0E7E6100D1AFF0 /* CTBadge_3.pdf */,
+				858F4DFA0D0E7E6100D1AFF0 /* CTBadge_4.pdf */,
+				858F4DFB0D0E7E6100D1AFF0 /* CTBadge_5.pdf */,
 				85EA93210D0791180098C94B /* Preferences.nib */,
 				85137B320D02192800833909 /* Credits.rtf */,
 				85834C0F0CFEC3F30015E348 /* Whit.aiff */,
@@ -236,6 +254,10 @@
 		85D9B9D20C97DF7B006C5E0F /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				858F4DF20D0E7E4400D1AFF0 /* CTBadge.m */,
+				858F4DF30D0E7E4400D1AFF0 /* CTBadge.h */,
+				858F4DF40D0E7E4400D1AFF0 /* CTGradient.h */,
+				858F4DF50D0E7E4400D1AFF0 /* CTGradient.m */,
 				858A54E40CAE78C8000E1AA7 /* YLMarkedTextView.h */,
 				858A54E50CAE78C8000E1AA7 /* YLMarkedTextView.m */,
 				8570AD5D0A3923A900838442 /* YLView.h */,
@@ -300,7 +322,7 @@
 			name = Nally;
 			productInstallPath = "$(HOME)/Applications";
 			productName = MacBlueTelnet;
-			productReference = 8D1107320486CEB800E47090 /* MacBlueTelnet.app */;
+			productReference = 8D1107320486CEB800E47090 /* Nally.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -345,6 +367,10 @@
 				85137B330D02192800833909 /* Credits.rtf in Resources */,
 				85A0E73D0D06B72900ACA26F /* Localizable.strings in Resources */,
 				85EA93230D0791180098C94B /* Preferences.nib in Resources */,
+				858F4DFC0D0E7E6100D1AFF0 /* CTBadge_1.pdf in Resources */,
+				858F4DFD0D0E7E6100D1AFF0 /* CTBadge_3.pdf in Resources */,
+				858F4DFE0D0E7E6100D1AFF0 /* CTBadge_4.pdf in Resources */,
+				858F4DFF0D0E7E6100D1AFF0 /* CTBadge_5.pdf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -371,6 +397,8 @@
 				85ED52290D0920E6003296D4 /* CommonType.c in Sources */,
 				85ED53220D092B5F003296D4 /* YLConnection.mm in Sources */,
 				85CE53390D0D687800F55B7B /* YLSSH.mm in Sources */,
+				858F4DF60D0E7E4400D1AFF0 /* CTBadge.m in Sources */,
+				858F4DF70D0E7E4400D1AFF0 /* CTGradient.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

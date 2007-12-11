@@ -16,5 +16,6 @@
 - (id) init ;
 - (NSArray *) availableMenuItemForSelectionString: (NSString *) s ;
 - (NSString *) extractShortURL: (NSString *) s ;
+- (NSString *) extractLongURL: (NSString *) s ;
 
 @end

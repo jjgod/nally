@@ -12,6 +12,7 @@
 
 @interface YLLGlobalConfig : NSObject {
 @public
+    int _messageCount;
 	int _row;
 	int _column;
 	int _cellWidth;
@@ -25,6 +26,15 @@
     BOOL _shouldSmoothFonts;
     BOOL _detectDoubleByte;
     
+    CGFloat _chineseFontSize;
+    CGFloat _englishFontSize;
+    CGFloat _chineseFontPaddingLeft;
+    CGFloat _englishFontPaddingLeft;
+    CGFloat _chineseFontPaddingBottom;
+    CGFloat _englishFontPaddingBottom;
+    NSString *_chineseFontName;
+    NSString *_englishFontName;
+    
 	CTFontRef _cCTFont;
 	CTFontRef _eCTFont;
 	CGFontRef _cCGFont;
@@ -36,31 +46,33 @@
 	CFDictionaryRef _eCTAttribute[2][NUM_COLOR];
 }
 
+- (IBAction) setChineseFont: (id) sender;
+- (IBAction) setEnglishFont: (id) sender;
+
 + (YLLGlobalConfig *) sharedInstance;
+
+- (void) refreshFont;
 
 - (NSArray *) encodingArray;
 - (void) setEncodingArray: (NSArray *) a;
+- (int)messageCount;
+- (void)setMessageCount:(int)value;
 
 - (int)row;
 - (void)setRow:(int)value;
-
 - (int)column;
 - (void)setColumn:(int)value;
+- (int)cellWidth;
+- (void)setCellWidth:(int)value;
+- (int)cellHeight;
+- (void)setCellHeight:(int)value;
 
 - (BOOL)showHiddenText;
 - (void)setShowHiddenText:(BOOL)value;
-
 - (BOOL)shouldSmoothFonts;
 - (void)setShouldSmoothFonts:(BOOL)value;
-
 - (BOOL)detectDoubleByte;
 - (void)setDetectDoubleByte:(BOOL)value;
-
-- (int)cellWidth;
-- (void)setCellWidth:(int)value;
-
-- (int)cellHeight;
-- (void)setCellHeight:(int)value;
 
 - (NSColor *) colorAtIndex: (int) i hilite: (BOOL) h ;
 - (void) setColor: (NSColor *) c hilite: (BOOL) h atIndex: (int) i ;
@@ -68,6 +80,30 @@
 - (BOOL)blinkTicker;
 - (void)setBlinkTicker:(BOOL)value;
 - (void)updateBlinkTicker;
+
+- (CGFloat)chineseFontSize;
+- (void)setChineseFontSize:(CGFloat)value;
+
+- (CGFloat)englishFontSize;
+- (void)setEnglishFontSize:(CGFloat)value;
+
+- (CGFloat)chineseFontPaddingLeft;
+- (void)setChineseFontPaddingLeft:(CGFloat)value;
+
+- (CGFloat)englishFontPaddingLeft;
+- (void)setEnglishFontPaddingLeft:(CGFloat)value;
+
+- (CGFloat)chineseFontPaddingBottom;
+- (void)setChineseFontPaddingBottom:(CGFloat)value;
+
+- (CGFloat)englishFontPaddingBottom;
+- (void)setEnglishFontPaddingBottom:(CGFloat)value;
+
+- (NSString *)chineseFontName;
+- (void)setChineseFontName:(NSString *)value;
+
+- (NSString *)englishFontName;
+- (void)setEnglishFontName:(NSString *)value;
 
 /* Color */
 - (NSColor *) colorBlack ;

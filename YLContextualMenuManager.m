@@ -29,8 +29,18 @@ static YLContextualMenuManager *gSharedInstance;
     NSMutableArray *a = [NSMutableArray array];
     NSMenuItem *item;
     NSString *shortURL = [self extractShortURL: s];
+    NSString *longURL = [self extractLongURL: s];
     
-    if ([shortURL length]) {
+    if ([[longURL componentsSeparatedByString: @"."] count] > 1) {
+        if (![longURL hasPrefix: @"http://"]) longURL = [@"http://" stringByAppendingString: longURL];
+        item = [[[NSMenuItem alloc] initWithTitle: longURL
+                                           action: @selector(openURL:)
+                                    keyEquivalent: @""] autorelease];
+        [item setTarget: self];
+        [a addObject: item];
+    }
+    
+    if ([shortURL length] > 0 && [shortURL length] < 8) {
         item = [[[NSMenuItem alloc] initWithTitle: [@"0rz.tw/" stringByAppendingString: shortURL]
                                                        action: @selector(openURL:)
                                                 keyEquivalent: @""] autorelease];
@@ -75,6 +85,11 @@ static YLContextualMenuManager *gSharedInstance;
     }
     return result;
 }
+
+- (NSString *) extractLongURL: (NSString *) s {
+    return s;
+}
+
 
 - (IBAction) openURL: (id) sender {
     NSString *u = [sender title];

@@ -10,6 +10,7 @@
 #import <deque>
 #import "CommonType.h"
 #import "YLView.h"
+#import "YLConnection.h"
 
 @interface YLTerminal : NSObject {	
 @public
@@ -43,6 +44,9 @@
     
     int _scrollBeginRow;
     int _scrollEndRow;
+    
+    BOOL _hasMessage;
+    YLConnection *_connection;
 }
 
 /* Input Interface */
@@ -80,5 +84,9 @@
 - (int) cursorColumn;
 - (YLEncoding) encoding;
 - (void) setEncoding: (YLEncoding) encoding;
+- (BOOL)hasMessage;
+- (void)setHasMessage:(BOOL)value;
+- (YLConnection *)connection;
+- (void)setConnection:(YLConnection *)value;
 
 @end

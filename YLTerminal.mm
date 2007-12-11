@@ -94,10 +94,7 @@ static unsigned short gEmptyAttr;
                 // do nothing
             } else if (c == 0x07) { // Beep
 				[[NSSound soundNamed: @"Whit.aiff"] play];
-                [NSApp requestUserAttention: NSInformationalRequest];
-                if (connection != [[_delegate selectedTabViewItem] identifier]) {
-                    [connection setIcon: [NSImage imageNamed: @"message.pdf"]];
-                }
+                [self setHasMessage: YES];
 			} else if (c == 0x08) { // Backspace
 				if (_cursorX > 0)
 					_cursorX--;
@@ -605,5 +602,40 @@ static unsigned short gEmptyAttr;
 - (void)setEncoding:(YLEncoding)encoding {
     _encoding = encoding;
 }
+
+- (BOOL)hasMessage {
+    return _hasMessage;
+}
+
+- (void)setHasMessage:(BOOL)value {
+    if (_hasMessage != value) {
+        _hasMessage = value;
+        YLLGlobalConfig *config = [YLLGlobalConfig sharedInstance];
+        if (_hasMessage) {
+            [NSApp requestUserAttention: NSInformationalRequest];
+            if (_connection != [[_delegate selectedTabViewItem] identifier]) { /* Not selected tab */
+                [config setMessageCount: [config messageCount] + 1];
+                [_connection setIcon: [NSImage imageNamed: @"message.pdf"]];
+            } else {
+                _hasMessage = NO;
+            }
+        } else {
+            [config setMessageCount: [config messageCount] - 1];
+            if ([_connection connected])
+                [_connection setIcon: [NSImage imageNamed: @"connect.pdf"]];
+            else
+                [_connection setIcon: [NSImage imageNamed: @"offline.pdf"]];
+        }        
+    }
+}
+
+- (YLConnection *)connection {
+    return _connection;
+}
+
+- (void)setConnection:(YLConnection *)value {
+    _connection = value;
+}
+
 
 @end

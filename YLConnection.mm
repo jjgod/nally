@@ -38,6 +38,7 @@
 	if (term != _terminal) {
 		[_terminal release];
 		_terminal = [term retain];
+        [_terminal setConnection: self];
 	}
 }
 
@@ -49,8 +50,10 @@
     _connected = value;
     if (_connected) 
         [self setIcon: [NSImage imageNamed: @"connect.pdf"]];
-    else
+    else {
+        [[self terminal] setHasMessage: NO];
         [self setIcon: [NSImage imageNamed: @"offline.pdf"]];
+    }
 }
 
 - (NSString *)connectionName {

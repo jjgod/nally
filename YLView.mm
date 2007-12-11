@@ -674,7 +674,7 @@ BOOL isSpecialSymbol(unichar ch) {
 		return;
 	}
 	
-	if (![self hasMarkedText] && (c == 0x7F || c == NSDeleteFunctionKey)) {
+	if (![self hasMarkedText] && (c == 0x7F)) {
 		buf[0] = buf[1] = 0x08;
         if ([[YLLGlobalConfig sharedInstance] detectDoubleByte] &&
             [ds cursorColumn] > 0 && [ds attrAtRow: [ds cursorRow] column: [ds cursorColumn] - 1].f.doubleByte == 2)
@@ -1379,26 +1379,31 @@ BOOL isSpecialSymbol(unichar ch) {
     
 //    NSLog(@"%s", aSelector);
     
-	if (strcmp((char *) aSelector, "insertNewline:") == 0) {
+	if (aSelector == @selector(insertNewline:)) {
 		ch[0] = 0x0D;
 		[[self frontMostConnection] sendBytes: ch length: 1];
-	} else if (strcmp((char *) aSelector, "cancelOperation:") == 0) {
-	} else if (strcmp((char *) aSelector, "cancel:") == 0) {
-	} else if (strcmp((char *) aSelector, "scrollToBeginningOfDocument:") == 0) {
+    } else if (aSelector == @selector(cancelOperation:)) {
+        ch[0] = 0x1B;
+		[[self frontMostConnection] sendBytes: ch length: 1];
+	} else if (aSelector == @selector(cancel:)) {
+	} else if (aSelector == @selector(scrollToBeginningOfDocument:)) {
         ch[0] = 0x1B; ch[1] = '['; ch[2] = '1'; ch[3] = '~';
 		[[self frontMostConnection] sendBytes: ch length: 4];		
-	} else if (strcmp((char *) aSelector, "scrollToEndOfDocument:") == 0) {
+	} else if (aSelector == @selector(scrollToEndOfDocument:)) {
         ch[0] = 0x1B; ch[1] = '['; ch[2] = '4'; ch[3] = '~';
 		[[self frontMostConnection] sendBytes: ch length: 4];		
-	} else if (strcmp((char *) aSelector, "scrollPageUp:") == 0) {
+	} else if (aSelector == @selector(scrollPageUp:)) {
 		ch[0] = 0x1B; ch[1] = '['; ch[2] = '5'; ch[3] = '~';
 		[[self frontMostConnection] sendBytes: ch length: 4];
-	} else if (strcmp((char *) aSelector, "scrollPageDown:") == 0) {
+	} else if (aSelector == @selector(scrollPageDown:)) {
 		ch[0] = 0x1B; ch[1] = '['; ch[2] = '6'; ch[3] = '~';
 		[[self frontMostConnection] sendBytes: ch length: 4];		
-	} else if (strcmp((char *) aSelector, "insertTab:") == 0) {
+	} else if (aSelector == @selector(insertTab:)) {
         ch[0] = 0x09;
 		[[self frontMostConnection] sendBytes: ch length: 1];
+    } else if (aSelector == @selector(deleteForward:)) {
+		ch[0] = 0x1B; ch[1] = '['; ch[2] = '3'; ch[3] = '~';
+        [[self frontMostConnection] sendBytes: ch length: 4];
     }
 }
 

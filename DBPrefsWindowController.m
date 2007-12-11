@@ -3,7 +3,7 @@
 //
 
 #import "DBPrefsWindowController.h"
-
+#import "YLLGlobalConfig.h"
 
 static DBPrefsWindowController *_sharedPrefsWindowController = nil;
 
@@ -108,7 +108,7 @@ static DBPrefsWindowController *_sharedPrefsWindowController = nil;
 - (void)setupToolbar
 {
     [self addView: _generalPrefView label: NSLocalizedString(@"General", @"Preferences") image: [NSImage imageNamed: @"NSApplicationIcon"]];
-//    [self addView: _fontsPrefView label: @"Fonts" image: [NSImage imageNamed: @"NSFontPanel"]];
+    [self addView: _fontsPrefView label: @"Fonts" image: [NSImage imageNamed: @"NSFontPanel"]];
     [self addView: _colorsPrefView label: NSLocalizedString(@"Colors", @"Preferences") image: [NSImage imageNamed: @"NSColorPanel"]];
 }
 
@@ -123,6 +123,32 @@ static DBPrefsWindowController *_sharedPrefsWindowController = nil;
 }
 
 
+- (void) changeChineseFont: (id) sender {
+    NSFontManager *fontManager = [NSFontManager sharedFontManager];
+	NSFont *selectedFont = [fontManager selectedFont];
+
+    if (selectedFont == nil) {
+		selectedFont = [NSFont systemFontOfSize:[NSFont systemFontSize]];
+	}
+    
+	NSFont *panelFont = [fontManager convertFont:selectedFont];
+    [[YLLGlobalConfig sharedInstance] setChineseFontName: [panelFont fontName]];
+    [[YLLGlobalConfig sharedInstance] setChineseFontSize: [panelFont pointSize]];
+}
+
+- (void) changeEnglishFont: (id) sender {
+    NSFontManager *fontManager = [NSFontManager sharedFontManager];
+	NSFont *selectedFont = [fontManager selectedFont];
+    
+    if (selectedFont == nil) {
+		selectedFont = [NSFont systemFontOfSize:[NSFont systemFontSize]];
+	}
+    
+	NSFont *panelFont = [fontManager convertFont:selectedFont];
+    [[YLLGlobalConfig sharedInstance] setEnglishFontName: [panelFont fontName]];
+    [[YLLGlobalConfig sharedInstance] setEnglishFontSize: [panelFont pointSize]];
+    
+}
 
 
 - (void)addView:(NSView *)view label:(NSString *)label image:(NSImage *)image

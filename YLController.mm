@@ -12,15 +12,29 @@
 #import "YLLGlobalConfig.h"
 #import "DBPrefsWindowController.h"
 #import "YLEmoticon.h"
+#import "CTBadge.h"
+
+@interface YLController (Private)
+- (BOOL)tabView:(NSTabView *)tabView shouldCloseTabViewItem:(NSTabViewItem *)tabViewItem ;
+- (void)tabView:(NSTabView *)tabView willCloseTabViewItem:(NSTabViewItem *)tabViewItem ;
+- (void)tabView:(NSTabView *)tabView didCloseTabViewItem:(NSTabViewItem *)tabViewItem ;
+@end
 
 @implementation YLController
 
 - (void) awakeFromNib {
-    [[YLLGlobalConfig sharedInstance] addObserver: self
-                                       forKeyPath: @"showHiddenText"
-                                          options: (NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
-                                          context: NULL];
-//    [_tab setStyleNamed: @"Metal"];
+    NSArray *observeKeys = [NSArray arrayWithObjects: @"showHiddenText", @"messageCount", @"cellWidth", @"cellHeight", 
+                            @"chineseFontName", @"chineseFontSize", @"chineseFontPaddingLeft", @"chineseFontPaddingBottom",
+                            @"englishFontName", @"englishFontSize", @"englishFontPaddingLeft", @"englishFontPaddingBottom", 
+                            @"colorBlack", @"colorBlackHilite", @"colorRed", @"colorRedHilite", @"colorGreen", @"colorGreenHilite",
+                            @"colorYellow", @"colorYellowHilite", @"colorBlue", @"colorBlueHilite", @"colorMagenta", @"colorMagentaHilite", 
+                            @"colorCyan", @"colorCyanHilite", @"colorWhite", @"colorWhiteHilite", @"colorBG", @"colorBGHilite", nil];
+    for (NSString *key in observeKeys)
+        [[YLLGlobalConfig sharedInstance] addObserver: self
+                                           forKeyPath: key
+                                              options: (NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
+                                              context: NULL];
+
     [_tab setCanCloseOnlyTab: YES];
         
     [self loadSites];
@@ -132,10 +146,23 @@
                       ofObject:(id)object
                         change:(NSDictionary *)change
                        context:(void *)context {
-    if ([[YLLGlobalConfig sharedInstance] showHiddenText]) 
-        [_showHiddenTextMenuItem setState: NSOnState];
-    else
-        [_showHiddenTextMenuItem setState: NSOffState];
+    if ([keyPath isEqualToString: @"showHiddenText"]) {
+        if ([[YLLGlobalConfig sharedInstance] showHiddenText]) 
+            [_showHiddenTextMenuItem setState: NSOnState];
+        else
+            [_showHiddenTextMenuItem setState: NSOffState];        
+    } else if ([keyPath isEqualToString: @"messageCount"]) {
+        CTBadge *myBadge = [[CTBadge alloc] init];
+        [myBadge badgeApplicationDockIconWithValue: [[YLLGlobalConfig sharedInstance] messageCount] insetX: 5.0 y: 5.0];
+        [myBadge release];
+    } else if ([keyPath hasPrefix: @"cell"]) {
+        
+    } else if ([keyPath hasPrefix: @"chineseFont"] || [keyPath hasPrefix: @"englishFont"] || [keyPath hasPrefix: @"color"]) {
+        [[YLLGlobalConfig sharedInstance] refreshFont];
+        [[[[_telnetView selectedTabViewItem] identifier] terminal] setAllDirty];
+        [_telnetView updateBackedImage];
+        [_telnetView setNeedsDisplay: YES];
+    }
 }
 
 #pragma mark -
@@ -265,8 +292,12 @@
     if ([_telnetView numberOfTabViewItems] == 0) return;
     
     NSTabViewItem *tabItem = [_telnetView selectedTabViewItem];
-    
-    [_telnetView removeTabViewItem: tabItem];
+    if ([self tabView: _telnetView shouldCloseTabViewItem: tabItem]) {
+        [self tabView: _telnetView willCloseTabViewItem: tabItem];
+        [[[tabItem identifier] terminal] setHasMessage: NO];
+        [_telnetView removeTabViewItem: tabItem];
+        [self tabView: _telnetView didCloseTabViewItem: tabItem];
+    }
 }
 
 - (IBAction) editSites: (id) sender {
@@ -489,7 +520,7 @@
     if ([[NSUserDefaults standardUserDefaults] boolForKey: @"RestoreConnection"]) 
         [self saveLastConnections];
     
-    if (![[NSUserDefaults standardUserDefaults] boolForKey: @"ConfirmOnQuit"]) 
+    if (![[NSUserDefaults standardUserDefaults] boolForKey: @"ConfirmOnClose"]) 
         return YES;
     
     BOOL hasConnectedConnetion = NO;
@@ -546,16 +577,32 @@
 #pragma mark -
 #pragma mark Tab Delegation
 
+- (void) confirmTabSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void  *)contextInfo {
+    if (returnCode == NSAlertDefaultReturn) {
+        [[[(id)contextInfo identifier] terminal] setHasMessage: NO];
+        [_telnetView removeTabViewItem: (id)contextInfo];
+    }
+}
+
 - (BOOL)tabView:(NSTabView *)tabView shouldCloseTabViewItem:(NSTabViewItem *)tabViewItem {
-    return YES;
+    if (![[tabViewItem identifier] connected]) return YES;
+    if (![[NSUserDefaults standardUserDefaults] boolForKey: @"ConfirmOnClose"]) return YES;
+    NSBeginAlertSheet(NSLocalizedString(@"Are you sure you want to close this tab?", @"Sheet Title"), 
+                      NSLocalizedString(@"Close", @"Default Button"), 
+                      NSLocalizedString(@"Cancel", @"Cancel Button"), 
+                      nil, 
+                      _mainWindow, self, 
+                      @selector(confirmTabSheetDidEnd:returnCode:contextInfo:), 
+                      NULL, 
+                      tabViewItem, 
+                      NSLocalizedString(@"The connection is still alive. If you close this tab, the connection will be lost. Do you want to close this tab anyway?", @"Sheet Message"));
+    return NO;
 }
 
 - (void)tabView:(NSTabView *)tabView willCloseTabViewItem:(NSTabViewItem *)tabViewItem {
-
 }
 
 - (void)tabView:(NSTabView *)tabView didCloseTabViewItem:(NSTabViewItem *)tabViewItem {
-
 }
 
 - (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem {
@@ -564,9 +611,7 @@
     [_addressBar setStringValue: [identifier connectionAddress]];
     [_telnetView setNeedsDisplay: YES];
     [_mainWindow makeFirstResponder: _telnetView];
-    if ([[tabViewItem identifier] connected]) {
-        [[tabViewItem identifier] setIcon: [NSImage imageNamed: @"connect.pdf"]];
-    }
+    [[[tabViewItem identifier] terminal] setHasMessage: NO];
     [self updateEncodingMenu];
 }
 
