@@ -7,11 +7,26 @@
 /* Menu */
 "Lookup in Dictionary" = "使用字典查詢";
 
+/* Sheet Title */
+"Are you sure you want to close this tab?" = "確定要關閉標籤頁？";
+
+/* Default Button */
+"Close" = "關閉";
+
 /* Default Button */
 "Quit" = "離開";
 
 /* Sheet Message */
 "There are %d tabs open in Nally. Do you want to quit anyway?" = "還有 %d 個標籤頁正在連線中，您確定要結束 Nally？";
 
+/* Sheet Message */
+"The connection is still alive. If you close this tab, the connection will be lost. Do you want to close this tab anyway?" = "此連線未結束。若您關閉這個標籤頁會強迫斷線。您確定要關閉這個標籤頁嗎？";
+
 /* Preferences */
 "General" = "一般";
+
+/* Preferences */
+"Colors" = "顏色";
+
+/* Preferences */
+"Fonts" = "字形";
