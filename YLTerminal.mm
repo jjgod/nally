@@ -80,7 +80,6 @@ static unsigned short gEmptyAttr;
 - (void) feedBytes: (const unsigned char *) bytes length: (int) len connection: (id) connection {
 	int i, x;
 	unsigned char c;
-
 	[_delegate performSelector: @selector(tick:)
 					withObject: nil
 					afterDelay: 0.02];
@@ -613,9 +612,9 @@ static unsigned short gEmptyAttr;
         YLLGlobalConfig *config = [YLLGlobalConfig sharedInstance];
         if (_hasMessage) {
             [NSApp requestUserAttention: NSInformationalRequest];
-            if (_connection != [[_delegate selectedTabViewItem] identifier]) { /* Not selected tab */
-                [config setMessageCount: [config messageCount] + 1];
+            if (_connection != [[_delegate selectedTabViewItem] identifier] || ![NSApp isActive]) { /* Not selected tab */
                 [_connection setIcon: [NSImage imageNamed: @"message.pdf"]];
+                [config setMessageCount: [config messageCount] + 1];
             } else {
                 _hasMessage = NO;
             }

@@ -507,6 +507,7 @@ BOOL isSpecialSymbol(unichar ch) {
 #pragma mark -
 #pragma mark Event Handling
 - (void) mouseDown: (NSEvent *) e {
+    [[self frontMostTerminal] setHasMessage: NO];
     [[self window] makeFirstResponder: self];
     if (![self connected]) return;
     NSPoint p = [e locationInWindow];
@@ -645,6 +646,8 @@ BOOL isSpecialSymbol(unichar ch) {
 	unsigned char arrow[6] = {0x1B, 0x4F, 0x00, 0x1B, 0x4F, 0x00};
 	unsigned char buf[10];
 
+    [[self frontMostTerminal] setHasMessage: NO];
+    
 	if ([e modifierFlags] & NSControlKeyMask) {
 		buf[0] = c;
 		[[self frontMostConnection] sendBytes: buf length: 1];
