@@ -15,8 +15,8 @@
     int _messageCount;
 	int _row;
 	int _column;
-	int _cellWidth;
-	int _cellHeight;
+	CGFloat _cellWidth;
+	CGFloat _cellHeight;
     
     int _bgColorIndex;
     int _fgColorIndex;
@@ -62,10 +62,10 @@
 - (void)setRow:(int)value;
 - (int)column;
 - (void)setColumn:(int)value;
-- (int)cellWidth;
-- (void)setCellWidth:(int)value;
-- (int)cellHeight;
-- (void)setCellHeight:(int)value;
+- (CGFloat)cellWidth;
+- (void)setCellWidth:(CGFloat)value;
+- (CGFloat)cellHeight;
+- (void)setCellHeight:(CGFloat)value;
 
 - (BOOL)showHiddenText;
 - (void)setShowHiddenText:(BOOL)value;

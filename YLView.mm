@@ -198,6 +198,7 @@ BOOL isSpecialSymbol(unichar ch) {
         [self configure];
         _selectionLength = 0;
         _selectionLocation = 0;
+//        [self setTabViewType: NSNoTabsNoBorder];
     }
     return self;
 }
@@ -210,7 +211,6 @@ BOOL isSpecialSymbol(unichar ch) {
 #pragma mark -
 #pragma mark Actions
 
-/* FIXME: Truncate the extra spaces at end of line */
 - (void) copy: (id) sender {
     if (![self connected]) return;
     if (_selectionLength == 0) return;
@@ -498,8 +498,8 @@ BOOL isSpecialSymbol(unichar ch) {
     if (p.x < 0) p.x = 0;
     if (p.y < 0) p.y = 0;
     int cx, cy = 0;
-    cx = ((int)p.x) / _fontWidth;
-    cy = gRow - (((int)p.y) / _fontHeight) - 1;
+    cx = (int) ((CGFloat) p.x / _fontWidth);
+    cy = gRow - (int) ((CGFloat) p.y / _fontHeight) - 1;
     return cy * gColumn + cx;
 }
 
@@ -550,7 +550,8 @@ BOOL isSpecialSymbol(unichar ch) {
     
     [self setNeedsDisplay: YES];
     
-    /* Click to move cursor, I need better algorithm to support China BBS! */
+    /* Click to move cursor.
+       FIXME: I need better algorithm to support China BBS! */
     if ([e modifierFlags] & NSCommandKeyMask) {
         unsigned char cmd[gRow * gColumn + 1];
         unsigned int cmdLength = 0;

@@ -200,21 +200,21 @@ static NSArray *gEncodingArray = nil;
     _column = value;
 }
 
-- (int)cellWidth {
+- (CGFloat)cellWidth {
     return _cellWidth;
 }
 
-- (void)setCellWidth:(int)value {
+- (void)setCellWidth:(CGFloat)value {
     if (value == 0) value = 12;
     _cellWidth = value;
     [[NSUserDefaults standardUserDefaults] setFloat: value forKey: @"CellWidth"];
 }
 
-- (int)cellHeight {
+- (CGFloat)cellHeight {
     return _cellHeight;
 }
 
-- (void)setCellHeight:(int)value {
+- (void)setCellHeight:(CGFloat)value {
     if (value == 0) value = 24;
     _cellHeight = value;
     [[NSUserDefaults standardUserDefaults] setFloat: value forKey: @"CellHeight"];

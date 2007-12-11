@@ -17,8 +17,8 @@ extern "C" {
 @class YLMarkedTextView;
 
 @interface YLView : NSTabView <NSTextInput> {	
-	int _fontWidth;
-	int _fontHeight;
+	CGFloat _fontWidth;
+	CGFloat _fontHeight;
 	
 	NSImage *_backedImage;
 	
