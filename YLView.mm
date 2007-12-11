@@ -600,7 +600,7 @@ BOOL isSpecialSymbol(unichar ch) {
             [[self frontMostConnection] sendBytes: cmd length: cmdLength];
     }
     
-    [super mouseDown: e];
+//    [super mouseDown: e];
 }
 
 - (void) mouseDragged: (NSEvent *) e {
@@ -647,6 +647,7 @@ BOOL isSpecialSymbol(unichar ch) {
 	if ([e modifierFlags] & NSControlKeyMask) {
 		buf[0] = c;
 		[[self frontMostConnection] sendBytes: buf length: 1];
+        return;
 	}
 	
 	if (c == NSUpArrowFunctionKey) arrow[2] = arrow[5] = 'A';
