@@ -9,16 +9,23 @@
 #import "YLApplication.h"
 #import "YLController.h"
 
+static NSString *gLeftString, *gRightString;
+
 @implementation YLApplication
+
++ (void) initialize {
+    unichar r = NSRightArrowFunctionKey;
+    unichar l = NSLeftArrowFunctionKey;
+    gLeftString = [[NSString stringWithCharacters: &l length: 1] retain];
+    gRightString = [[NSString stringWithCharacters: &r length: 1] retain];
+}
+
 - (void) sendEvent: (NSEvent *) event {
+    NSAutoreleasePool *pool = [NSAutoreleasePool new];
     if ([event type] == NSKeyDown) {
-        unichar right = NSRightArrowFunctionKey;
-        unichar left = NSLeftArrowFunctionKey;
-        NSString *rightString = [NSString stringWithCharacters: &right length: 1];
-        NSString *leftString = [NSString stringWithCharacters: &left length: 1];
         if ((([event modifierFlags] & NSCommandKeyMask) == NSCommandKeyMask) && 
             (([event modifierFlags] & NSShiftKeyMask) == NSShiftKeyMask) &&
-            [[event charactersIgnoringModifiers] isEqualToString: rightString] ) {
+            [[event charactersIgnoringModifiers] isEqualToString: gRightString] ) {
 
             event = [NSEvent keyEventWithType: [event type] 
                                      location: [event locationInWindow] 
@@ -26,13 +33,13 @@
                                     timestamp: [event timestamp] 
                                  windowNumber: [event windowNumber] 
                                       context: [event context] 
-                                   characters: rightString
-                  charactersIgnoringModifiers: rightString 
+                                   characters: gRightString
+                  charactersIgnoringModifiers: gRightString 
                                     isARepeat: [event isARepeat] 
                                       keyCode:[event keyCode]];
         } else if ((([event modifierFlags] & NSCommandKeyMask) == NSCommandKeyMask) && 
                     (([event modifierFlags] & NSShiftKeyMask) == NSShiftKeyMask) &&
-                    [[event charactersIgnoringModifiers] isEqualToString: leftString] ) {
+                    [[event charactersIgnoringModifiers] isEqualToString: gLeftString] ) {
             
             event = [NSEvent keyEventWithType: [event type] 
                                      location: [event locationInWindow] 
@@ -40,8 +47,8 @@
                                     timestamp: [event timestamp] 
                                  windowNumber: [event windowNumber] 
                                       context: [event context] 
-                                   characters: leftString
-                  charactersIgnoringModifiers: leftString 
+                                   characters: gLeftString
+                  charactersIgnoringModifiers: gLeftString 
                                     isARepeat: [event isARepeat] 
                                       keyCode:[event keyCode]];
         } else if (([event modifierFlags] & NSCommandKeyMask) == NSCommandKeyMask && 
@@ -51,14 +58,16 @@
                    [[event characters] intValue] > 0 && 
                    [[event characters] intValue] < 10) {
             [_controller selectTabNumber: [[event characters] intValue]];
+            [pool release];
             return;
-        } else if ([[NSUserDefaults standardUserDefaults] boolForKey: @"CommandRHotkey"] &&
-                   ([event modifierFlags] & NSCommandKeyMask) == NSCommandKeyMask && 
+        } else if (([event modifierFlags] & NSCommandKeyMask) == NSCommandKeyMask && 
                    ([event modifierFlags] & NSAlternateKeyMask) == 0 && 
                    ([event modifierFlags] & NSControlKeyMask) == 0 && 
                    ([event modifierFlags] & NSShiftKeyMask) == 0 && 
-                   [[event characters] isEqualToString: @"r"]) {
+                   [[event characters] isEqualToString: @"r"] &&
+                   [[NSUserDefaults standardUserDefaults] boolForKey: @"CommandRHotkey"]) {
             [_controller reconnect: self];
+            [pool release];
             return;
         } else if (([event modifierFlags] & NSCommandKeyMask) == NSCommandKeyMask && 
                    ([event modifierFlags] & NSAlternateKeyMask) == 0 && 
@@ -66,11 +75,13 @@
                    ([event modifierFlags] & NSShiftKeyMask) == 0 && 
                    [[event characters] isEqualToString: @"n"]) {
             [_controller editSites: self];
+            [pool release];
             return;
         }
     }
     
     [super sendEvent:event];
+    [pool release];
 }
 
 

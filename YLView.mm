@@ -778,6 +778,8 @@ BOOL isSpecialSymbol(unichar ch) {
 }
 
 - (void) drawBlink {
+    NSAutoreleasePool *pool = [NSAutoreleasePool new];
+
     int c, r;
     if (![gConfig blinkTicker]) return;
     id ds = [self frontMostTerminal];
@@ -794,9 +796,11 @@ BOOL isSpecialSymbol(unichar ch) {
         }
     }
     
+    [pool release];
 }
 
 - (void) drawSelection {
+    NSAutoreleasePool *pool = [NSAutoreleasePool new];
     int location, length;
     if (_selectionLength >= 0) {
         location = _selectionLocation;
@@ -820,6 +824,7 @@ BOOL isSpecialSymbol(unichar ch) {
         x = 0;
         y++;
     }
+    [pool release];
 }
 
 /* 
@@ -832,6 +837,7 @@ BOOL isSpecialSymbol(unichar ch) {
  
  */
 - (void) extendBottomFrom: (int) start to: (int) end {
+    NSAutoreleasePool *pool = [NSAutoreleasePool new];
 	[_backedImage lockFocus];
 	[_backedImage compositeToPoint: NSMakePoint(0, (gRow - end) * _fontHeight) 
 						  fromRect: NSMakeRect(0, (gRow - end - 1) * _fontHeight, gColumn * _fontWidth, (end - start) * _fontHeight) 
@@ -840,6 +846,7 @@ BOOL isSpecialSymbol(unichar ch) {
 	[gConfig->_colorTable[0][gConfig->_bgColorIndex] set];
 	[NSBezierPath fillRect: NSMakeRect(0, (gRow - end - 1) * _fontHeight, gColumn * _fontWidth, _fontHeight)];
 	[_backedImage unlockFocus];
+    [pool release];
 }
 
 
@@ -851,6 +858,7 @@ BOOL isSpecialSymbol(unichar ch) {
 		DDDDDDDDDDD			CCCCCCCCCCC
  */
 - (void) extendTopFrom: (int) start to: (int) end {
+    NSAutoreleasePool *pool = [NSAutoreleasePool new];
     [_backedImage lockFocus];
 	[_backedImage compositeToPoint: NSMakePoint(0, (gRow - end - 1) * _fontHeight) 
 						  fromRect: NSMakeRect(0, (gRow - end) * _fontHeight, gColumn * _fontWidth, (end - start) * _fontHeight) 
@@ -859,6 +867,7 @@ BOOL isSpecialSymbol(unichar ch) {
 	[gConfig->_colorTable[0][gConfig->_bgColorIndex] set];
 	[NSBezierPath fillRect: NSMakeRect(0, (gRow - start - 1) * _fontHeight, gColumn * _fontWidth, _fontHeight)];
 	[_backedImage unlockFocus];
+    [pool release];
 }
 
 - (void) updateBackedImage {
@@ -1349,6 +1358,8 @@ BOOL isSpecialSymbol(unichar ch) {
 /* NSTextInput protocol */
 // instead of keyDown: aString can be NSString or NSAttributedString
 - (void) insertText: (id) aString {
+    NSAutoreleasePool *pool = [NSAutoreleasePool new];
+
 	[_textField setHidden: YES];
 	[_markedText release];
 	_markedText = nil;	
@@ -1376,6 +1387,7 @@ BOOL isSpecialSymbol(unichar ch) {
 		}
 	}
 	[[self frontMostConnection] sendMessage: data];
+    [pool release];
 }
 
 - (void) doCommandBySelector:(SEL)aSelector {
