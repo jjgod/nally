@@ -87,7 +87,7 @@ static YLContextualMenuManager *gSharedInstance;
 }
 
 - (NSString *) extractLongURL: (NSString *) s {
-    return s;
+    return [[s componentsSeparatedByString: @"\n"] componentsJoinedByString: @""];
 }
 
 

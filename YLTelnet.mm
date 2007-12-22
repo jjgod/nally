@@ -8,6 +8,7 @@
 
 #import "YLTelnet.h"
 #import "YLTerminal.h"
+#import "YLSite.h"
 #import <sys/types.h>
 #import <sys/socket.h>
 #import <netinet/in.h>

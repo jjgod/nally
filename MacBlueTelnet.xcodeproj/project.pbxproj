@@ -16,18 +16,13 @@
 		856CDB260C9650550025C754 /* encoding.c in Sources */ = {isa = PBXBuildFile; fileRef = 856CDB250C9650550025C754 /* encoding.c */; };
 		8570AD5F0A3923A900838442 /* YLView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8570AD5E0A3923A900838442 /* YLView.mm */; };
 		8579CA2A0CF21D3D005A8353 /* YLSite.m in Sources */ = {isa = PBXBuildFile; fileRef = 8579CA290CF21D3D005A8353 /* YLSite.m */; };
+		857ACC7E0D1CE1DC00C422E7 /* Xmas.icns in Resources */ = {isa = PBXBuildFile; fileRef = 857ACC7D0D1CE1DC00C422E7 /* Xmas.icns */; };
 		857EAE2A0CF1D62900777C15 /* connect.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 857EAE290CF1D62900777C15 /* connect.pdf */; };
 		857EAE4F0CF1D89300777C15 /* offline.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 857EAE4E0CF1D89300777C15 /* offline.pdf */; };
 		85834AC30CFE7F530015E348 /* message.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 85834AC20CFE7F530015E348 /* message.pdf */; };
 		85834C100CFEC3F30015E348 /* Whit.aiff in Resources */ = {isa = PBXBuildFile; fileRef = 85834C0F0CFEC3F30015E348 /* Whit.aiff */; };
 		85899C7B0CEED4E40031907F /* YLApplication.mm in Sources */ = {isa = PBXBuildFile; fileRef = 85899C7A0CEED4E40031907F /* YLApplication.mm */; };
 		858A54E60CAE78C8000E1AA7 /* YLMarkedTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 858A54E50CAE78C8000E1AA7 /* YLMarkedTextView.m */; };
-		858F4DF60D0E7E4400D1AFF0 /* CTBadge.m in Sources */ = {isa = PBXBuildFile; fileRef = 858F4DF20D0E7E4400D1AFF0 /* CTBadge.m */; };
-		858F4DF70D0E7E4400D1AFF0 /* CTGradient.m in Sources */ = {isa = PBXBuildFile; fileRef = 858F4DF50D0E7E4400D1AFF0 /* CTGradient.m */; };
-		858F4DFC0D0E7E6100D1AFF0 /* CTBadge_1.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 858F4DF80D0E7E6100D1AFF0 /* CTBadge_1.pdf */; };
-		858F4DFD0D0E7E6100D1AFF0 /* CTBadge_3.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 858F4DF90D0E7E6100D1AFF0 /* CTBadge_3.pdf */; };
-		858F4DFE0D0E7E6100D1AFF0 /* CTBadge_4.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 858F4DFA0D0E7E6100D1AFF0 /* CTBadge_4.pdf */; };
-		858F4DFF0D0E7E6100D1AFF0 /* CTBadge_5.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 858F4DFB0D0E7E6100D1AFF0 /* CTBadge_5.pdf */; };
 		859252F50CFD4F860054E3D6 /* YLContextualMenuManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 859252F40CFD4F860054E3D6 /* YLContextualMenuManager.m */; };
 		85957EAF0CFF1176006E5E08 /* sleep.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 85957EAE0CFF1176006E5E08 /* sleep.pdf */; };
 		859CB7DB0CEF43C300B27180 /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 859CB7DA0CEF43C300B27180 /* Sparkle.framework */; };
@@ -36,7 +31,6 @@
 		85ABEB810C966FEF008227D6 /* YLController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 85ABEB800C966FEF008227D6 /* YLController.mm */; };
 		85AE9DA70CB1597A0045317F /* reload.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 85AE9DA60CB1597A0045317F /* reload.pdf */; };
 		85AE9DAE0CB15D220045317F /* bookmark.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 85AE9DAD0CB15D220045317F /* bookmark.pdf */; };
-		85B247E70CEA1B840090046C /* DragonBall.icns in Resources */ = {isa = PBXBuildFile; fileRef = 85B247E60CEA1B840090046C /* DragonBall.icns */; };
 		85CE53390D0D687800F55B7B /* YLSSH.mm in Sources */ = {isa = PBXBuildFile; fileRef = 85CE53380D0D687800F55B7B /* YLSSH.mm */; };
 		85E7825C0D057E8400BDA3FB /* YLEmoticon.m in Sources */ = {isa = PBXBuildFile; fileRef = 85E7825B0D057E8400BDA3FB /* YLEmoticon.m */; };
 		85EA93230D0791180098C94B /* Preferences.nib in Resources */ = {isa = PBXBuildFile; fileRef = 85EA93210D0791180098C94B /* Preferences.nib */; };
@@ -86,6 +80,7 @@
 		8570AD5E0A3923A900838442 /* YLView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = YLView.mm; sourceTree = "<group>"; };
 		8579CA280CF21D3D005A8353 /* YLSite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLSite.h; sourceTree = "<group>"; };
 		8579CA290CF21D3D005A8353 /* YLSite.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YLSite.m; sourceTree = "<group>"; };
+		857ACC7D0D1CE1DC00C422E7 /* Xmas.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Xmas.icns; sourceTree = "<group>"; };
 		857EAE290CF1D62900777C15 /* connect.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = connect.pdf; sourceTree = "<group>"; };
 		857EAE4E0CF1D89300777C15 /* offline.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = offline.pdf; sourceTree = "<group>"; };
 		85834AC20CFE7F530015E348 /* message.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = message.pdf; sourceTree = "<group>"; };
@@ -94,14 +89,6 @@
 		85899C7A0CEED4E40031907F /* YLApplication.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = YLApplication.mm; sourceTree = "<group>"; };
 		858A54E40CAE78C8000E1AA7 /* YLMarkedTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLMarkedTextView.h; sourceTree = "<group>"; };
 		858A54E50CAE78C8000E1AA7 /* YLMarkedTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YLMarkedTextView.m; sourceTree = "<group>"; };
-		858F4DF20D0E7E4400D1AFF0 /* CTBadge.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CTBadge.m; sourceTree = "<group>"; };
-		858F4DF30D0E7E4400D1AFF0 /* CTBadge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CTBadge.h; sourceTree = "<group>"; };
-		858F4DF40D0E7E4400D1AFF0 /* CTGradient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CTGradient.h; sourceTree = "<group>"; };
-		858F4DF50D0E7E4400D1AFF0 /* CTGradient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CTGradient.m; sourceTree = "<group>"; };
-		858F4DF80D0E7E6100D1AFF0 /* CTBadge_1.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = CTBadge_1.pdf; sourceTree = "<group>"; };
-		858F4DF90D0E7E6100D1AFF0 /* CTBadge_3.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = CTBadge_3.pdf; sourceTree = "<group>"; };
-		858F4DFA0D0E7E6100D1AFF0 /* CTBadge_4.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = CTBadge_4.pdf; sourceTree = "<group>"; };
-		858F4DFB0D0E7E6100D1AFF0 /* CTBadge_5.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = CTBadge_5.pdf; sourceTree = "<group>"; };
 		859252F30CFD4F860054E3D6 /* YLContextualMenuManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLContextualMenuManager.h; sourceTree = "<group>"; };
 		859252F40CFD4F860054E3D6 /* YLContextualMenuManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YLContextualMenuManager.m; sourceTree = "<group>"; };
 		85957EAE0CFF1176006E5E08 /* sleep.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = sleep.pdf; sourceTree = "<group>"; };
@@ -220,10 +207,6 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				858F4DF80D0E7E6100D1AFF0 /* CTBadge_1.pdf */,
-				858F4DF90D0E7E6100D1AFF0 /* CTBadge_3.pdf */,
-				858F4DFA0D0E7E6100D1AFF0 /* CTBadge_4.pdf */,
-				858F4DFB0D0E7E6100D1AFF0 /* CTBadge_5.pdf */,
 				85EA93210D0791180098C94B /* Preferences.nib */,
 				85137B320D02192800833909 /* Credits.rtf */,
 				85834C0F0CFEC3F30015E348 /* Whit.aiff */,
@@ -232,6 +215,7 @@
 				857EAE290CF1D62900777C15 /* connect.pdf */,
 				857EAE4E0CF1D89300777C15 /* offline.pdf */,
 				85B247E60CEA1B840090046C /* DragonBall.icns */,
+				857ACC7D0D1CE1DC00C422E7 /* Xmas.icns */,
 				85AE9DAD0CB15D220045317F /* bookmark.pdf */,
 				85AE9DA60CB1597A0045317F /* reload.pdf */,
 				8D1107310486CEB800E47090 /* Info.plist */,
@@ -254,10 +238,6 @@
 		85D9B9D20C97DF7B006C5E0F /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				858F4DF20D0E7E4400D1AFF0 /* CTBadge.m */,
-				858F4DF30D0E7E4400D1AFF0 /* CTBadge.h */,
-				858F4DF40D0E7E4400D1AFF0 /* CTGradient.h */,
-				858F4DF50D0E7E4400D1AFF0 /* CTGradient.m */,
 				858A54E40CAE78C8000E1AA7 /* YLMarkedTextView.h */,
 				858A54E50CAE78C8000E1AA7 /* YLMarkedTextView.m */,
 				8570AD5D0A3923A900838442 /* YLView.h */,
@@ -358,7 +338,6 @@
 				8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */,
 				85AE9DA70CB1597A0045317F /* reload.pdf in Resources */,
 				85AE9DAE0CB15D220045317F /* bookmark.pdf in Resources */,
-				85B247E70CEA1B840090046C /* DragonBall.icns in Resources */,
 				857EAE2A0CF1D62900777C15 /* connect.pdf in Resources */,
 				857EAE4F0CF1D89300777C15 /* offline.pdf in Resources */,
 				85834AC30CFE7F530015E348 /* message.pdf in Resources */,
@@ -367,10 +346,7 @@
 				85137B330D02192800833909 /* Credits.rtf in Resources */,
 				85A0E73D0D06B72900ACA26F /* Localizable.strings in Resources */,
 				85EA93230D0791180098C94B /* Preferences.nib in Resources */,
-				858F4DFC0D0E7E6100D1AFF0 /* CTBadge_1.pdf in Resources */,
-				858F4DFD0D0E7E6100D1AFF0 /* CTBadge_3.pdf in Resources */,
-				858F4DFE0D0E7E6100D1AFF0 /* CTBadge_4.pdf in Resources */,
-				858F4DFF0D0E7E6100D1AFF0 /* CTBadge_5.pdf in Resources */,
+				857ACC7E0D1CE1DC00C422E7 /* Xmas.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -397,8 +373,6 @@
 				85ED52290D0920E6003296D4 /* CommonType.c in Sources */,
 				85ED53220D092B5F003296D4 /* YLConnection.mm in Sources */,
 				85CE53390D0D687800F55B7B /* YLSSH.mm in Sources */,
-				858F4DF60D0E7E4400D1AFF0 /* CTBadge.m in Sources */,
-				858F4DF70D0E7E4400D1AFF0 /* CTGradient.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -506,7 +506,7 @@ static unsigned short gEmptyAttr;
             int index = (firstByte << 8) + _grid[y][x].byte - 0x8000;
             for (j = 0; j < spacebuf; j++)
                 textBuf[bufLength++] = ' ';
-            textBuf[bufLength++] = _encoding == YLBig5Encoding ? B2U[index] : G2U[index];
+            textBuf[bufLength++] = ([[[self connection] site] encoding] == YLBig5Encoding) ? B2U[index] : G2U[index];
             spacebuf = 0;
         }
     }
@@ -539,7 +539,11 @@ static unsigned short gEmptyAttr;
 	cell *currRow = _grid[r];
     int httpLength = 7; // http://
     int httpsLength = 8; // https://
+    int ftpLength = 6, telnetLength = 9, bbsLength = 6, sshLength = 6, mailtoLength = 7;
     BOOL urlState = NO;
+    
+    if (r > 0) 
+        urlState = _grid[r - 1][_column - 1].attr.f.url;
     
 	int i;
 	for (i = 0; i < _column; i++) {
@@ -572,10 +576,92 @@ static unsigned short gEmptyAttr;
                    currRow[i + 7].byte == '/' ) {
             urlState = YES;
             currRow[i].attr.f.url = YES;
+        } else if (i + ftpLength < _column && 
+                   currRow[i + 0].byte == 'f' &&
+                   currRow[i + 1].byte == 't' && 
+                   currRow[i + 2].byte == 'p' &&
+                   currRow[i + 3].byte == ':' &&
+                   currRow[i + 4].byte == '/' &&
+                   currRow[i + 5].byte == '/' ) {
+            urlState = YES;
+            currRow[i].attr.f.url = YES;
+        } else if (i + telnetLength < _column && 
+                   currRow[i + 0].byte == 't' &&
+                   currRow[i + 1].byte == 'e' && 
+                   currRow[i + 2].byte == 'l' &&
+                   currRow[i + 3].byte == 'n' &&
+                   currRow[i + 4].byte == 'e' &&
+                   currRow[i + 5].byte == 't' &&
+                   currRow[i + 6].byte == ':' &&
+                   currRow[i + 7].byte == '/' &&
+                   currRow[i + 8].byte == '/') {
+            urlState = YES;
+            currRow[i].attr.f.url = YES;
+        } else if (i + bbsLength < _column && 
+                   currRow[i + 0].byte == 'b' &&
+                   currRow[i + 1].byte == 'b' && 
+                   currRow[i + 2].byte == 's' &&
+                   currRow[i + 3].byte == ':' &&
+                   currRow[i + 4].byte == '/' &&
+                   currRow[i + 5].byte == '/') {
+            urlState = YES;
+            currRow[i].attr.f.url = YES;        
+        } else if (i + sshLength < _column && 
+                   currRow[i + 0].byte == 's' &&
+                   currRow[i + 1].byte == 's' && 
+                   currRow[i + 2].byte == 'h' &&
+                   currRow[i + 3].byte == ':' &&
+                   currRow[i + 4].byte == '/' &&
+                   currRow[i + 5].byte == '/') {
+            urlState = YES;
+            currRow[i].attr.f.url = YES;
+        } else if (i + mailtoLength < _column && 
+                   currRow[i + 0].byte == 'm' &&
+                   currRow[i + 1].byte == 'a' && 
+                   currRow[i + 2].byte == 'i' &&
+                   currRow[i + 3].byte == 'l' &&
+                   currRow[i + 4].byte == 't' &&
+                   currRow[i + 5].byte == 'o' &&
+                   currRow[i + 6].byte == ':') {
+            urlState = YES;
+            (currRow + i)->attr.f.url = YES;
         } else {
             currRow[i].attr.f.url = NO;
         }
 	}
+}
+
+- (NSString *) urlStringAtRow: (int) r column: (int) c {
+    if (!_grid[r][c].attr.f.url) return nil;
+
+    while (_grid[r][c].attr.f.url) {
+        c--;
+        if (c < 0) {
+            c = _column - 1;
+            r--;
+        }
+        if (r < 0) 
+            break;
+    }
+    
+    c++;
+    if (c >= _column) {
+        c = 0;
+        r++;
+    }
+    
+    NSMutableString *urlString = [NSMutableString string];
+    while (_grid[r][c].attr.f.url) {
+        [urlString appendFormat: @"%c", _grid[r][c].byte];
+        c++;
+        if (c >= _column) {
+            c = 0;
+            r++;
+        }
+        if (r >= _row) 
+            break;
+    }
+    return urlString;
 }
 
 # pragma mark -
@@ -598,11 +684,11 @@ static unsigned short gEmptyAttr;
 }
 
 - (YLEncoding)encoding {
-    return _encoding;
+    return [[[self connection] site] encoding];
 }
 
 - (void)setEncoding:(YLEncoding)encoding {
-    _encoding = encoding;
+    [[[self connection] site] setEncoding: encoding];
 }
 
 - (BOOL)hasMessage {
@@ -614,7 +700,7 @@ static unsigned short gEmptyAttr;
         _hasMessage = value;
         YLLGlobalConfig *config = [YLLGlobalConfig sharedInstance];
         if (_hasMessage) {
-            [NSApp requestUserAttention: NSInformationalRequest];
+            [NSApp requestUserAttention: ([config repeatBounce] ? NSCriticalRequest : NSInformationalRequest)];
             if (_connection != [[_delegate selectedTabViewItem] identifier] || ![NSApp isActive]) { /* Not selected tab */
                 [_connection setIcon: [NSImage imageNamed: @"message.pdf"]];
                 [config setMessageCount: [config messageCount] + 1];

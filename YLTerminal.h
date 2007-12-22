@@ -35,8 +35,8 @@
 	
 	enum { TP_NORMAL, TP_ESCAPE, TP_CONTROL } _state;
     
-    YLEncoding _encoding;
-
+//    YLEncoding _encoding;
+    
 	std::deque<unsigned char> *_csBuf;
 	std::deque<int> *_csArg;
 	unsigned int _csTemp;
@@ -76,6 +76,7 @@
 /* Update State */
 - (void) updateURLStateForRow: (int) r ;
 - (void) updateDoubleByteStateForRow: (int) r ;
+- (NSString *) urlStringAtRow: (int) r column: (int) c ;
 
 /* Accessor */
 - (void) setDelegate: (id) d;

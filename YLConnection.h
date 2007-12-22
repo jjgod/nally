@@ -9,10 +9,13 @@
 #import <Cocoa/Cocoa.h>
 #import "YLTerminal.h"
 
+@class YLSite;
+
 @protocol YLConnectionProtocol 
 - (void) close ;
 - (void) reconnect ;
 
+- (BOOL) connectToSite: (YLSite *) s;
 - (BOOL) connectToAddress: (NSString *) addr;
 - (BOOL) connectToAddress: (NSString *) addr port: (unsigned int) port ;
 
@@ -36,6 +39,8 @@
 
 - (NSDate *) lastTouchDate;
 
+- (YLSite *)site;
+- (void)setSite:(YLSite *)value;
 @end
 
 @interface YLConnection : NSObject <YLConnectionProtocol> {
@@ -48,9 +53,11 @@
     NSDate          * _lastTouchDate;
     
     YLTerminal		* _terminal;
+    YLSite          * _site;
 }
 
 + (YLConnection *) connectionWithAddress: (NSString *) addr;
+- (BOOL) connectToSite: (YLSite *) s;
 
 - (YLTerminal *) terminal ;
 - (void) setTerminal: (YLTerminal *) term;
@@ -65,7 +72,7 @@
 - (void)setConnectionAddress:(NSString *)value;
 - (BOOL)isProcessing;
 - (void)setIsProcessing:(BOOL)value;
-
 - (NSDate *) lastTouchDate;
-
+- (YLSite *)site;
+- (void)setSite:(YLSite *)value;
 @end

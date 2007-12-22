@@ -7,6 +7,7 @@
 //
 
 #import <Cocoa/Cocoa.h>
+#import "CommonType.h"
 #import <ApplicationServices/ApplicationServices.h>
 #define NUM_COLOR 10
 
@@ -25,6 +26,9 @@
 	BOOL _blinkTicker;
     BOOL _shouldSmoothFonts;
     BOOL _detectDoubleByte;
+    BOOL _repeatBounce;
+    YLEncoding _defaultEncoding;
+    YLANSIColorKey _defaultANSIColorKey;
     
     CGFloat _chineseFontSize;
     CGFloat _englishFontSize;
@@ -39,22 +43,17 @@
 	CTFontRef _eCTFont;
 	CGFontRef _cCGFont;
 	CGFontRef _eCGFont;
-	
+    
 	NSColor *_colorTable[2][NUM_COLOR];
 
 	CFDictionaryRef _cCTAttribute[2][NUM_COLOR];
 	CFDictionaryRef _eCTAttribute[2][NUM_COLOR];
 }
 
-- (IBAction) setChineseFont: (id) sender;
-- (IBAction) setEnglishFont: (id) sender;
-
 + (YLLGlobalConfig *) sharedInstance;
 
 - (void) refreshFont;
 
-- (NSArray *) encodingArray;
-- (void) setEncodingArray: (NSArray *) a;
 - (int)messageCount;
 - (void)setMessageCount:(int)value;
 
@@ -73,6 +72,14 @@
 - (void)setShouldSmoothFonts:(BOOL)value;
 - (BOOL)detectDoubleByte;
 - (void)setDetectDoubleByte:(BOOL)value;
+- (BOOL)repeatBounce;
+- (void)setRepeatBounce:(BOOL)value;
+- (YLEncoding)defaultEncoding;
+- (void)setDefaultEncoding:(YLEncoding)value;
+- (YLANSIColorKey)defaultANSIColorKey;
+- (void)setDefaultANSIColorKey:(YLANSIColorKey)value;
+
+
 
 - (NSColor *) colorAtIndex: (int) i hilite: (BOOL) h ;
 - (void) setColor: (NSColor *) c hilite: (BOOL) h atIndex: (int) i ;

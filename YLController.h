@@ -19,7 +19,10 @@
     IBOutlet NSWindow *_mainWindow;
 	IBOutlet id _telnetView;
 	IBOutlet id _addressBar;
+    IBOutlet id _detectDoubleByteButton;
+    
     IBOutlet PSMTabBarControl *_tab;
+    IBOutlet NSMenuItem *_detectDoubleByteMenuItem;
     IBOutlet NSMenuItem *_closeWindowMenuItem;
     IBOutlet NSMenuItem *_closeTabMenuItem;
     NSMutableArray *_sites;
@@ -27,7 +30,7 @@
     IBOutlet NSArrayController *_sitesController;
     IBOutlet NSArrayController *_emoticonsController;
     IBOutlet NSMenuItem *_sitesMenu;
-    IBOutlet NSTableView *_sitesTableView;
+    IBOutlet NSTextField *_siteNameField;
     IBOutlet NSMenuItem *_showHiddenTextMenuItem;
     IBOutlet NSMenuItem *_encodingMenuItem;
 }
@@ -38,6 +41,7 @@
 - (void) loadLastConnections;
 
 - (IBAction) setEncoding: (id) sender ;
+- (IBAction) setDetectDoubleByteAction: (id) sender ;
 
 - (IBAction) newTab: (id) sender ;
 - (IBAction) connect: (id) sender;
@@ -53,8 +57,6 @@
 - (IBAction) addSites: (id) sender;
 - (IBAction) showHiddenText: (id) sender;
 - (IBAction) openPreferencesWindow: (id) sender ;
-- (void) newConnectionToAddress: (NSString *) addr name: (NSString *) name encoding: (YLEncoding) encoding;
-- (void) newConnectionWithDictionary: (NSDictionary *) d ;
 - (void) newConnectionWithSite: (YLSite *) s ;
 
 - (IBAction) closeEmoticons: (id) sender;

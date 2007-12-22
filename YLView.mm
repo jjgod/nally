@@ -9,6 +9,7 @@
 #import "YLView.h"
 #import "YLTerminal.h"
 #import "YLConnection.h"
+#import "YLSite.h"
 #import "YLLGLobalConfig.h"
 #import "YLMarkedTextView.h"
 #import "YLContextualMenuManager.h"
@@ -42,7 +43,7 @@ static NSBezierPath *gSymbolTrianglePath1[4];
 static NSBezierPath *gSymbolTrianglePath2[4];
 
 BOOL isEnglishNumberAlphabet(unsigned char c) {
-    return ('0' <= c && c <= '9') || ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z') || (c == '-') || (c == '_');
+    return ('0' <= c && c <= '9') || ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z') || (c == '-') || (c == '_') || (c == '.');
 }
 
 BOOL isSpecialSymbol(unichar ch) {
@@ -228,9 +229,10 @@ BOOL isSpecialSymbol(unichar ch) {
     }
 
     cell *buffer = (cell *) malloc((length + gRow + gColumn + 1) * sizeof(cell));
-    int i;
+    int i, j;
     int bufferLength = 0;
     id ds = [self frontMostTerminal];
+    int emptyCount = 0;
 
     for (i = 0; i < length; i++) {
         int index = location + i;
@@ -240,15 +242,26 @@ BOOL isSpecialSymbol(unichar ch) {
             buffer[bufferLength].byte = '\n';
             buffer[bufferLength].attr = buffer[bufferLength - 1].attr;
             bufferLength++;
+            emptyCount = 0;
         }
         if (currentRow[index % gColumn].byte != '\0') {
+            for (j = 0; j < emptyCount; j++) {
+                buffer[bufferLength] = currentRow[index % gColumn];
+                buffer[bufferLength].byte = ' ';
+                buffer[bufferLength].attr.f.doubleByte = 0;
+                buffer[bufferLength].attr.f.url = 0;
+                buffer[bufferLength].attr.f.nothing = 0;
+                bufferLength++;   
+            }
             buffer[bufferLength] = currentRow[index % gColumn];
             /* Clear non-ANSI related properties. */
             buffer[bufferLength].attr.f.doubleByte = 0;
             buffer[bufferLength].attr.f.url = 0;
             buffer[bufferLength].attr.f.nothing = 0;
-            
-            bufferLength++;            
+            bufferLength++;
+            emptyCount = 0;
+        } else {
+            emptyCount++;
         }
     }
     
@@ -263,7 +276,6 @@ BOOL isSpecialSymbol(unichar ch) {
 
 - (void) pasteColor: (id) sender {
     if (![self connected]) return;
-    
     NSPasteboard *pb = [NSPasteboard generalPasteboard];
 	NSArray *types = [pb types];
 	if (![types containsObject: ANSIColorPBoardType]) {
@@ -271,6 +283,16 @@ BOOL isSpecialSymbol(unichar ch) {
 		return;
 	}
 	
+    NSData *escData;
+    YLSite *s = [[self frontMostConnection] site];
+    if ([s ansiColorKey] == YLCtrlUANSIColorKey) {
+        escData = [NSData dataWithBytes: "\x15" length: 1];
+    } else if ([s ansiColorKey] == YLEscEscEscANSIColorKey) {
+        escData = [NSData dataWithBytes: "\x1B\x1B" length: 2];
+    } else {
+        escData = [NSData dataWithBytes: "\x1B" length:1];
+    }
+    
 	cell *buffer = (cell *) [[pb dataForType: ANSIColorPBoardType] bytes];
 	int bufferLength = [[pb dataForType: ANSIColorPBoardType] length] / sizeof(cell);
 		
@@ -289,7 +311,8 @@ BOOL isSpecialSymbol(unichar ch) {
 	for (i = 0; i < bufferLength; i++) {
 		if (buffer[i].byte == '\n' ) {
 			previousANSI = defaultANSI;
-			[writeBuffer appendBytes: "\x15[m\r" length: 5];
+            [writeBuffer appendData: escData];
+			[writeBuffer appendBytes: "[m\r" length: 3];
 			continue;
 		}
 		
@@ -315,7 +338,7 @@ BOOL isSpecialSymbol(unichar ch) {
 			(currentANSI.f.underline == 0 && previousANSI.f.underline == 1) ||
 			(currentANSI.f.reverse == 0 && previousANSI.f.reverse == 1) ||
             (currentANSI.f.bgColor ==  gConfig->_bgColorIndex && previousANSI.f.reverse != gConfig->_bgColorIndex) ) {
-			strcpy(tmp, "\x15[0");
+			strcpy(tmp, "[0");
 			if (currentANSI.f.blink == 1) strcat(tmp, ";5");
 			if (currentANSI.f.bold == 1) strcat(tmp, ";1");
 			if (currentANSI.f.underline == 1) strcat(tmp, ";4");
@@ -323,6 +346,7 @@ BOOL isSpecialSymbol(unichar ch) {
 			if (currentANSI.f.fgColor != gConfig->_fgColorIndex) sprintf(tmp, "%s;%d", tmp, currentANSI.f.fgColor + 30);
 			if (currentANSI.f.bgColor != gConfig->_bgColorIndex) sprintf(tmp, "%s;%d", tmp, currentANSI.f.bgColor + 40);
 			strcat(tmp, "m");
+            [writeBuffer appendData: escData];
 			[writeBuffer appendBytes: tmp length: strlen(tmp)];
 			[writeBuffer appendBytes: &(buffer[i].byte) length: 1];
 			previousANSI = currentANSI;
@@ -330,7 +354,7 @@ BOOL isSpecialSymbol(unichar ch) {
 		}
 		
 		/* Add attribute */
-		strcpy(tmp, "\x15[");
+		strcpy(tmp, "[");
 		if (currentANSI.f.blink == 1 && previousANSI.f.blink == 0) strcat(tmp, "5;");
 		if (currentANSI.f.bold == 1 && previousANSI.f.bold == 0) strcat(tmp, "1;");
 		if (currentANSI.f.underline == 1 && previousANSI.f.underline == 0) strcat(tmp, "4;");
@@ -339,12 +363,18 @@ BOOL isSpecialSymbol(unichar ch) {
 		if (currentANSI.f.bgColor != previousANSI.f.bgColor) sprintf(tmp, "%s%d;", tmp, currentANSI.f.bgColor + 40);
 		tmp[strlen(tmp) - 1] = 'm';
 		sprintf(tmp, "%s%c", tmp, buffer[i].byte);
+        [writeBuffer appendData: escData];
 		[writeBuffer appendBytes: tmp length: strlen(tmp)];
 		previousANSI = currentANSI;
 		continue;
 	}
-	[writeBuffer appendBytes: "\x15[m" length: 3];
-    [[self frontMostConnection] sendMessage: writeBuffer];
+    [writeBuffer appendData: escData];
+	[writeBuffer appendBytes: "[m" length: 2];
+    unsigned char *buf = (unsigned char *)[writeBuffer bytes];
+    for (i = 0; i < [writeBuffer length]; i++) {
+        [[self frontMostConnection] sendBytes: buf + i length: 1];
+        usleep(100);
+    }
 }
 
 - (void) paste: (id) sender {
@@ -353,7 +383,7 @@ BOOL isSpecialSymbol(unichar ch) {
     NSArray *types = [pb types];
     if ([types containsObject: NSStringPboardType]) {
         NSString *str = [pb stringForType: NSStringPboardType];
-        [self insertText: str];
+        [self insertText: str withDelay: 100];
     }
 }
 
@@ -454,7 +484,7 @@ BOOL isSpecialSymbol(unichar ch) {
         carray[i] = text[i];
     NSString *mStr = [NSString stringWithCharacters: carray length: text.size()];
     free(carray);
-    [self insertText: mStr];
+    [self insertText: mStr withDelay: 100];
 }
 
 - (void) selectAll: (id) sender {
@@ -579,23 +609,30 @@ BOOL isSpecialSymbol(unichar ch) {
 			} 			
 		} 
 		
+        cell *currRow = [[self frontMostTerminal] cellsOfRow: moveToRow];
 		if (home) {
 			for (i = 0; i < moveToCol; i++) {
-				cmd[cmdLength++] = 0x1B;
-				cmd[cmdLength++] = 0x4F;
-				cmd[cmdLength++] = 0x43;
+                if (currRow[i].attr.f.doubleByte != 2 || [[[self frontMostConnection] site] detectDoubleByte]) {
+                    cmd[cmdLength++] = 0x1B;
+                    cmd[cmdLength++] = 0x4F;
+                    cmd[cmdLength++] = 0x43;                    
+                }
 			}
 		} else if (moveToCol > [ds cursorColumn]) {
 			for (i = [ds cursorColumn]; i < moveToCol; i++) {
-				cmd[cmdLength++] = 0x1B;
-				cmd[cmdLength++] = 0x4F;
-				cmd[cmdLength++] = 0x43;
+                if (currRow[i].attr.f.doubleByte != 2 || [[[self frontMostConnection] site] detectDoubleByte]) {
+                    cmd[cmdLength++] = 0x1B;
+                    cmd[cmdLength++] = 0x4F;
+                    cmd[cmdLength++] = 0x43;
+                }
 			}
 		} else if (moveToCol < [ds cursorColumn]) {
 			for (i = [ds cursorColumn]; i > moveToCol; i--) {
-				cmd[cmdLength++] = 0x1B;
-				cmd[cmdLength++] = 0x4F;
-				cmd[cmdLength++] = 0x44;
+                if (currRow[i].attr.f.doubleByte != 2 || [[[self frontMostConnection] site] detectDoubleByte]) {
+                    cmd[cmdLength++] = 0x1B;
+                    cmd[cmdLength++] = 0x4F;
+                    cmd[cmdLength++] = 0x44;
+                }
 			}
 		}
 		if (cmdLength > 0) 
@@ -623,25 +660,15 @@ BOOL isSpecialSymbol(unichar ch) {
         NSPoint p = [e locationInWindow];
         p = [self convertPoint: p toView: nil];
         int index = [self convertIndexFromPoint: p];
-        int r = index / gColumn;
-        int c = index % gColumn;
-        cell *currRow = [[self frontMostTerminal] cellsOfRow: r];
-        if (currRow[c].attr.f.url) {
-            int start = c;
-            for (start = c; start >= 0 && currRow[start].attr.f.url; start--) ;
-            start++;
-            int end = c;
-            for (end = c; end < gColumn && currRow[end].attr.f.url; end++) ;
-
-            NSMutableString *url = [NSMutableString string];
-            for (c = start; c < end; c++)
-                [url appendFormat: @"%c", currRow[c].byte];
-            [[NSWorkspace sharedWorkspace] openURL: [NSURL URLWithString: url]];
-        }
+        
+        NSString *url = [[self frontMostTerminal] urlStringAtRow: (index / gColumn) 
+                                                          column: (index % gColumn)];
+        if (url) [[NSWorkspace sharedWorkspace] openURL: [NSURL URLWithString: url]];
     }
 }
 
 - (void) keyDown: (NSEvent *) e {
+    [self clearSelection];
 	unichar c = [[e characters] characterAtIndex: 0];
 	unsigned char arrow[6] = {0x1B, 0x4F, 0x00, 0x1B, 0x4F, 0x00};
 	unsigned char buf[10];
@@ -669,7 +696,7 @@ BOOL isSpecialSymbol(unichar ch) {
         [ds updateDoubleByteStateForRow: [ds cursorRow]];
         if ((c == NSRightArrowFunctionKey && [ds attrAtRow: [ds cursorRow] column: [ds cursorColumn]].f.doubleByte == 1) || 
             (c == NSLeftArrowFunctionKey && [ds cursorColumn] > 0 && [ds attrAtRow: [ds cursorRow] column: [ds cursorColumn] - 1].f.doubleByte == 2))
-            if ([[YLLGlobalConfig sharedInstance] detectDoubleByte]) {
+            if ([[[self frontMostConnection] site] detectDoubleByte]) {
                 [[self frontMostConnection] sendBytes: arrow length: 6];
                 return;
             }
@@ -680,7 +707,7 @@ BOOL isSpecialSymbol(unichar ch) {
 	
 	if (![self hasMarkedText] && (c == 0x7F)) {
 		buf[0] = buf[1] = 0x08;
-        if ([[YLLGlobalConfig sharedInstance] detectDoubleByte] &&
+        if ([[[self frontMostConnection] site] detectDoubleByte] &&
             [ds cursorColumn] > 0 && [ds attrAtRow: [ds cursorRow] column: [ds cursorColumn] - 1].f.doubleByte == 2)
             [[self frontMostConnection] sendBytes: buf length: 2];
         else
@@ -701,6 +728,13 @@ BOOL isSpecialSymbol(unichar ch) {
 	}
 	[viewCursor set];
 	[super flagsChanged: event];
+}
+
+- (void) clearSelection {
+    if (_selectionLength != 0) {
+        _selectionLength = 0;
+        [self setNeedsDisplay: YES];
+    }
 }
 
 #pragma mark -
@@ -955,7 +989,7 @@ BOOL isSpecialSymbol(unichar ch) {
 			continue;
 		} else if (db == 2) {
 			unsigned short code = (((currRow + x - 1)->byte) << 8) + ((currRow + x)->byte) - 0x8000;
-			unichar ch = [ds encoding] == YLBig5Encoding ? B2U[code] : G2U[code];
+			unichar ch = [[[self frontMostConnection] site] encoding] == YLBig5Encoding ? B2U[code] : G2U[code];
 			if (isSpecialSymbol(ch)) {
 				[self drawSpecialSymbol: ch forRow: r column: (x - 1) leftAttribute: (currRow + x - 1)->attr rightAttribute: (currRow + x)->attr];
 			} else {
@@ -1358,8 +1392,12 @@ BOOL isSpecialSymbol(unichar ch) {
 /* NSTextInput protocol */
 // instead of keyDown: aString can be NSString or NSAttributedString
 - (void) insertText: (id) aString {
-    NSAutoreleasePool *pool = [NSAutoreleasePool new];
+    [self insertText: aString withDelay: 0];
+}
 
+- (void) insertText: (id) aString withDelay: (int) microsecond {
+    NSAutoreleasePool *pool = [NSAutoreleasePool new];
+    
 	[_textField setHidden: YES];
 	[_markedText release];
 	_markedText = nil;	
@@ -1379,14 +1417,23 @@ BOOL isSpecialSymbol(unichar ch) {
 			buf[0] = ch;
 			[data appendBytes: buf length: 1];
 		} else {
-            YLEncoding encoding = [[self frontMostTerminal] encoding];
+            YLEncoding encoding = [[[self frontMostConnection] site] encoding];
             unichar code = (encoding == YLBig5Encoding ? U2B[ch] : U2G[ch]);
 			buf[0] = code >> 8;
 			buf[1] = code & 0xFF;
 			[data appendBytes: buf length: 2];
 		}
 	}
-	[[self frontMostConnection] sendMessage: data];
+    if (microsecond == 0) {
+        [[self frontMostConnection] sendMessage: data];
+    } else {
+        int i;
+        unsigned char *buf = (unsigned char *) [data bytes];
+        for (i = 0; i < [data length]; i++) {
+            [[self frontMostConnection] sendBytes: buf + i length: 1];
+            usleep(microsecond);
+        }
+    }
     [pool release];
 }
 
@@ -1401,7 +1448,7 @@ BOOL isSpecialSymbol(unichar ch) {
     } else if (aSelector == @selector(cancelOperation:)) {
         ch[0] = 0x1B;
 		[[self frontMostConnection] sendBytes: ch length: 1];
-	} else if (aSelector == @selector(cancel:)) {
+//	} else if (aSelector == @selector(cancel:)) {
 	} else if (aSelector == @selector(scrollToBeginningOfDocument:)) {
         ch[0] = 0x1B; ch[1] = '['; ch[2] = '1'; ch[3] = '~';
 		[[self frontMostConnection] sendBytes: ch length: 4];		
@@ -1419,7 +1466,16 @@ BOOL isSpecialSymbol(unichar ch) {
 		[[self frontMostConnection] sendBytes: ch length: 1];
     } else if (aSelector == @selector(deleteForward:)) {
 		ch[0] = 0x1B; ch[1] = '['; ch[2] = '3'; ch[3] = '~';
-        [[self frontMostConnection] sendBytes: ch length: 4];
+		ch[4] = 0x1B; ch[5] = '['; ch[6] = '3'; ch[7] = '~';
+        int len = 4;
+        id ds = [self frontMostTerminal];
+        if ([[[self frontMostConnection] site] detectDoubleByte] && 
+            [ds cursorColumn] < (gColumn - 1) && 
+            [ds attrAtRow: [ds cursorRow] column: [ds cursorColumn] + 1].f.doubleByte == 2)
+            len += 4;
+        [[self frontMostConnection] sendBytes: ch length: len];
+    } else {
+        NSLog(@"Unprocessed selector: %s", aSelector);
     }
 }
 

@@ -50,7 +50,11 @@
 	BOOL _crossFade;
 	BOOL _shiftSlowsAnimation;
 	
+    IBOutlet NSPopUpButton *_telnetPopUpButton;
+    IBOutlet NSPopUpButton *_sshPopUpButton;
+    
     IBOutlet NSView *_generalPrefView;
+    IBOutlet NSView *_connectionPrefView;
     IBOutlet NSView *_fontsPrefView;
     IBOutlet NSView *_colorsPrefView;
     
@@ -58,6 +62,11 @@
 	NSViewAnimation *viewAnimation;
 }
 
+- (IBAction) setChineseFont: (id) sender;
+- (IBAction) setEnglishFont: (id) sender;
+
+- (IBAction) setDefaultTelnetClient: (id) sender;
+- (IBAction) setDefaultSSHClient: (id) sender;
 
 + (DBPrefsWindowController *)sharedPrefsWindowController;
 + (NSString *)nibName;

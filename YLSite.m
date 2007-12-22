@@ -19,17 +19,26 @@
     return self;
 }
 
++ (YLSite *) site {
+    return [[YLSite new] autorelease];
+}
+
+
 + (YLSite *) siteWithDictionary: (NSDictionary *) d {
     YLSite *s = [[[YLSite alloc] init] autorelease];
-    [s setName: [d valueForKey: @"name"]];
-    [s setAddress: [d valueForKey: @"address"]];
+    [s setName: [d valueForKey: @"name"] ?: @""];
+    [s setAddress: [d valueForKey: @"address"] ?: @""];
     [s setEncoding: (YLEncoding)[[d valueForKey: @"encoding"] unsignedShortValue]];
+    [s setAnsiColorKey: (YLANSIColorKey)[[d valueForKey: @"ansicolorkey"] unsignedShortValue]];
+    [s setDetectDoubleByte: [[d valueForKey: @"detectdoublebyte"] boolValue]];
     return s;
 }
 
 - (NSDictionary *) dictionaryOfSite {
-    return [NSDictionary dictionaryWithObjectsAndKeys: [self name], @"name", [self address], @"address",
-            [NSNumber numberWithUnsignedShort: [self encoding]], @"encoding", nil];
+    return [NSDictionary dictionaryWithObjectsAndKeys: [self name] ?: @"", @"name", [self address], @"address",
+            [NSNumber numberWithUnsignedShort: [self encoding]], @"encoding", 
+            [NSNumber numberWithUnsignedShort: [self ansiColorKey]], @"ansicolorkey", 
+            [NSNumber numberWithBool: [self detectDoubleByte]], @"detectdoublebyte", nil];
 }
 
 - (NSString *)name {
@@ -62,8 +71,34 @@
     _encoding = encoding;
 }
 
+- (YLANSIColorKey)ansiColorKey {
+    return _ansiColorKey;
+}
+
+- (void)setAnsiColorKey: (YLANSIColorKey)value {
+    _ansiColorKey = value;
+}
+
+- (BOOL)detectDoubleByte {
+    return _detectDoubleByte;
+}
+
+- (void)setDetectDoubleByte:(BOOL)value {
+    _detectDoubleByte = value;
+}
+
 - (NSString *) description {
     return [NSString stringWithFormat: @"%@:%@", [self name], [self address]];
+}
+
+- (id) copyWithZone:(NSZone *)zone {
+    YLSite *s = [[YLSite allocWithZone: zone] init];
+    [s setName: [self name]];
+    [s setAddress: [self address]];
+    [s setEncoding: [self encoding]];
+    [s setAnsiColorKey: [self ansiColorKey]];
+    [s setDetectDoubleByte: [self detectDoubleByte]];
+    return s;
 }
 
 @end

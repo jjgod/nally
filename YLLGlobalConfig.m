@@ -9,7 +9,6 @@
 #import "YLLGlobalConfig.h"
 
 static YLLGlobalConfig *sSharedInstance;
-static NSArray *gEncodingArray = nil;
 
 @interface NSUserDefaults(myColorSupport)
 - (void)setMyColor:(NSColor *)aColor forKey:(NSString *)aKey;
@@ -36,11 +35,6 @@ static NSArray *gEncodingArray = nil;
 	return sSharedInstance ?: [[YLLGlobalConfig new] autorelease];
 }
 
-+ (void) initialize {
-    gEncodingArray = 
-    [[NSArray arrayWithObjects: @"Big5", @"GBK", nil] retain];
-}
-
 - (id) init {
 	if(sSharedInstance) {
 		[self release];
@@ -50,7 +44,10 @@ static NSArray *gEncodingArray = nil;
         [self setShowHiddenText: [defaults boolForKey: @"ShowHiddenText"]];
         [self setShouldSmoothFonts: [defaults boolForKey: @"ShouldSmoothFonts"]];
         [self setDetectDoubleByte: [defaults boolForKey: @"DetectDoubleByte"]];
-
+        [self setDefaultEncoding: (YLEncoding) [defaults integerForKey: @"DefaultEncoding"]];
+        [self setDefaultANSIColorKey: (YLANSIColorKey) [defaults integerForKey: @"DefaultANSIColorKey"]];
+        [self setRepeatBounce: [defaults boolForKey: @"RepeatBounce"]];
+        
 		/* init code */
 		_row = 24;
 		_column = 80;
@@ -156,22 +153,6 @@ static NSArray *gEncodingArray = nil;
     
 }
 
-- (IBAction) setChineseFont: (id) sender {
-    [[NSFontManager sharedFontManager] setAction: @selector(changeChineseFont:)];
-    [[sender window] makeFirstResponder: [sender window]];
-    NSFontPanel *fp = [NSFontPanel sharedFontPanel];
-    [fp setPanelFont: [NSFont fontWithName: _chineseFontName size: _chineseFontSize] isMultiple: NO];
-    [fp orderFront: self];
-}
-
-- (IBAction) setEnglishFont: (id) sender {
-    [[NSFontManager sharedFontManager] setAction: @selector(changeEnglishFont:)];
-    [[sender window] makeFirstResponder: [sender window]];
-    NSFontPanel *fp = [NSFontPanel sharedFontPanel];
-    [fp setPanelFont: [NSFont fontWithName: _englishFontName size: _englishFontSize] isMultiple: NO];
-    [fp orderFront: self];
-}
-
 #pragma mark -
 #pragma mark Accessor
 - (int)messageCount {
@@ -251,6 +232,14 @@ static NSArray *gEncodingArray = nil;
     [[NSUserDefaults standardUserDefaults] setBool: value forKey: @"ShouldSmoothFonts"];
 }
 
+- (BOOL)repeatBounce {
+    return _repeatBounce;
+}
+- (void)setRepeatBounce:(BOOL)value {
+    _repeatBounce = value;
+    [[NSUserDefaults standardUserDefaults] setBool: value forKey: @"RepeatBounce"];
+}
+
 - (BOOL)detectDoubleByte {
     return _detectDoubleByte;
 }
@@ -258,6 +247,24 @@ static NSArray *gEncodingArray = nil;
 - (void)setDetectDoubleByte:(BOOL)value {
     _detectDoubleByte = value;
     [[NSUserDefaults standardUserDefaults] setBool: value forKey: @"DetectDoubleByte"];
+}
+
+- (YLEncoding)defaultEncoding {
+    return _defaultEncoding;
+}
+
+- (void)setDefaultEncoding:(YLEncoding)value {
+    _defaultEncoding = value;
+    [[NSUserDefaults standardUserDefaults] setInteger: (NSInteger) value forKey: @"DefaultEncoding"];
+}
+
+- (YLANSIColorKey)defaultANSIColorKey {
+    return _defaultANSIColorKey;
+}
+
+- (void)setDefaultANSIColorKey:(YLANSIColorKey)value {
+    _defaultANSIColorKey = value;
+    [[NSUserDefaults standardUserDefaults] setInteger: (NSInteger) value forKey: @"DefaultANSIColorKey"];
 }
 
 - (BOOL)blinkTicker {
@@ -270,12 +277,6 @@ static NSArray *gEncodingArray = nil;
 - (void)updateBlinkTicker {
     [self setBlinkTicker: !_blinkTicker];
 }
-
-- (NSArray *) encodingArray {
-    return gEncodingArray;
-}
-- (void) setEncodingArray: (NSArray *) a {}
-
 
 - (CGFloat)chineseFontSize { return _chineseFontSize; }
 - (void)setChineseFontSize:(CGFloat)value {

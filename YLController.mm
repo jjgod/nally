@@ -12,7 +12,6 @@
 #import "YLLGlobalConfig.h"
 #import "DBPrefsWindowController.h"
 #import "YLEmoticon.h"
-#import "CTBadge.h"
 
 @interface YLController (Private)
 - (BOOL)tabView:(NSTabView *)tabView shouldCloseTabViewItem:(NSTabViewItem *)tabViewItem ;
@@ -23,6 +22,9 @@
 @implementation YLController
 
 - (void) awakeFromNib {
+    // Register URL
+    [[NSAppleEventManager sharedAppleEventManager] setEventHandler:self andSelector:@selector(getUrl:withReplyEvent:) forEventClass:kInternetEventClass andEventID:kAEGetURL];
+    
     NSArray *observeKeys = [NSArray arrayWithObjects: @"shouldSmoothFonts", @"showHiddenText", @"messageCount", @"cellWidth", @"cellHeight", 
                             @"chineseFontName", @"chineseFontSize", @"chineseFontPaddingLeft", @"chineseFontPaddingBottom",
                             @"englishFontName", @"englishFontSize", @"englishFontPaddingLeft", @"englishFontPaddingBottom", 
@@ -36,7 +38,7 @@
                                               context: NULL];
 
     [_tab setCanCloseOnlyTab: YES];
-    
+    [[YLLGlobalConfig sharedInstance] setShowHiddenText: [[YLLGlobalConfig sharedInstance] showHiddenText]];
     
     [self loadSites];
     [self updateSitesMenu];
@@ -60,10 +62,10 @@
     }
     
     for (YLSite *s in _sites) {
-        NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle: [s name] action: @selector(openSiteMenu:) keyEquivalent: @""];
+        NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle: [s name] ?: @"" action: @selector(openSiteMenu:) keyEquivalent: @""];
         [menuItem setRepresentedObject: s];
         [[_sitesMenu submenu] addItem: menuItem];
-        [menuItem release];        
+        [menuItem release];
     }
 }
 
@@ -77,7 +79,6 @@
         if ([_telnetView frontMostTerminal] && i == [[_telnetView frontMostTerminal] encoding])
             [item setState: NSOnState];
     }
-    
 }
 
 - (void) updateBlinkTicker: (NSTimer *) t {
@@ -100,26 +101,17 @@
 }
 
 - (void) newConnectionWithSite: (YLSite *) s {
-    [self newConnectionWithDictionary: [s dictionaryOfSite]];
-}
-
-- (void) newConnectionWithDictionary: (NSDictionary *) d {
-    [self newConnectionToAddress: [d valueForKey: @"address"] 
-                            name: [d valueForKey: @"name"]
-                        encoding: (YLEncoding) [[d valueForKey: @"encoding"] unsignedIntValue]];
-}
-
-- (void) newConnectionToAddress: (NSString *) addr name: (NSString *) name encoding: (YLEncoding) encoding {
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
+    
 	id terminal = [YLTerminal new];
-    YLConnection *connection = [YLConnection connectionWithAddress: addr];
-
+    YLConnection *connection = [YLConnection connectionWithAddress: [s address]];
+    
     BOOL emptyTab = [_telnetView frontMostConnection] && ([_telnetView frontMostTerminal] == nil);
-
-    [terminal setEncoding: encoding];
+    
+    [terminal setEncoding: [s encoding]];
 	[connection setTerminal: terminal];
-    [connection setConnectionName: name];
-    [connection setConnectionAddress: addr];
+    [connection setConnectionName: [s name]];
+    [connection setConnectionAddress: [s address]];
 	[terminal setDelegate: _telnetView];
     
     NSTabViewItem *tabItem;
@@ -132,13 +124,15 @@
         [_telnetView addTabViewItem: tabItem];
     }
     
-    [tabItem setLabel: name];
+    [tabItem setLabel: [s name]];
 	
-	[connection connectToAddress: addr];
+	[connection connectToSite: s];
     [_telnetView selectTabViewItem: tabItem];
     [terminal release];
     [self refreshTabLabelNumber: _telnetView];
     [self updateEncodingMenu];
+    [_detectDoubleByteButton setState: [[[_telnetView frontMostConnection] site] detectDoubleByte] ? NSOnState : NSOffState];
+    [_detectDoubleByteMenuItem setState: [[[_telnetView frontMostConnection] site] detectDoubleByte] ? NSOnState : NSOffState];
     [pool release];
 }
 
@@ -155,9 +149,13 @@
         else
             [_showHiddenTextMenuItem setState: NSOffState];        
     } else if ([keyPath isEqualToString: @"messageCount"]) {
-        CTBadge *myBadge = [[CTBadge alloc] init];
-        [myBadge badgeApplicationDockIconWithValue: [[YLLGlobalConfig sharedInstance] messageCount] insetX: 5.0 y: 5.0];
-        [myBadge release];
+        NSDockTile *dockTile = [NSApp dockTile];
+        if ([[YLLGlobalConfig sharedInstance] messageCount] == 0) {
+            [dockTile setBadgeLabel: nil];
+        } else {
+            [dockTile setBadgeLabel: [NSString stringWithFormat: @"%d", [[YLLGlobalConfig sharedInstance] messageCount]]];
+        }
+        [dockTile display];
     } else if ([keyPath isEqualToString: @"shouldSmoothFonts"]) {
         [[[[_telnetView selectedTabViewItem] identifier] terminal] setAllDirty];
         [_telnetView updateBackedImage];
@@ -205,6 +203,7 @@
     for (YLSite *s in _sites) 
         [a addObject: [s dictionaryOfSite]];
     [[NSUserDefaults standardUserDefaults] setObject: a forKey: @"Sites"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
     [self updateSitesMenu];
 }
 
@@ -219,12 +218,13 @@
     for (YLEmoticon *e in _emoticons) 
         [a addObject: [e dictionaryOfEmoticon]];
     [[NSUserDefaults standardUserDefaults] setObject: a forKey: @"Emoticons"];    
+    [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 - (void) loadLastConnections {
     NSArray *a = [[NSUserDefaults standardUserDefaults] arrayForKey: @"LastConnections"];
     for (NSDictionary *d in a) {
-        [self newConnectionWithDictionary: d];
+        [self newConnectionWithSite: [YLSite siteWithDictionary: d]];
     }    
 }
 
@@ -235,15 +235,23 @@
     for (i = 0; i < tabNumber; i++) {
         id connection = [[_telnetView tabViewItemAtIndex: i] identifier];
         if ([connection terminal]) // not empty tab
-            [a addObject: [NSDictionary dictionaryWithObjectsAndKeys: [connection connectionName], @"name", 
-                           [connection connectionAddress], @"address", 
-                           [NSNumber numberWithUnsignedInt: [[connection terminal] encoding]], @"encoding", nil]];
+            [a addObject: [[connection site] dictionaryOfSite]];
     }
     [[NSUserDefaults standardUserDefaults] setObject: a forKey: @"LastConnections"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 #pragma mark -
 #pragma mark Actions
+- (IBAction) setDetectDoubleByteAction: (id) sender {
+    BOOL ddb = [sender state];
+    if ([sender isKindOfClass: [NSMenuItem class]])
+        ddb = !ddb;
+    [[[_telnetView frontMostConnection] site] setDetectDoubleByte: ddb];
+    [_detectDoubleByteButton setState: ddb ? NSOnState : NSOffState];
+    [_detectDoubleByteMenuItem setState: ddb ? NSOnState : NSOffState];
+}
+
 - (IBAction) setEncoding: (id) sender {
     int index = [[_encodingMenuItem submenu] indexOfItem: sender];
     if ([_telnetView frontMostTerminal]) {
@@ -262,6 +270,9 @@
     NSTabViewItem *tabItem = [[[NSTabViewItem alloc] initWithIdentifier: connection] autorelease];
     [_telnetView addTabViewItem: tabItem];
     [_telnetView selectTabViewItem: tabItem];
+    YLSite *s = [YLSite site];
+    [s setEncoding: [[YLLGlobalConfig sharedInstance] defaultEncoding]];
+    [s setDetectDoubleByte: [[YLLGlobalConfig sharedInstance] detectDoubleByte]];
     
     [_mainWindow makeKeyAndOrderFront: self];
 	[_telnetView resignFirstResponder];
@@ -276,12 +287,51 @@
     NSString *name = [sender stringValue];
     if ([[name lowercaseString] hasPrefix: @"ssh://"])
         name = [name substringFromIndex: 6];
+    if ([[name lowercaseString] hasPrefix: @"telnet://"])
+        name = [name substringFromIndex: 9];
     if ([[name componentsSeparatedByString: @"@"] count] == 2)
         name = [[name componentsSeparatedByString: @"@"] objectAtIndex: 1];
-    
-	[self newConnectionToAddress: [sender stringValue] 
-                            name: name
-                        encoding: (YLEncoding) [(NSNumber *)[[NSUserDefaults standardUserDefaults] objectForKey: @"DefaultEncoding"] unsignedShortValue]];
+
+    NSMutableArray *matchedSites = [NSMutableArray array];
+    YLSite *s = [YLSite site];
+    if ([name rangeOfString: @"."].location != NSNotFound) { /* Normal address */        
+        for (YLSite *site in _sites) 
+            if ([[site address] rangeOfString: name].location != NSNotFound) 
+                [matchedSites addObject: site];
+        
+        if ([matchedSites count] > 0) {
+            [matchedSites sortUsingDescriptors: [NSArray arrayWithObject: [[[NSSortDescriptor alloc] initWithKey:@"address.length" ascending:YES] autorelease]]];
+            s = [[[matchedSites objectAtIndex: 0] copy] autorelease];
+        } else {
+            [s setAddress: [sender stringValue]];
+            [s setName: name];
+            [s setEncoding: [[YLLGlobalConfig sharedInstance] defaultEncoding]];
+            [s setAnsiColorKey: [[YLLGlobalConfig sharedInstance] defaultANSIColorKey]];
+            [s setDetectDoubleByte: [[YLLGlobalConfig sharedInstance] detectDoubleByte]];            
+        }
+    } else { /* Short Address? */
+        for (YLSite *site in _sites) 
+            if ([[site name] rangeOfString: name].location != NSNotFound) 
+                [matchedSites addObject: site];
+        [matchedSites sortUsingDescriptors: [NSArray arrayWithObject: [[[NSSortDescriptor alloc] initWithKey:@"name.length" ascending:YES] autorelease]]];
+        if ([matchedSites count] == 0) {
+            for (YLSite *site in _sites) 
+                if ([[site address] rangeOfString: name].location != NSNotFound)
+                    [matchedSites addObject: site];
+            [matchedSites sortUsingDescriptors: [NSArray arrayWithObject: [[[NSSortDescriptor alloc] initWithKey:@"address.length" ascending:YES] autorelease]]];
+        } 
+        if ([matchedSites count] > 0) {
+            s = [[[matchedSites objectAtIndex: 0] copy] autorelease];
+        } else {
+            [s setAddress: [sender stringValue]];
+            [s setName: name];
+            [s setEncoding: [[YLLGlobalConfig sharedInstance] defaultEncoding]];
+            [s setAnsiColorKey: [[YLLGlobalConfig sharedInstance] defaultANSIColorKey]];
+            [s setDetectDoubleByte: [[YLLGlobalConfig sharedInstance] detectDoubleByte]];
+        }        
+    }
+    [self newConnectionWithSite: s];
+    [sender setStringValue: [s address]];
 }
 
 - (IBAction) openLocation: (id) sender {
@@ -340,7 +390,7 @@
     
     if ([a count] == 1) {
         YLSite *s = [a objectAtIndex: 0];
-        [self newConnectionWithSite: s];
+        [self newConnectionWithSite: [[s copy] autorelease]];
     }
 }
 
@@ -364,14 +414,14 @@
         if ([[s address] isEqualToString: address]) 
             return;
     
-    YLSite *s = [[YLSite new] autorelease];
-    [s setName: address];
-    [s setAddress: address];
-    [s setEncoding: [[_telnetView frontMostTerminal] encoding]];
+    YLSite *s = [[[[_telnetView frontMostConnection] site] copy] autorelease];
     [_sitesController addObject: s];
     [_sitesController setSelectedObjects: [NSArray arrayWithObject: s]];
     [self performSelector: @selector(editSites:) withObject: sender afterDelay: 0.1];
-    [_sitesTableView editColumn: 0 row: [_sitesTableView selectedRow] withEvent: nil select: YES];
+    NSLog(@"%d %d", [_siteNameField acceptsFirstResponder], [_sitesWindow makeFirstResponder: _siteNameField]);;
+    ;
+//    [_sitesTableView editColumn: 0 row: [_sitesTableView selectedRow] withEvent: nil select: YES];
+//  FIXME: focus!
 }
 
 
@@ -516,7 +566,8 @@
     [_emoticons replaceObjectAtIndex:theIndex withObject:obj];
 }
 
-
+- (IBOutlet) view { return _telnetView; }
+- (void) setView: (IBOutlet) o {}
 
 #pragma mark -
 #pragma mark Application Delegation
@@ -569,10 +620,12 @@
 }
 
 - (void) confirmSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void  *)contextInfo {
+    [[NSUserDefaults standardUserDefaults] synchronize];
     [NSApp replyToApplicationShouldTerminate: (returnCode == NSAlertDefaultReturn)];
 }
 
 - (void) confirmSheetDidDismiss:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void  *)contextInfo {
+    [[NSUserDefaults standardUserDefaults] synchronize];
     [NSApp replyToApplicationShouldTerminate: (returnCode == NSAlertDefaultReturn)];
 }
 
@@ -598,6 +651,15 @@
 - (void) windowDidResignKey: (NSNotification *) notification {
     [_closeWindowMenuItem setKeyEquivalentModifierMask: NSCommandKeyMask];
     [_closeTabMenuItem setKeyEquivalent: @""];
+}
+
+- (void)getUrl:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent {
+	NSString *url = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
+	// now you can create an NSURL and grab the necessary parts
+    if ([[url lowercaseString] hasPrefix: @"bbs://"])
+        url = [url substringFromIndex: 6];
+    [_addressBar setStringValue: url];
+    [self connect: _addressBar];
 }
 
 #pragma mark -
@@ -639,6 +701,8 @@
     [_mainWindow makeFirstResponder: _telnetView];
     [[[tabViewItem identifier] terminal] setHasMessage: NO];
     [self updateEncodingMenu];
+    [_detectDoubleByteButton setState: [[[_telnetView frontMostConnection] site] detectDoubleByte] ? NSOnState : NSOffState];
+    [_detectDoubleByteMenuItem setState: [[[_telnetView frontMostConnection] site] detectDoubleByte] ? NSOnState : NSOffState];
 }
 
 - (BOOL)tabView:(NSTabView *)tabView shouldSelectTabViewItem:(NSTabViewItem *)tabViewItem {
@@ -648,6 +712,7 @@
 - (void)tabView:(NSTabView *)tabView willSelectTabViewItem:(NSTabViewItem *)tabViewItem {
     id identifier = [tabViewItem identifier];
     [[identifier terminal] setAllDirty];
+    [_telnetView clearSelection];
 }
 
 - (BOOL)tabView:(NSTabView*)aTabView shouldDragTabViewItem:(NSTabViewItem *)tabViewItem fromTabBar:(PSMTabBarControl *)tabBarControl {

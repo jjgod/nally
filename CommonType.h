@@ -34,6 +34,11 @@ typedef enum YLEncoding {
     YLGBKEncoding
 } YLEncoding;
 
+typedef enum YLANSIColorKey {
+    YLCtrlUANSIColorKey, 
+    YLEscEscEscANSIColorKey
+} YLANSIColorKey;
+
 int isHiddenAttribute(attribute a) ;
 int isBlinkCell(cell c) ;
 int bgColorIndexOfAttribute(attribute a) ;

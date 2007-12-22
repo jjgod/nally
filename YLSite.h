@@ -13,8 +13,11 @@
     NSString *_name;
     NSString *_address;
     YLEncoding _encoding;
+    YLANSIColorKey _ansiColorKey;
+    BOOL _detectDoubleByte;
 }
 
++ (YLSite *) site;
 + (YLSite *) siteWithDictionary: (NSDictionary *) d ;
 - (NSDictionary *) dictionaryOfSite ;
 
@@ -26,5 +29,11 @@
 
 - (YLEncoding)encoding;
 - (void)setEncoding:(YLEncoding)encoding;
+
+- (YLANSIColorKey)ansiColorKey;
+- (void)setAnsiColorKey:(YLANSIColorKey)value;
+
+- (BOOL)detectDoubleByte;
+- (void)setDetectDoubleByte:(BOOL)value;
 
 @end

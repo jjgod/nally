@@ -7,7 +7,7 @@
 	<key>CFBundleExecutable</key>
 	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleIconFile</key>
-	<string>DragonBall</string>
+	<string>Xmas</string>
 	<key>CFBundleIdentifier</key>
 	<string>org.yllan.Nally</string>
 	<key>CFBundleInfoDictionaryVersion</key>
@@ -18,8 +18,30 @@
 	<string>APPL</string>
 	<key>CFBundleSignature</key>
 	<string>naly</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>Telnet URL</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>telnet</string>
+				<string>bbs</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>SSH URL</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>ssh</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
-	<string>1.2</string>
+	<string>1.3</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>10.5.0</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>

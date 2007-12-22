@@ -48,6 +48,8 @@ extern "C" {
 - (void) drawBlink ;
 - (void) refreshHiddenRegion;
 
+- (void) clearSelection;
+
 - (YLTerminal *) frontMostTerminal;
 - (YLConnection *) frontMostConnection;
 - (BOOL)connected;
@@ -67,4 +69,5 @@ extern "C" {
 - (NSString *) selectedPlainString ;
 - (BOOL) hasBlinkCell ;
 
+- (void) insertText: (id) aString withDelay: (int) microsecond ;
 @end

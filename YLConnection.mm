@@ -101,9 +101,25 @@
     return _lastTouchDate;
 }
 
+- (YLSite *) site {
+    return _site;
+}
+
+- (void)setSite:(YLSite *)value {
+    if (_site != value) {
+        [_site release];
+        _site = [value retain];
+    }
+}
+
 /* Empty */
 - (void) close {}
 - (void) reconnect {}
+
+- (BOOL) connectToSite: (YLSite *) s { 
+    [self setSite: s];
+    return [self connectToAddress: [s address]];
+}
 
 - (BOOL) connectToAddress: (NSString *) addr { return YES; }
 - (BOOL) connectToAddress: (NSString *) addr port: (unsigned int) port { return YES;}

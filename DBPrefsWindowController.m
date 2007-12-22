@@ -4,14 +4,16 @@
 
 #import "DBPrefsWindowController.h"
 #import "YLLGlobalConfig.h"
+#import <ApplicationServices/ApplicationServices.h>
 
 static DBPrefsWindowController *_sharedPrefsWindowController = nil;
 
+@interface DBPrefsWindowController (Private)
+- (void) setupMenuOfURLScheme: (NSString *) scheme forPopUpButton: (NSPopUpButton *) button ;
++ (NSArray *) applicationIdentifierArrayForURLScheme: (NSString *) scheme ;
+@end
 
 @implementation DBPrefsWindowController
-
-
-
 
 #pragma mark -
 #pragma mark Class Methods
@@ -25,7 +27,12 @@ static DBPrefsWindowController *_sharedPrefsWindowController = nil;
 	return _sharedPrefsWindowController;
 }
 
-
++ (NSArray *) applicationIdentifierArrayForURLScheme: (NSString *) scheme {
+    CFArrayRef array = LSCopyAllHandlersForURLScheme((CFStringRef)scheme);
+    NSMutableArray *result = [NSMutableArray arrayWithArray: (NSArray *) array];
+    CFRelease(array);
+    return result;
+}
 
 
 + (NSString *)nibName
@@ -34,12 +41,64 @@ static DBPrefsWindowController *_sharedPrefsWindowController = nil;
    return @"Preferences";
 }
 
-
-
-
 #pragma mark -
 #pragma mark Setup & Teardown
 
+- (void) setupMenuOfURLScheme: (NSString *) scheme forPopUpButton: (NSPopUpButton *) button {
+    NSString *nallyIdentifier = [[[NSBundle mainBundle] bundleIdentifier] lowercaseString];
+    NSMutableArray *array = [NSMutableArray arrayWithArray: [DBPrefsWindowController applicationIdentifierArrayForURLScheme: scheme]];
+    NSWorkspace *ws = [NSWorkspace sharedWorkspace];
+    NSMutableArray *menuItems = [NSMutableArray array];
+
+    int nallyCount = 0;
+    for (NSString *appId in array) 
+        if ([[appId lowercaseString] isEqualToString: nallyIdentifier]) 
+            nallyCount++;
+    if (nallyCount == 0)
+        [array addObject: [[NSBundle mainBundle] bundleIdentifier]];
+        
+    for (NSString *appId in array) {
+        CFStringRef appNameInCFString;
+        NSString *appPath = [ws absolutePathForAppBundleWithIdentifier: appId];
+        if (appPath) {
+            NSURL *appURL = [NSURL fileURLWithPath: appPath];
+            if (LSCopyDisplayNameForURL((CFURLRef)appURL, &appNameInCFString) == noErr) {                
+                NSString *appName = [NSString stringWithString: (NSString *) appNameInCFString];
+                CFRelease(appNameInCFString);
+                
+                if (nallyCount > 1 && [[appId lowercaseString] isEqualToString: nallyIdentifier])
+                    appName = [NSString stringWithFormat: @"%@ (%@)", appName, [[[NSBundle bundleWithPath: appPath] infoDictionary] objectForKey: @"CFBundleVersion"]];
+                
+                NSImage *appIcon = [ws iconForFile: appPath];
+                [appIcon setSize: NSMakeSize(16, 16)];
+                
+                NSMenuItem *item = [[[NSMenuItem alloc] initWithTitle: (NSString *)appName action: NULL keyEquivalent: @""] autorelease];
+                [item setRepresentedObject: appId];
+                if (appIcon) [item setImage: appIcon];
+                [menuItems addObject: item];
+            }            
+        }
+    }
+    
+    NSMenu *menu = [[[NSMenu alloc] initWithTitle: @"PopUp Menu"] autorelease];
+    for (NSMenuItem *item in menuItems) 
+        [menu addItem: item];
+    [button setMenu: menu];
+    
+    /* Select the default client */
+    CFStringRef defaultHandler = LSCopyDefaultHandlerForURLScheme((CFStringRef) scheme);
+    if (defaultHandler) {
+        int index = [button indexOfItemWithRepresentedObject: (NSString *) defaultHandler];
+        if (index != NSNotFound) 
+            [button selectItemAtIndex: index];
+        CFRelease(defaultHandler);
+    }
+}
+
+- (void) awakeFromNib {
+    [self setupMenuOfURLScheme: @"telnet" forPopUpButton: _telnetPopUpButton];
+    [self setupMenuOfURLScheme: @"ssh" forPopUpButton: _sshPopUpButton];
+}
 
 - (id)initWithWindow:(NSWindow *)window
   // -initWithWindow: is the designated initializer for NSWindowController.
@@ -99,34 +158,30 @@ static DBPrefsWindowController *_sharedPrefsWindowController = nil;
 }
 
 
-
-
 #pragma mark -
-#pragma mark Configuration
+#pragma mark Actions
 
 
-- (void)setupToolbar
-{
-    [self addView: _generalPrefView label: NSLocalizedString(@"General", @"Preferences") image: [NSImage imageNamed: @"NSApplicationIcon"]];
-    [self addView: _fontsPrefView label: NSLocalizedString(@"Fonts", @"Preferences") image: [NSImage imageNamed: @"NSFontPanel"]];
-    [self addView: _colorsPrefView label: NSLocalizedString(@"Colors", @"Preferences") image: [NSImage imageNamed: @"NSColorPanel"]];
+- (IBAction) setChineseFont: (id) sender {
+    [[NSFontManager sharedFontManager] setAction: @selector(changeChineseFont:)];
+    [[sender window] makeFirstResponder: [sender window]];
+    NSFontPanel *fp = [NSFontPanel sharedFontPanel];
+    [fp setPanelFont: [NSFont fontWithName: [[YLLGlobalConfig sharedInstance] chineseFontName] size: [[YLLGlobalConfig sharedInstance] chineseFontSize]] isMultiple: NO];
+    [fp orderFront: self];
 }
 
-
-
-
-- (void)addView:(NSView *)view label:(NSString *)label
-{
-	[self addView:view
-			label:label
-			image:[NSImage imageNamed:label]];
+- (IBAction) setEnglishFont: (id) sender {
+    [[NSFontManager sharedFontManager] setAction: @selector(changeEnglishFont:)];
+    [[sender window] makeFirstResponder: [sender window]];
+    NSFontPanel *fp = [NSFontPanel sharedFontPanel];
+    [fp setPanelFont: [NSFont fontWithName: [[YLLGlobalConfig sharedInstance] englishFontName] size: [[YLLGlobalConfig sharedInstance] englishFontSize]] isMultiple: NO];
+    [fp orderFront: self];
 }
-
 
 - (void) changeChineseFont: (id) sender {
     NSFontManager *fontManager = [NSFontManager sharedFontManager];
 	NSFont *selectedFont = [fontManager selectedFont];
-
+    
     if (selectedFont == nil) {
 		selectedFont = [NSFont systemFontOfSize:[NSFont systemFontSize]];
 	}
@@ -150,6 +205,40 @@ static DBPrefsWindowController *_sharedPrefsWindowController = nil;
     
 }
 
+- (IBAction) setDefaultTelnetClient: (id) sender {
+    NSString *appId = [[sender selectedItem] representedObject];
+    if (appId) 
+        LSSetDefaultHandlerForURLScheme(CFSTR("telnet"), (CFStringRef)appId);
+}
+
+- (IBAction) setDefaultSSHClient: (id) sender {
+    NSString *appId = [[sender selectedItem] representedObject];
+    if (appId) 
+        LSSetDefaultHandlerForURLScheme(CFSTR("ssh"), (CFStringRef)appId);    
+}
+
+#pragma mark -
+#pragma mark Configuration
+
+
+- (void)setupToolbar
+{
+    [self addView: _generalPrefView label: NSLocalizedString(@"General", @"Preferences") image: [NSImage imageNamed: @"NSPreferencesGeneral"]];
+    [self addView: _connectionPrefView label: NSLocalizedString(@"Connection", @"Preferences") image: [NSImage imageNamed: @"NSApplicationIcon"]];
+    [self addView: _fontsPrefView label: NSLocalizedString(@"Fonts", @"Preferences") image: [NSImage imageNamed: @"NSFontPanel"]];
+    [self addView: _colorsPrefView label: NSLocalizedString(@"Colors", @"Preferences") image: [NSImage imageNamed: @"NSColorPanel"]];
+}
+
+
+
+
+- (void)addView:(NSView *)view label:(NSString *)label
+{
+	[self addView:view
+			label:label
+			image:[NSImage imageNamed:label]];
+}
+
 
 - (void)addView:(NSView *)view label:(NSString *)label image:(NSImage *)image
 {
@@ -169,8 +258,6 @@ static DBPrefsWindowController *_sharedPrefsWindowController = nil;
 	
 	[toolbarItems setObject:item forKey:identifier];
 }
-
-
 
 
 #pragma mark -
