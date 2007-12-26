@@ -7,7 +7,7 @@
 	<key>CFBundleExecutable</key>
 	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleIconFile</key>
-	<string>Xmas</string>
+	<string>DragonBall</string>
 	<key>CFBundleIdentifier</key>
 	<string>org.yllan.Nally</string>
 	<key>CFBundleInfoDictionaryVersion</key>

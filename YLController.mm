@@ -50,8 +50,7 @@
     [NSTimer scheduledTimerWithTimeInterval: 120 target: self selector: @selector(antiIdle:) userInfo: nil repeats: YES];
     [NSTimer scheduledTimerWithTimeInterval: 1 target: self selector: @selector(updateBlinkTicker:) userInfo: nil repeats: YES];
 
-    [self observeValueForKeyPath: @"cellWidth" ofObject: [YLLGlobalConfig sharedInstance]
-                          change: [NSDictionary dictionary] context: NULL];
+    
 }
 
 - (void) updateSitesMenu {
@@ -281,24 +280,27 @@
 }
 
 - (IBAction) connect: (id) sender {
+    // FIXME: different protocol!
 	[sender abortEditing];
 	[[_telnetView window] makeFirstResponder: _telnetView];
-
+    BOOL ssh = NO;
+    
     NSString *name = [sender stringValue];
-    if ([[name lowercaseString] hasPrefix: @"ssh://"])
-        name = [name substringFromIndex: 6];
+    if ([[name lowercaseString] hasPrefix: @"ssh://"]) 
+        ssh = YES;
+//        name = [name substringFromIndex: 6];
     if ([[name lowercaseString] hasPrefix: @"telnet://"])
         name = [name substringFromIndex: 9];
-    if ([[name componentsSeparatedByString: @"@"] count] == 2)
-        name = [[name componentsSeparatedByString: @"@"] objectAtIndex: 1];
-
+    if ([[name lowercaseString] hasPrefix: @"bbs://"])
+        name = [name substringFromIndex: 9];
+    
     NSMutableArray *matchedSites = [NSMutableArray array];
     YLSite *s = [YLSite site];
+        
     if ([name rangeOfString: @"."].location != NSNotFound) { /* Normal address */        
         for (YLSite *site in _sites) 
-            if ([[site address] rangeOfString: name].location != NSNotFound) 
+            if ([[site address] rangeOfString: name].location != NSNotFound && !(ssh ^ [[site address] hasPrefix: @"ssh://"])) 
                 [matchedSites addObject: site];
-        
         if ([matchedSites count] > 0) {
             [matchedSites sortUsingDescriptors: [NSArray arrayWithObject: [[[NSSortDescriptor alloc] initWithKey:@"address.length" ascending:YES] autorelease]]];
             s = [[[matchedSites objectAtIndex: 0] copy] autorelease];
@@ -307,7 +309,7 @@
             [s setName: name];
             [s setEncoding: [[YLLGlobalConfig sharedInstance] defaultEncoding]];
             [s setAnsiColorKey: [[YLLGlobalConfig sharedInstance] defaultANSIColorKey]];
-            [s setDetectDoubleByte: [[YLLGlobalConfig sharedInstance] detectDoubleByte]];            
+            [s setDetectDoubleByte: [[YLLGlobalConfig sharedInstance] detectDoubleByte]];
         }
     } else { /* Short Address? */
         for (YLSite *site in _sites) 
@@ -328,7 +330,7 @@
             [s setEncoding: [[YLLGlobalConfig sharedInstance] defaultEncoding]];
             [s setAnsiColorKey: [[YLLGlobalConfig sharedInstance] defaultANSIColorKey]];
             [s setDetectDoubleByte: [[YLLGlobalConfig sharedInstance] detectDoubleByte]];
-        }        
+        }
     }
     [self newConnectionWithSite: s];
     [sender setStringValue: [s address]];
@@ -418,10 +420,8 @@
     [_sitesController addObject: s];
     [_sitesController setSelectedObjects: [NSArray arrayWithObject: s]];
     [self performSelector: @selector(editSites:) withObject: sender afterDelay: 0.1];
-    NSLog(@"%d %d", [_siteNameField acceptsFirstResponder], [_sitesWindow makeFirstResponder: _siteNameField]);;
-    ;
-//    [_sitesTableView editColumn: 0 row: [_sitesTableView selectedRow] withEvent: nil select: YES];
-//  FIXME: focus!
+    if ([_siteNameField acceptsFirstResponder])
+        [_sitesWindow makeFirstResponder: _siteNameField];
 }
 
 

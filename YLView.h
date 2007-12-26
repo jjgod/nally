@@ -42,6 +42,7 @@ extern "C" {
 - (void) paste: (id) sender ;
 - (void) pasteColor: (id) sender ;
 
+- (void) displayCellAtRow: (int) r column: (int) c;
 - (void) updateBackedImage;
 - (void) drawSpecialSymbol: (unichar) ch forRow: (int) r column: (int) c leftAttribute: (attribute) attr1 rightAttribute: (attribute) attr2 ;
 - (void) drawSelection ;

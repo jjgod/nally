@@ -82,9 +82,7 @@ static unsigned short gEmptyAttr;
 
 	int i, x;
 	unsigned char c;
-	[_delegate performSelector: @selector(tick:)
-					withObject: nil
-					afterDelay: 0.02];
+
 //    NSLog(@"length: %d", len);
 	for (i = 0; i < len; i++) {
 		c = bytes[i];
@@ -251,7 +249,9 @@ static unsigned short gEmptyAttr;
 					} else {
                         if ((*_csArg)[0] < 1) (*_csArg)[0] = 1;
                         if ((*_csArg)[1] < 1) (*_csArg)[1] = 1;
+//                        NSLog(@"jump %d %d", (*_csArg)[0], (*_csArg)[1]);
 						CURSOR_MOVETO((*_csArg)[1] - 1, (*_csArg)[0] - 1);
+//                        [self setDirty: YES atRow: _cursorY column: _cursorX];
 					}
 				} else if (c == 'J') {		// Erase Region (cursor does not move)
 					/* 
@@ -378,7 +378,15 @@ static unsigned short gEmptyAttr;
 			}
 		}
 	}
-//	[_delegate updateBackedImage];
+
+    for (i = 0; i < _row; i++) {
+        [self updateDoubleByteStateForRow: i];
+        [self updateURLStateForRow: i];
+    }
+    [_delegate performSelector: @selector(tick:)
+					withObject: nil
+					afterDelay: 0.001];
+    
     [pool release];
 }
 
@@ -537,9 +545,10 @@ static unsigned short gEmptyAttr;
 
 - (void) updateURLStateForRow: (int) r {
 	cell *currRow = _grid[r];
-    int httpLength = 7; // http://
-    int httpsLength = 8; // https://
-    int ftpLength = 6, telnetLength = 9, bbsLength = 6, sshLength = 6, mailtoLength = 7;
+    /* TODO: use DFA to reduce the computation  */
+    char *protocols[] = {"http://", "https://", "ftp://", "telnet://", "bbs://", "ssh://", "mailto:"};
+    int protocolNum = 7;
+    
     BOOL urlState = NO;
     
     if (r > 0) 
@@ -549,84 +558,31 @@ static unsigned short gEmptyAttr;
 	for (i = 0; i < _column; i++) {
         if (urlState) {
             unsigned char c = currRow[i].byte;
-            if (0x21 <= c && c <= 0x7E) {
-                currRow[i].attr.f.url = YES;                
-            } else {
+            if (0x21 > c || c > 0x7E) 
                 urlState = NO;
-                currRow[i].attr.f.url = NO;
-            }
-        } else if (i + httpLength < _column && 
-            currRow[i + 0].byte == 'h' &&
-            currRow[i + 1].byte == 't' && 
-            currRow[i + 2].byte == 't' &&
-            currRow[i + 3].byte == 'p' &&
-            currRow[i + 4].byte == ':' &&
-            currRow[i + 5].byte == '/' &&
-            currRow[i + 6].byte == '/') {
-            urlState = YES;
-            (currRow + i)->attr.f.url = YES;
-        } else if (i + httpsLength < _column && 
-                   currRow[i + 0].byte == 'h' &&
-                   currRow[i + 1].byte == 't' && 
-                   currRow[i + 2].byte == 't' &&
-                   currRow[i + 3].byte == 'p' &&
-                   currRow[i + 4].byte == 's' &&
-                   currRow[i + 5].byte == ':' &&
-                   currRow[i + 6].byte == '/' &&
-                   currRow[i + 7].byte == '/' ) {
-            urlState = YES;
-            currRow[i].attr.f.url = YES;
-        } else if (i + ftpLength < _column && 
-                   currRow[i + 0].byte == 'f' &&
-                   currRow[i + 1].byte == 't' && 
-                   currRow[i + 2].byte == 'p' &&
-                   currRow[i + 3].byte == ':' &&
-                   currRow[i + 4].byte == '/' &&
-                   currRow[i + 5].byte == '/' ) {
-            urlState = YES;
-            currRow[i].attr.f.url = YES;
-        } else if (i + telnetLength < _column && 
-                   currRow[i + 0].byte == 't' &&
-                   currRow[i + 1].byte == 'e' && 
-                   currRow[i + 2].byte == 'l' &&
-                   currRow[i + 3].byte == 'n' &&
-                   currRow[i + 4].byte == 'e' &&
-                   currRow[i + 5].byte == 't' &&
-                   currRow[i + 6].byte == ':' &&
-                   currRow[i + 7].byte == '/' &&
-                   currRow[i + 8].byte == '/') {
-            urlState = YES;
-            currRow[i].attr.f.url = YES;
-        } else if (i + bbsLength < _column && 
-                   currRow[i + 0].byte == 'b' &&
-                   currRow[i + 1].byte == 'b' && 
-                   currRow[i + 2].byte == 's' &&
-                   currRow[i + 3].byte == ':' &&
-                   currRow[i + 4].byte == '/' &&
-                   currRow[i + 5].byte == '/') {
-            urlState = YES;
-            currRow[i].attr.f.url = YES;        
-        } else if (i + sshLength < _column && 
-                   currRow[i + 0].byte == 's' &&
-                   currRow[i + 1].byte == 's' && 
-                   currRow[i + 2].byte == 'h' &&
-                   currRow[i + 3].byte == ':' &&
-                   currRow[i + 4].byte == '/' &&
-                   currRow[i + 5].byte == '/') {
-            urlState = YES;
-            currRow[i].attr.f.url = YES;
-        } else if (i + mailtoLength < _column && 
-                   currRow[i + 0].byte == 'm' &&
-                   currRow[i + 1].byte == 'a' && 
-                   currRow[i + 2].byte == 'i' &&
-                   currRow[i + 3].byte == 'l' &&
-                   currRow[i + 4].byte == 't' &&
-                   currRow[i + 5].byte == 'o' &&
-                   currRow[i + 6].byte == ':') {
-            urlState = YES;
-            (currRow + i)->attr.f.url = YES;
         } else {
-            currRow[i].attr.f.url = NO;
+            int p;
+            for (p = 0; p < protocolNum; p++) {
+                int s, len = strlen(protocols[p]);
+                BOOL match = YES;
+                for (s = 0; s < len; s++) 
+                    if (currRow[i + s].byte != protocols[p][s] || currRow[i + s].attr.f.doubleByte) {
+                        match = NO;
+                        break;
+                    }
+                
+                if (match) {
+                    urlState = YES;
+                    break;
+                }
+            }
+        }            
+        
+        if (currRow[i].attr.f.url != urlState) {
+            currRow[i].attr.f.url = urlState;
+            [self setDirty: YES atRow: r column: i];
+            //            [_delegate displayCellAtRow: r column: i];
+            /* TODO: Do not regenerate the region. Draw the url line instead. */
         }
 	}
 }

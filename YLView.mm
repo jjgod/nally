@@ -581,8 +581,7 @@ BOOL isSpecialSymbol(unichar ch) {
     
     [self setNeedsDisplay: YES];
     
-    /* Click to move cursor.
-       FIXME: I need better algorithm to support China BBS! */
+    /* Click to move cursor. */
     if ([e modifierFlags] & NSCommandKeyMask) {
         unsigned char cmd[gRow * gColumn + 1];
         unsigned int cmdLength = 0;
@@ -740,7 +739,11 @@ BOOL isSpecialSymbol(unichar ch) {
 #pragma mark -
 #pragma mark Drawing
 
-- (void) tick: (NSTimer *) t {
+- (void) displayCellAtRow: (int) r column: (int) c {
+    [self setNeedsDisplayInRect: NSMakeRect(c * _fontWidth, (gRow - 1 - r) * _fontHeight, _fontWidth, _fontHeight)];
+}
+
+- (void) tick: (NSArray *) a {
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
 	[self updateBackedImage];
     YLTerminal *ds = [self frontMostTerminal];
@@ -781,11 +784,10 @@ BOOL isSpecialSymbol(unichar ch) {
         [[NSColor orangeColor] set];
         [NSBezierPath setDefaultLineWidth: 1.0];
         for (r = 0; r < gRow; r++) {
-            [ds updateURLStateForRow: r];
             cell *currRow = [ds cellsOfRow: r];
             for (c = 0; c < gColumn; c++) {
                 int start;
-                for (start = c; currRow[c].attr.f.url && c < gColumn; c++) ;
+                for (start = c; c < gColumn && currRow[c].attr.f.url; c++) ;
                 if (c != start) {
                     [NSBezierPath strokeLineFromPoint: NSMakePoint(start * _fontWidth, (gRow - r - 1) * _fontHeight + 0.5) 
                                               toPoint: NSMakePoint(c * _fontWidth, (gRow - r - 1) * _fontHeight + 0.5)];
@@ -799,13 +801,30 @@ BOOL isSpecialSymbol(unichar ch) {
 		[NSBezierPath strokeLineFromPoint: NSMakePoint(ds->_cursorX * _fontWidth, (gRow - 1 - ds->_cursorY) * _fontHeight + 1) 
 								  toPoint: NSMakePoint((ds->_cursorX + 1) * _fontWidth, (gRow - 1 - ds->_cursorY) * _fontHeight + 1) ];
         [NSBezierPath setDefaultLineWidth: 1.0];
+        _x = ds->_cursorX, _y = ds->_cursorY;
 
         /* Draw the selection */
         if (_selectionLength != 0) 
             [self drawSelection];
 	} else {
 		[[gConfig colorAtIndex: gConfig->_bgColorIndex hilite: 0] set];
-		[NSBezierPath fillRect: [self bounds]];
+        
+//        [[NSColor colorWithCalibratedRed:0 green:0.02 blue:0.38 alpha:1.0] set];
+        NSRect r = [self bounds];
+		[NSBezierPath fillRect: r];
+//        NSImage *img = [NSImage imageNamed: @"Xmas.icns"];
+//        NSSize sz = NSMakeSize(512, 512);
+//        if (r.size.width < 512 || r.size.height < 512) {
+//            CGFloat small = r.size.height > r.size.width ? r.size.width : r.size.height;
+//            sz = NSMakeSize(small, small);
+//        }
+//        
+//        NSPoint p = NSZeroPoint;
+//        
+//        p.x = (r.size.width - sz.width) / 2;
+//        p.y = (r.size.height - sz.height) / 2;
+//        [img setSize: sz];
+//        [img compositeToPoint: p operation: NSCompositeSourceOver];
 	}
 	
     [pool release];
@@ -967,10 +986,12 @@ BOOL isSpecialSymbol(unichar ch) {
 	for (i = 0; i < gColumn; i++) 
 		isDoubleColor[i] = isDoubleByte[i] = textBuf[i] = runLength[i] = 0;
 
-    // find the first non-dirty position in this row
+    // find the first dirty position in this row
 	for (x = 0; x < gColumn && ![ds isDirtyAtRow: r column: x]; x++) ;
+	// all clean? great!
+    if (x == gColumn) return; 
+    
 	start = x;
-	if (start == gColumn) return;
 
     // update the information array
 	for (x = start; x < gColumn; x++) {
@@ -1001,6 +1022,7 @@ BOOL isSpecialSymbol(unichar ch) {
 				position[bufLength] = CGPointMake((x - 1) * _fontWidth + cPaddingLeft, (gRow - 1 - r) * _fontHeight + CTFontGetDescent(gConfig->_cCTFont) + cPaddingBottom);
 				bufLength++;
 			}
+            // FIXME: why?
 			if (x == start)
 				[self setNeedsDisplayInRect: NSMakeRect((x - 1) * _fontWidth, (gRow - 1 - r) * _fontHeight, _fontWidth, _fontHeight)];
 		}
@@ -1075,11 +1097,10 @@ BOOL isSpecialSymbol(unichar ch) {
         
         for (runGlyphIndex = 0; runGlyphIndex <= runGlyphCount; runGlyphIndex++) {
             int index = bufIndex[glyphOffset + runGlyphIndex];
-
             if (runGlyphIndex == runGlyphCount || 
                 (gConfig->_showHiddenText && isHiddenAttribute(currRow[index].attr) != hidden) ||
-                (isDoubleByte[runGlyphIndex] && index != lastIndex + 2) ||
-                (!isDoubleByte[runGlyphIndex] && index != lastIndex + 1)) {
+                (isDoubleByte[runGlyphIndex + glyphOffset] && index != lastIndex + 2) ||
+                (!isDoubleByte[runGlyphIndex + glyphOffset] && index != lastIndex + 1)) {
                 int len = runGlyphIndex - location;
                 
                 CGContextSetTextDrawingMode(myCGContext, ([gConfig showHiddenText] && hidden) ? kCGTextStroke : kCGTextFill);
