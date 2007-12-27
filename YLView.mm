@@ -651,6 +651,7 @@ BOOL isSpecialSymbol(unichar ch) {
     if (_selectionLength <= 0) _selectionLength--;
     if (oldValue != _selectionLength)
         [self setNeedsDisplay: YES];
+    // TODO: Calculate the precise region to redraw
 }
 
 - (void) mouseUp: (NSEvent *) e {
