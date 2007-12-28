@@ -129,15 +129,16 @@ static YLLGlobalConfig *sSharedInstance;
     
     for (i = 0; i < NUM_COLOR; i++) 
         for (j = 0; j < 2; j++) {
+            int zero = 0;
+            CFNumberRef number = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &zero);
+            CFStringRef cfKeys[] = {kCTFontAttributeName, kCTForegroundColorAttributeName, kCTLigatureAttributeName};
             
-            CFStringRef cfKeys[] = {kCTFontAttributeName, kCTForegroundColorAttributeName};
-            
-            CFTypeRef cfValues[] = {_cCTFont, _colorTable[j][i]};
+            CFTypeRef cfValues[] = {_cCTFont, _colorTable[j][i], number};
             if (_cCTAttribute[j][i]) CFRelease(_cCTAttribute[j][i]);
             _cCTAttribute[j][i] = CFDictionaryCreate(kCFAllocatorDefault, 
                                                      (const void **) cfKeys, 
                                                      (const void **) cfValues, 
-                                                     2, 
+                                                     3, 
                                                      &kCFTypeDictionaryKeyCallBacks, 
                                                      &kCFTypeDictionaryValueCallBacks);
 
@@ -146,9 +147,10 @@ static YLLGlobalConfig *sSharedInstance;
             _eCTAttribute[j][i] = CFDictionaryCreate(kCFAllocatorDefault, 
                                                      (const void **) cfKeys, 
                                                      (const void **) cfValues, 
-                                                     2, 
+                                                     3, 
                                                      &kCFTypeDictionaryKeyCallBacks, 
                                                      &kCFTypeDictionaryValueCallBacks);
+            CFRelease(number);
         }
     
 }

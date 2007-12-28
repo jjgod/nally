@@ -1095,13 +1095,16 @@ BOOL isSpecialSymbol(unichar ch) {
         int location = runGlyphIndex = 0;
         int lastIndex = bufIndex[glyphOffset];
         BOOL hidden = isHiddenAttribute(currRow[lastIndex].attr);
+        BOOL lastDoubleByte = isDoubleByte[glyphOffset];
         
         for (runGlyphIndex = 0; runGlyphIndex <= runGlyphCount; runGlyphIndex++) {
             int index = bufIndex[glyphOffset + runGlyphIndex];
             if (runGlyphIndex == runGlyphCount || 
                 (gConfig->_showHiddenText && isHiddenAttribute(currRow[index].attr) != hidden) ||
                 (isDoubleByte[runGlyphIndex + glyphOffset] && index != lastIndex + 2) ||
-                (!isDoubleByte[runGlyphIndex + glyphOffset] && index != lastIndex + 1)) {
+                (!isDoubleByte[runGlyphIndex + glyphOffset] && index != lastIndex + 1) ||
+                (isDoubleByte[runGlyphIndex + glyphOffset] != lastDoubleByte)) {
+                lastDoubleByte = isDoubleByte[runGlyphIndex + glyphOffset];
                 int len = runGlyphIndex - location;
                 
                 CGContextSetTextDrawingMode(myCGContext, ([gConfig showHiddenText] && hidden) ? kCGTextStroke : kCGTextFill);

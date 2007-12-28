@@ -47,7 +47,7 @@ static unsigned short gEmptyAttr;
 
 - (id) init {
 	if (self = [super init]) {
-        _savedCursorX = _savedCursorY = 0;
+        _savedCursorX = _savedCursorY = -1;
         _row = [[YLLGlobalConfig sharedInstance] row];
 		_column = [[YLLGlobalConfig sharedInstance] column];
         _scrollBeginRow = 0; _scrollEndRow = _row - 1;
@@ -181,8 +181,8 @@ static unsigned short gEmptyAttr;
                 _savedCursorY = _cursorY;
                 _state = TP_NORMAL;
 			} else if (c == '8') { // Restore cursor
-                _savedCursorX = _cursorX;
-                _savedCursorY = _cursorY;
+                _cursorX = _savedCursorX;
+                _cursorY = _savedCursorY;
                 _state = TP_NORMAL;
             } else {
 				NSLog(@"unprocessed esc: %c(0x%X)", c, c);
@@ -367,9 +367,13 @@ static unsigned short gEmptyAttr;
                         _scrollEndRow = e - 1;
                     }
 				} else if (c == 's') {
-					
+                    _savedCursorX = _cursorX;
+                    _savedCursorY = _cursorY;
 				} else if (c == 'u') {
-					
+                    if (_savedCursorX >= 0 && _savedCursorY >= 0) {
+                        _cursorX = _savedCursorX;
+                        _cursorY = _savedCursorY;
+                    }
 				} else {
 					NSLog(@"unsupported control sequence: %c", c);
 				}

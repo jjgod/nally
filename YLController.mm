@@ -38,7 +38,9 @@
                                               context: NULL];
 
     [_tab setCanCloseOnlyTab: YES];
+    /* Trigger the KVO to update the information properly. */
     [[YLLGlobalConfig sharedInstance] setShowHiddenText: [[YLLGlobalConfig sharedInstance] showHiddenText]];
+    [[YLLGlobalConfig sharedInstance] setCellWidth: [[YLLGlobalConfig sharedInstance] cellWidth]];
     
     [self loadSites];
     [self updateSitesMenu];
@@ -280,7 +282,6 @@
 }
 
 - (IBAction) connect: (id) sender {
-    // FIXME: different protocol!
 	[sender abortEditing];
 	[[_telnetView window] makeFirstResponder: _telnetView];
     BOOL ssh = NO;
