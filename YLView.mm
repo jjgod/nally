@@ -1001,12 +1001,12 @@ BOOL isSpecialSymbol(unichar ch) {
 		int db = (currRow + x)->attr.f.doubleByte;
 
 		if (db == 0) {
-			isDoubleByte[bufLength] = NO;
-			textBuf[bufLength] = 0x0000 + (currRow + x)->byte;
-			bufIndex[bufLength] = x;
-			position[bufLength] = CGPointMake(x * _fontWidth + ePaddingLeft, (gRow - 1 - r) * _fontHeight + CTFontGetDescent(gConfig->_eCTFont) + ePaddingBottom);
+            isDoubleByte[bufLength] = NO;
+            textBuf[bufLength] = 0x0000 + (currRow[x].byte ?: ' ');
+            bufIndex[bufLength] = x;
+            position[bufLength] = CGPointMake(x * _fontWidth + ePaddingLeft, (gRow - 1 - r) * _fontHeight + CTFontGetDescent(gConfig->_eCTFont) + ePaddingBottom);
             isDoubleColor[bufLength] = NO;
-			bufLength++;
+            bufLength++;
 		} else if (db == 1) {
 			continue;
 		} else if (db == 2) {
