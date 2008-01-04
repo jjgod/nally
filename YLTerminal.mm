@@ -99,11 +99,11 @@ static unsigned short gEmptyAttr;
 					_cursorX--;
 			} else if (c == 0x0A) { // Linefeed 
 				if (_cursorY == _scrollEndRow) {
-                    if ((i != len - 1 && bytes[i + 1] != 0x0A) || 
-                        (i != 0 && bytes[i - 1] != 0x0A)) {
-                        [_delegate updateBackedImage];
-                        [_delegate extendBottomFrom: _scrollBeginRow to: _scrollEndRow];
-                    }
+                    //if ((i != len - 1 && bytes[i + 1] != 0x0A) || 
+//                        (i != 0 && bytes[i - 1] != 0x0A)) {
+//                        [_delegate updateBackedImage];
+//                        [_delegate extendBottomFrom: _scrollBeginRow to: _scrollEndRow];
+//                    }
                     cell *emptyLine = _grid[_scrollBeginRow];
                     [self clearRow: _scrollBeginRow];
                     
@@ -389,7 +389,7 @@ static unsigned short gEmptyAttr;
     }
     [_delegate performSelector: @selector(tick:)
 					withObject: nil
-					afterDelay: 0.001];
+					afterDelay: 0.07];
     
     [pool release];
 }
