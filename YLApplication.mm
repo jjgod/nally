@@ -18,6 +18,8 @@ static NSString *gLeftString, *gRightString;
     unichar l = NSLeftArrowFunctionKey;
     gLeftString = [[NSString stringWithCharacters: &l length: 1] retain];
     gRightString = [[NSString stringWithCharacters: &r length: 1] retain];
+
+    [NSColor setIgnoresAlpha: NO];
 }
 
 - (void) sendEvent: (NSEvent *) event {

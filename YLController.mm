@@ -45,7 +45,12 @@
     [self loadSites];
     [self updateSitesMenu];
     [self loadEmoticons];
-    
+
+    [_mainWindow _setContentHasShadow: NO];
+    [_mainWindow setOpaque: NO];
+
+    [_mainWindow setFrameAutosaveName: @"nallyMainWindowFrame"];
+
     if ([[NSUserDefaults standardUserDefaults] boolForKey: @"RestoreConnection"]) 
         [self loadLastConnections];
     

@@ -13,6 +13,7 @@
 #import "YLLGLobalConfig.h"
 #import "YLMarkedTextView.h"
 #import "YLContextualMenuManager.h"
+#import "YLImagePreviewer.h"
 
 #include <deque>
 #include "encoding.h"
@@ -168,11 +169,7 @@ BOOL isSpecialSymbol(unichar ch) {
     [_backedImage release];
     _backedImage = [[NSImage alloc] initWithSize: frame.size];
     [_backedImage setFlipped: NO];
-    [_backedImage lockFocus];
-    [[gConfig colorAtIndex: gConfig->_bgColorIndex hilite: NO] set];
-    [NSBezierPath fillRect: NSMakeRect(0, 0, frame.size.width, frame.size.height)];
-    [_backedImage unlockFocus];
-    
+
     [gLeftImage release]; 
     gLeftImage = [[NSImage alloc] initWithSize: NSMakeSize(_fontWidth, _fontHeight)];			
 
@@ -663,7 +660,17 @@ BOOL isSpecialSymbol(unichar ch) {
         
         NSString *url = [[self frontMostTerminal] urlStringAtRow: (index / gColumn) 
                                                           column: (index % gColumn)];
-        if (url) [[NSWorkspace sharedWorkspace] openURL: [NSURL URLWithString: url]];
+        if (url)
+        {
+            // if it's a image file, try loading it.
+            if ([url pathExtension] && !([e modifierFlags] & NSControlKeyMask) &&
+                [[NSImage imageFileTypes] containsObject:[url pathExtension]] &&
+                ! [[url pathExtension] isEqual: @"pdf"])
+            {
+                [[YLImagePreviewer alloc] initWithURL: [NSURL URLWithString: url]];
+            } else
+                [[NSWorkspace sharedWorkspace] openURL: [NSURL URLWithString: url]];
+        }
     }
 }
 
@@ -769,14 +776,16 @@ BOOL isSpecialSymbol(unichar ch) {
 - (void)drawRect:(NSRect)rect {
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
     YLTerminal *ds = [self frontMostTerminal];
-	if ([self connected]) {
         
+	if ([self connected]) {
         /* Draw the backed image */
 		NSRect imgRect = rect;
 		imgRect.origin.y = (_fontHeight * gRow) - rect.origin.y - rect.size.height;
 		[_backedImage compositeToPoint: rect.origin
 							  fromRect: rect
 							 operation: NSCompositeCopy];
+        // NSData *data = [_backedImage TIFFRepresentation];
+        // [data writeToFile: @"/Users/jjgod/Nally.tiff" atomically: NO];
 
         [self drawBlink];
         
@@ -958,6 +967,7 @@ BOOL isSpecialSymbol(unichar ch) {
         }
         
     } else {
+        [[NSColor clearColor] set];
         CGContextFillRect(myCGContext, CGRectMake(0, 0, gColumn * _fontWidth, gRow * _fontHeight));
     }
 
@@ -1236,7 +1246,8 @@ BOOL isSpecialSymbol(unichar ch) {
 			NSRect rect = NSMakeRect((c - length) * _fontWidth, (gRow - 1 - r) * _fontHeight,
 								  _fontWidth * length, _fontHeight);
 			[[gConfig colorAtIndex: lastBackgroundColor hilite: lastBold] set];
-			[NSBezierPath fillRect: rect];
+			// [NSBezierPath fillRect: rect];
+            NSRectFill(rect);
 			
 			/* finish this segment */
 			length = 1;

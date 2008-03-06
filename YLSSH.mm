@@ -144,6 +144,9 @@
     
     if (_fileDescriptor < 0) return;
     
+    [_lastTouchDate release];
+    _lastTouchDate = [[NSDate date] retain];
+
     while (length > 0) {
         FD_ZERO(&writeFileDescriptorSet);
         FD_ZERO(&errorFileDescriptorSet);
