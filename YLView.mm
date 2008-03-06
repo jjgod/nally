@@ -877,10 +877,10 @@ BOOL isSpecialSymbol(unichar ch) {
 
     while (length > 0) {
         if (x + length <= gColumn) { // one-line
-            NSRectFill(NSMakeRect(x * _fontWidth, (gRow - y - 1) * _fontHeight, _fontWidth * length, _fontHeight));
+            [NSBezierPath fillRect: NSMakeRect(x * _fontWidth, (gRow - y - 1) * _fontHeight, _fontWidth * length, _fontHeight)];
             length = 0;
         } else {
-            NSRectFill(NSMakeRect(x * _fontWidth, (gRow - y - 1) * _fontHeight, _fontWidth * (gColumn - x), _fontHeight));
+            [NSBezierPath fillRect: NSMakeRect(x * _fontWidth, (gRow - y - 1) * _fontHeight, _fontWidth * (gColumn - x), _fontHeight)];
             length -= (gColumn - x);
         }
         x = 0;
