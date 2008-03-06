@@ -478,6 +478,7 @@ static unsigned short gEmptyAttr;
     for (i = s; i <= e; i++) {
         _grid[r][i].byte = '\0';
         _grid[r][i].attr.v = gEmptyAttr;
+        _grid[r][i].attr.f.bgColor = _bgColor;
         _dirty[r * _column + i] = YES;
     }
 }
