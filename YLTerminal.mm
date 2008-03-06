@@ -151,8 +151,13 @@ static unsigned short gEmptyAttr;
             break;
 
         case TP_NEXT_BYTE:
-            SET_GRID_BYTE(c);
-            _state = TP_NORMAL;
+            if (c == 0x1B)
+                _state = TP_ESCAPE;
+            else
+            {
+                SET_GRID_BYTE(c);
+                _state = TP_NORMAL;
+            }
             break;
 
         case TP_ESCAPE:
