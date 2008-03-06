@@ -77,6 +77,22 @@ static unsigned short gEmptyAttr;
 	[self feedBytes: (const unsigned char *)[data bytes] length: [data length] connection: connection];
 }
 
+#define SET_GRID_BYTE(c) \
+{ \
+    _grid[_cursorY][_cursorX].byte = c; \
+    _grid[_cursorY][_cursorX].attr.f.fgColor = _fgColor; \
+    _grid[_cursorY][_cursorX].attr.f.bgColor = _bgColor; \
+    _grid[_cursorY][_cursorX].attr.f.bold = _bold; \
+    _grid[_cursorY][_cursorX].attr.f.underline = _underline; \
+    _grid[_cursorY][_cursorX].attr.f.blink = _blink; \
+    _grid[_cursorY][_cursorX].attr.f.reverse = _reverse; \
+    _grid[_cursorY][_cursorX].attr.f.url = NO; \
+    [self setDirty: YES atRow: _cursorY column: _cursorX]; \
+    _cursorX++; \
+    if (_cursorX >= _column) \
+        _cursorX = _column - 1; \
+}
+
 - (void) feedBytes: (const unsigned char *) bytes length: (int) len connection: (id) connection {
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
 
@@ -88,7 +104,9 @@ static unsigned short gEmptyAttr;
 		c = bytes[i];
 //        if (c == 0x00) continue;
         
-		if (_state == TP_NORMAL) {
+		switch (_state)
+        {
+        case TP_NORMAL:
             if (c == 0x00) {
                 // do nothing
             } else if (c == 0x07) { // Beep
@@ -125,20 +143,19 @@ static unsigned short gEmptyAttr;
 				_csTemp = 0;
 				_state = TP_CONTROL;
 			} else {
-				_grid[_cursorY][_cursorX].byte = c;
-				_grid[_cursorY][_cursorX].attr.f.fgColor = _fgColor;
-				_grid[_cursorY][_cursorX].attr.f.bgColor = _bgColor;
-				_grid[_cursorY][_cursorX].attr.f.bold = _bold;
-				_grid[_cursorY][_cursorX].attr.f.underline = _underline;
-				_grid[_cursorY][_cursorX].attr.f.blink = _blink;
-				_grid[_cursorY][_cursorX].attr.f.reverse = _reverse;
-                _grid[_cursorY][_cursorX].attr.f.url = NO;
-				[self setDirty: YES atRow: _cursorY column: _cursorX];
-				_cursorX++;
-                if (_cursorX >= _column)  /* FIXME: wrap or squeeze at the last column? */
-                    _cursorX = _column - 1;
+                SET_GRID_BYTE(c);
+                if (c >= 0x81 && c <= 0xFE)
+                    _state = TP_NEXT_BYTE;
 			}
-		} else if (_state == TP_ESCAPE) {
+
+            break;
+
+        case TP_NEXT_BYTE:
+            SET_GRID_BYTE(c);
+            _state = TP_NORMAL;
+            break;
+
+        case TP_ESCAPE:
 			if (c == 0x5B) { // 0x5B == '['
 				_csBuf->clear();
 				_csArg->clear();
@@ -188,7 +205,10 @@ static unsigned short gEmptyAttr;
 				NSLog(@"unprocessed esc: %c(0x%X)", c, c);
 				_state = TP_NORMAL;
 			}
-		} else if (_state == TP_CONTROL) {
+
+            break;
+
+        case TP_CONTROL:
 			if (isParameter(c)) {
 				_csBuf->push_back(c);
 				if (c >= '0' && c <= '9') {
@@ -380,6 +400,8 @@ static unsigned short gEmptyAttr;
 				_csArg->clear();
 				_state = TP_NORMAL;
 			}
+
+            break;
 		}
 	}
 
