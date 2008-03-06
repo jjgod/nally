@@ -135,12 +135,12 @@ static unsigned short gEmptyAttr;
 				_cursorX = 0;
 			} else if (c == 0x1B) { // ESC
 				_state = TP_ESCAPE;
-			} else if (c == 0x9B) { // Control Sequence Introducer
+			} /* else if (c == 0x9B) { // Control Sequence Introducer
 				_csBuf->clear();
 				_csArg->clear();
 				_csTemp = 0;
 				_state = TP_CONTROL;
-			} else {
+			} */ else {
                 SET_GRID_BYTE(c);
                 if (c >= 0x81 && c <= 0xFE)
                     _state = TP_NEXT_BYTE;
