@@ -65,7 +65,7 @@ BOOL isSpecialSymbol(unichar ch) {
     NSImage *cursorImage = [[NSImage alloc] initWithSize: NSMakeSize(11.0, 20.0)];
     [cursorImage lockFocus];
     [[NSColor clearColor] set];
-    [NSBezierPath fillRect: NSMakeRect(0, 0, 11, 20)];
+    NSRectFill(NSMakeRect(0, 0, 11, 20));
     [[NSColor whiteColor] set];
     NSBezierPath *path = [NSBezierPath bezierPath];
     [path setLineCapStyle: NSRoundLineCapStyle];
@@ -817,11 +817,10 @@ BOOL isSpecialSymbol(unichar ch) {
         if (_selectionLength != 0) 
             [self drawSelection];
 	} else {
-		[[gConfig colorAtIndex: gConfig->_bgColorIndex hilite: 0] set];
+		[[gConfig colorBG] set];
         
-//        [[NSColor colorWithCalibratedRed:0 green:0.02 blue:0.38 alpha:1.0] set];
         NSRect r = [self bounds];
-		[NSBezierPath fillRect: r];
+		NSRectFill(r);
 //        NSImage *img = [NSImage imageNamed: @"Xmas.icns"];
 //        NSSize sz = NSMakeSize(512, 512);
 //        if (r.size.width < 512 || r.size.height < 512) {
@@ -854,7 +853,7 @@ BOOL isSpecialSymbol(unichar ch) {
                 int bgColorIndex = currRow[c].attr.f.reverse ? currRow[c].attr.f.fgColor : currRow[c].attr.f.bgColor;
                 BOOL bold = currRow[c].attr.f.reverse ? currRow[c].attr.f.bold : NO;
                 [[gConfig colorAtIndex: bgColorIndex hilite: bold] set];
-                [NSBezierPath fillRect: NSMakeRect(c * _fontWidth, (gRow - r - 1) * _fontHeight, _fontWidth, _fontHeight)];
+                NSRectFill(NSMakeRect(c * _fontWidth, (gRow - r - 1) * _fontHeight, _fontWidth, _fontHeight));
             }
         }
     }
@@ -878,10 +877,10 @@ BOOL isSpecialSymbol(unichar ch) {
 
     while (length > 0) {
         if (x + length <= gColumn) { // one-line
-            [NSBezierPath fillRect: NSMakeRect(x * _fontWidth, (gRow - y - 1) * _fontHeight, _fontWidth * length, _fontHeight)];
+            NSRectFill(NSMakeRect(x * _fontWidth, (gRow - y - 1) * _fontHeight, _fontWidth * length, _fontHeight));
             length = 0;
         } else {
-            [NSBezierPath fillRect: NSMakeRect(x * _fontWidth, (gRow - y - 1) * _fontHeight, _fontWidth * (gColumn - x), _fontHeight)];
+            NSRectFill(NSMakeRect(x * _fontWidth, (gRow - y - 1) * _fontHeight, _fontWidth * (gColumn - x), _fontHeight));
             length -= (gColumn - x);
         }
         x = 0;
@@ -907,7 +906,7 @@ BOOL isSpecialSymbol(unichar ch) {
 						 operation: NSCompositeCopy];
 
 	[gConfig->_colorTable[0][gConfig->_bgColorIndex] set];
-	[NSBezierPath fillRect: NSMakeRect(0, (gRow - end - 1) * _fontHeight, gColumn * _fontWidth, _fontHeight)];
+	NSRectFill(NSMakeRect(0, (gRow - end - 1) * _fontHeight, gColumn * _fontWidth, _fontHeight));
 	[_backedImage unlockFocus];
     [pool release];
 }
@@ -928,7 +927,7 @@ BOOL isSpecialSymbol(unichar ch) {
 						 operation: NSCompositeCopy];
 	
 	[gConfig->_colorTable[0][gConfig->_bgColorIndex] set];
-	[NSBezierPath fillRect: NSMakeRect(0, (gRow - start - 1) * _fontHeight, gColumn * _fontWidth, _fontHeight)];
+	NSRectFill(NSMakeRect(0, (gRow - start - 1) * _fontHeight, gColumn * _fontWidth, _fontHeight));
 	[_backedImage unlockFocus];
     [pool release];
 }
@@ -1153,7 +1152,7 @@ BOOL isSpecialSymbol(unichar ch) {
                 NSRect rect;
                 rect.size = [gLeftImage size];
                 rect.origin = NSZeroPoint;
-                [NSBezierPath fillRect: rect];
+                NSRectFill(rect);
                 
                 CGContextRef tempContext = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
                 
@@ -1276,13 +1275,13 @@ BOOL isSpecialSymbol(unichar ch) {
 		
 		if (ch == 0x25FC) { // ◼ BLACK SQUARE
 			[color set];
-			[NSBezierPath fillRect: gSymbolBlackSquareRect];
+			NSRectFill(gSymbolBlackSquareRect);
 		} else if (ch >= 0x2581 && ch <= 0x2588) { // BLOCK ▁▂▃▄▅▆▇█
 			[color set];
-			[NSBezierPath fillRect: gSymbolLowerBlockRect[ch - 0x2581]];
+			NSRectFill(gSymbolLowerBlockRect[ch - 0x2581]);
 		} else if (ch >= 0x2589 && ch <= 0x258F) { // BLOCK ▉▊▋▌▍▎▏
 			[color set];
-			[NSBezierPath fillRect: gSymbolLeftBlockRect[ch - 0x2589]];		
+			NSRectFill(gSymbolLeftBlockRect[ch - 0x2589]);
 		} else if (ch >= 0x25E2 && ch <= 0x25E5) { // TRIANGLE ◢◣◤◥
             [color set];
             [gSymbolTrianglePath[ch - 0x25E2] fill];
@@ -1293,20 +1292,20 @@ BOOL isSpecialSymbol(unichar ch) {
 		NSColor *color2 = [gConfig colorAtIndex: colorIndex2 hilite: fgBoldOfAttribute(attr2)];
 		if (ch == 0x25FC) { // ◼ BLACK SQUARE
 			[color1 set];
-			[NSBezierPath fillRect: gSymbolBlackSquareRect1];
+			NSRectFill(gSymbolBlackSquareRect1);
 			[color2 set];
-			[NSBezierPath fillRect: gSymbolBlackSquareRect2];
+			NSRectFill(gSymbolBlackSquareRect2);
 		} else if (ch >= 0x2581 && ch <= 0x2588) { // BLOCK ▁▂▃▄▅▆▇█
 			[color1 set];
-			[NSBezierPath fillRect: gSymbolLowerBlockRect1[ch - 0x2581]];
+			NSRectFill(gSymbolLowerBlockRect1[ch - 0x2581]);
 			[color2 set];
-            [NSBezierPath fillRect: gSymbolLowerBlockRect2[ch - 0x2581]];
+            NSRectFill(gSymbolLowerBlockRect2[ch - 0x2581]);
 		} else if (ch >= 0x2589 && ch <= 0x258F) { // BLOCK ▉▊▋▌▍▎▏
 			[color1 set];
-			[NSBezierPath fillRect: gSymbolLeftBlockRect1[ch - 0x2589]];
+			NSRectFill(gSymbolLeftBlockRect1[ch - 0x2589]);
             if (ch <= 0x259B) {
                 [color2 set];
-                [NSBezierPath fillRect: gSymbolLeftBlockRect2[ch - 0x2589]];
+                NSRectFill(gSymbolLeftBlockRect2[ch - 0x2589]);
             }
 		} else if (ch >= 0x25E2 && ch <= 0x25E5) { // TRIANGLE ◢◣◤◥
             [color1 set];
