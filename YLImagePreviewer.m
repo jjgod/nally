@@ -98,7 +98,9 @@
     NSImageRep *rep = [[image representations] objectAtIndex: 0];
     NSSize size = NSMakeSize([rep pixelsWide], [rep pixelsHigh]);
     NSSize visibleSize = [[NSScreen mainScreen] visibleFrame].size;
-    
+    NSSize viewSize = [[_window contentView] frame].size;
+    NSSize frameSize = [_window frame].size;
+
     visibleSize.width -= 20;
     visibleSize.height -= 20;
     
@@ -140,7 +142,10 @@
 
     [view setImage: image];
     [image release];
-    [_window setFrame: NSMakeRect(origin.x, origin.y, size.width, size.height) 
+
+    [_window setFrame: NSMakeRect(origin.x, origin.y,
+                                  size.width + frameSize.width - viewSize.width,
+                                  size.height + frameSize.height - viewSize.height)
               display: YES 
               animate: YES];
 }
