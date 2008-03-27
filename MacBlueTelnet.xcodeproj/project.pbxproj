@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		070D50430D9BF40400EC2660 /* YLImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 070D50420D9BF40400EC2660 /* YLImageView.m */; };
 		07B370690D6840600035E87D /* YLImagePreviewer.m in Sources */ = {isa = PBXBuildFile; fileRef = 07B370680D6840600035E87D /* YLImagePreviewer.m */; };
 		07B3707A0D6840B20035E87D /* HMBlkAppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07B370790D6840B20035E87D /* HMBlkAppKit.framework */; };
 		07B3708E0D6840BB0035E87D /* HMBlkAppKit.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 07B370790D6840B20035E87D /* HMBlkAppKit.framework */; };
@@ -65,6 +66,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		070D50410D9BF40400EC2660 /* YLImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLImageView.h; sourceTree = "<group>"; };
+		070D50420D9BF40400EC2660 /* YLImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YLImageView.m; sourceTree = "<group>"; };
 		07B370670D6840600035E87D /* YLImagePreviewer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLImagePreviewer.h; sourceTree = "<group>"; };
 		07B370680D6840600035E87D /* YLImagePreviewer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YLImagePreviewer.m; sourceTree = "<group>"; };
 		07B370790D6840B20035E87D /* HMBlkAppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = HMBlkAppKit.framework; sourceTree = "<group>"; };
@@ -257,6 +260,8 @@
 		85D9B9D20C97DF7B006C5E0F /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				070D50410D9BF40400EC2660 /* YLImageView.h */,
+				070D50420D9BF40400EC2660 /* YLImageView.m */,
 				858A54E40CAE78C8000E1AA7 /* YLMarkedTextView.h */,
 				858A54E50CAE78C8000E1AA7 /* YLMarkedTextView.m */,
 				8570AD5D0A3923A900838442 /* YLView.h */,
@@ -393,6 +398,7 @@
 				85ED53220D092B5F003296D4 /* YLConnection.mm in Sources */,
 				85CE53390D0D687800F55B7B /* YLSSH.mm in Sources */,
 				07B370690D6840600035E87D /* YLImagePreviewer.m in Sources */,
+				070D50430D9BF40400EC2660 /* YLImageView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

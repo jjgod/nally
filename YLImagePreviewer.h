@@ -20,5 +20,7 @@
 
 - (void) showLoadingWindow;
 - (void) releaseConnection;
+- (NSMutableData *) receivedData;
+- (NSString *) filename;
 
 @end

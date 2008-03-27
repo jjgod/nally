@@ -9,6 +9,7 @@
 #import "CommonType.h"
 #import "YLSite.h"
 #import "YLImagePreviewer.h"
+#import "YLImageView.h"
 
 @implementation YLImagePreviewer
 
@@ -94,7 +95,7 @@
 
 - (void) showImage: (NSImage *) image withTitle: (NSString *) title
 {
-    NSImageView *view;
+    YLImageView *view;
     NSImageRep *rep = [[image representations] objectAtIndex: 0];
     NSSize size = NSMakeSize([rep pixelsWide], [rep pixelsHigh]);
     NSSize visibleSize = [[NSScreen mainScreen] visibleFrame].size;
@@ -131,7 +132,7 @@
     [_window setTitle: title];
     
     NSRect viewRect = NSMakeRect(0, 0, size.width, size.height);
-    view = [[NSImageView alloc] initWithFrame: viewRect];
+    view = [[YLImageView alloc] initWithFrame: viewRect previewer: self];
     
     [_indicator removeFromSuperview];
     [_indicator release];
@@ -245,8 +246,8 @@ NSStringEncoding encodingFromYLEncoding(YLEncoding ylenc)
     }
     else
         [self showImage: image withTitle: _currentFileDownloading];
-    
-    [self releaseConnection];
+
+    // [self releaseConnection];
 }
 
 - (void) releaseConnection
@@ -259,6 +260,16 @@ NSStringEncoding encodingFromYLEncoding(YLEncoding ylenc)
     
     [_currentFileDownloading release];
     _currentFileDownloading = nil;
+}
+
+- (NSMutableData *) receivedData
+{
+    return _receivedData;
+}
+
+- (NSString *) filename
+{
+    return _currentFileDownloading;
 }
 
 @end
