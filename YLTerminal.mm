@@ -78,7 +78,7 @@ static unsigned short gEmptyAttr;
 }
 
 #define SET_GRID_BYTE(c) \
-{ \
+if (_cursorX <= _column - 1) { \
     _grid[_cursorY][_cursorX].byte = c; \
     _grid[_cursorY][_cursorX].attr.f.fgColor = _fgColor; \
     _grid[_cursorY][_cursorX].attr.f.bgColor = _bgColor; \
@@ -88,7 +88,7 @@ static unsigned short gEmptyAttr;
     _grid[_cursorY][_cursorX].attr.f.reverse = _reverse; \
     _grid[_cursorY][_cursorX].attr.f.url = NO; \
     [self setDirty: YES atRow: _cursorY column: _cursorX]; \
-    _cursorX++; \
+    if (_cursorX < _column - 1) _cursorX++; \
 }
 
 - (void) feedBytes: (const unsigned char *) bytes length: (int) len connection: (id) connection {
