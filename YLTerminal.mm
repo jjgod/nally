@@ -54,7 +54,10 @@ static unsigned short gEmptyAttr;
 		_grid = (cell **) malloc(sizeof(cell *) * _row);
         int i;
         for (i = 0; i < _row; i++)
-            _grid[i] = (cell *) malloc(sizeof(cell) * _column);
+            // NOTE: in case _cursorX will exceed _column size (at
+            // the border of the screen), we allocate one more unit
+            // for this array
+            _grid[i] = (cell *) malloc(sizeof(cell) * (_column + 1));
 		_dirty = (char *) malloc(sizeof(char) * (_row * _column));
         [self clearAll];
 	}
@@ -88,7 +91,7 @@ if (_cursorX <= _column - 1) { \
     _grid[_cursorY][_cursorX].attr.f.reverse = _reverse; \
     _grid[_cursorY][_cursorX].attr.f.url = NO; \
     [self setDirty: YES atRow: _cursorY column: _cursorX]; \
-    if (_cursorX < _column - 1) _cursorX++; \
+    _cursorX++; \
 }
 
 - (void) feedBytes: (const unsigned char *) bytes length: (int) len connection: (id) connection {
@@ -272,7 +275,7 @@ if (_cursorX <= _column - 1) { \
 					} else {
                         if ((*_csArg)[0] < 1) (*_csArg)[0] = 1;
                         if ((*_csArg)[1] < 1) (*_csArg)[1] = 1;
-//                        NSLog(@"jump %d %d", (*_csArg)[0], (*_csArg)[1]);
+//                        NSLog(@"jump %c, %d x=%d, %d %d", c, _column, _cursorX, (*_csArg)[0], (*_csArg)[1]);
 						CURSOR_MOVETO((*_csArg)[1] - 1, (*_csArg)[0] - 1);
 //                        [self setDirty: YES atRow: _cursorY column: _cursorX];
 					}
