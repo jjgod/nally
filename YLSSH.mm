@@ -25,6 +25,7 @@
     if (self = [super init]) {
         _pid = 0;
         _fileDescriptor = -1;
+        _ifLoginAsBBS = FALSE;
     }
     return self;
 }
@@ -55,8 +56,12 @@
 }
 
 - (BOOL) connectToAddress: (NSString *) addr {
-    if ([addr hasPrefix: @"ssh://"]) 
+    if ([addr hasPrefix: @"ssh://bbs"]) {
         addr = [addr substringFromIndex: 6];
+        _ifLoginAsBBS=TRUE;
+    } else if ([addr hasPrefix: @"ssh://"]) {
+        addr = [addr substringFromIndex: 6];
+    }
     NSArray *a = [addr componentsSeparatedByString: @":"];
     if ([a count] == 2) {
         int p = [[a objectAtIndex: 1] intValue];
@@ -111,12 +116,14 @@
     
     _pid = forkpty(&_fileDescriptor, slaveName, &term, &size);
     if (_pid == 0) { /* child */
-        char * argv[5];
+        char * argv[6];
         argv[0] = "/usr/bin/ssh";
         argv[1] = "-p";
         argv[2] = (char *)[[NSString stringWithFormat: @"%d", port] UTF8String];
         argv[3] = (char *)[addr UTF8String];
         argv[4] = NULL;
+        argv[5] = NULL;
+        if (_ifLoginAsBBS) argv[4] = "-x";
         execvp(argv[0], argv); 
         fprintf(stderr, "fork error");
     } else { /* parent */

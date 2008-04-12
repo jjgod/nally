@@ -12,6 +12,7 @@
 @interface YLSSH : YLConnection <YLConnectionProtocol> {
     pid_t _pid;
     int _fileDescriptor;
+    BOOL _ifLoginAsBBS;
 }
 
 @end
