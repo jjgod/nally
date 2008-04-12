@@ -116,14 +116,16 @@
     
     _pid = forkpty(&_fileDescriptor, slaveName, &term, &size);
     if (_pid == 0) { /* child */
-        char * argv[6];
-        argv[0] = "/usr/bin/ssh";
-        argv[1] = "-p";
-        argv[2] = (char *)[[NSString stringWithFormat: @"%d", port] UTF8String];
-        argv[3] = (char *)[addr UTF8String];
-        argv[4] = NULL;
-        argv[5] = NULL;
-        if (_ifLoginAsBBS) argv[4] = "-x";
+        char * argv[8];
+        argv[0] = "/usr/bin/env";
+        argv[1] = "TERM=vt102";
+        argv[2] = "/usr/bin/ssh";
+        argv[3] = "-p";
+        argv[4] = (char *)[[NSString stringWithFormat: @"%d", port] UTF8String];
+        argv[5] = (char *)[addr UTF8String];
+        argv[6] = NULL;
+        argv[7] = NULL;
+        if (_ifLoginAsBBS) argv[6] = "-x";
         execvp(argv[0], argv); 
         fprintf(stderr, "fork error");
     } else { /* parent */
