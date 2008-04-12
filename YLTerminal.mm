@@ -207,6 +207,12 @@ if (_cursorX <= _column - 1) { \
                 _cursorX = _savedCursorX;
                 _cursorY = _savedCursorY;
                 _state = TP_NORMAL;
+            } else if (c == 0x3D ) { // Application keypad mode (vt52)
+				NSLog(@"Application keypad mode request ignored");
+                _state = TP_NORMAL;
+            } else if (c == 0x3E ) { // Numeric keypad mode (vt52)
+				NSLog(@"Numeric keypad mode request ignored");
+                _state = TP_NORMAL;
             } else {
 				NSLog(@"unprocessed esc: %c(0x%X)", c, c);
 				_state = TP_NORMAL;
@@ -346,7 +352,10 @@ if (_cursorX <= _column - 1) { \
                     }
                     for (i = _cursorY; i < _row; i++)
                         [self setDirtyForRow: i];
-                    
+				} else if (c == 'h') {		// set mode
+					NSLog(@"control sequence: set mode is not implemented yet.");
+				} else if (c == 'l') {		// reset mode
+					NSLog(@"control sequence: reset mode is not implemented yet.");
 				} else if (c == 'm') { 
 					if (_csArg->empty()) { // clear
 						_fgColor = 7;
