@@ -56,11 +56,13 @@
 }
 
 - (BOOL) connectToAddress: (NSString *) addr {
-    if ([addr hasPrefix: @"ssh://bbs"]) {
+    if (NO) {
+    } else if ([addr hasPrefix: @"ssh://bbs"]) {
         addr = [addr substringFromIndex: 6];
-        _ifLoginAsBBS=TRUE;
+        _ifLoginAsBBS=true;
     } else if ([addr hasPrefix: @"ssh://"]) {
         addr = [addr substringFromIndex: 6];
+		_ifLoginAsBBS=false;
     }
     NSArray *a = [addr componentsSeparatedByString: @":"];
     if ([a count] == 2) {
@@ -116,18 +118,28 @@
     
     _pid = forkpty(&_fileDescriptor, slaveName, &term, &size);
     if (_pid == 0) { /* child */
-        char * argv[8];
-        argv[0] = "/usr/bin/env";
-        argv[1] = "TERM=vt102";
-        argv[2] = "/usr/bin/ssh";
-        argv[3] = "-p";
-        argv[4] = (char *)[[NSString stringWithFormat: @"%d", port] UTF8String];
-        argv[5] = (char *)[addr UTF8String];
-        argv[6] = NULL;
-        argv[7] = NULL;
-        if (_ifLoginAsBBS) argv[6] = "-x";
-        execvp(argv[0], argv); 
-        fprintf(stderr, "fork error");
+        if (_ifLoginAsBBS) {
+            char * argv[6];
+            argv[0] = "/usr/bin/ssh";
+            argv[1] = "-x";
+            argv[2] = "-p";
+            argv[3] = (char *)[[NSString stringWithFormat: @"%d", port] UTF8String];
+            argv[4] = (char *)[addr UTF8String];
+            argv[5] = NULL;
+            execvp(argv[0], argv);
+            fprintf(stderr, "fork error");
+        } else {
+            char * argv[7];
+            argv[0] = "/usr/bin/env";
+            argv[1] = "TERM=vt102";
+            argv[2] = "/usr/bin/ssh";
+            argv[3] = "-p";
+            argv[4] = (char *)[[NSString stringWithFormat: @"%d", port] UTF8String];
+            argv[5] = (char *)[addr UTF8String];
+            argv[6] = NULL;
+            execvp(argv[0], argv);
+            fprintf(stderr, "fork error");
+        }
     } else { /* parent */
         int one = 1;
         ioctl(_fileDescriptor, TIOCPKT, &one);

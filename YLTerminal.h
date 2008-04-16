@@ -33,7 +33,7 @@
 	cell **_grid;
 	char *_dirty;
 	
-	enum { TP_NORMAL, TP_NEXT_BYTE, TP_ESCAPE, TP_CONTROL } _state;
+	enum { TP_NORMAL, TP_NEXT_BYTE, TP_ESCAPE, TP_CONTROL, TP_SCS } _state;
     
 //    YLEncoding _encoding;
     

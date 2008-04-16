@@ -108,21 +108,30 @@ if (_cursorX <= _column - 1) { \
 		switch (_state)
         {
         case TP_NORMAL:
-            if (c == 0x00) {
+            if (NO) { // code alignment
+            } else if (c == 0x00) { // Null
                 // do nothing
-            } else if (c == 0x07) { // Beep
+//          } else if (c == 0x03) { // ETX
+//          } else if (c == 0x04) { // EOT
+//          } else if (c == 0x05) { // Enquire(ENQ)
+            } else if (c == 0x07) { // Beep(BEL)
 				[[NSSound soundNamed: @"Whit.aiff"] play];
                 [self setHasMessage: YES];
-			} else if (c == 0x08) { // Backspace
+			} else if (c == 0x08) { // Backspace(BS)
 				if (_cursorX > 0)
 					_cursorX--;
-			} else if (c == 0x0A) { // Linefeed 
+				//mjhsieh: zterm seems to implement more
+			} else if (c == 0x09) { // Tab(HT)
+                _cursorX=(int(_cursorX/8) + 1) * 8;
+                //mjhsieh: this implement is not yet tested
+			} else if (c == 0x0A || c == 0x0B || c == 0x0C) {
+                // Linefeed(LF) or Vertical tab(VT) or Form feed (FF)
 				if (_cursorY == _scrollEndRow) {
-                    //if ((i != len - 1 && bytes[i + 1] != 0x0A) || 
-//                        (i != 0 && bytes[i - 1] != 0x0A)) {
-//                        [_delegate updateBackedImage];
-//                        [_delegate extendBottomFrom: _scrollBeginRow to: _scrollEndRow];
-//                    }
+//                  if ((i != len - 1 && bytes[i + 1] != 0x0A) || 
+//                      (i != 0 && bytes[i - 1] != 0x0A)) {
+//                      [_delegate updateBackedImage];
+//                      [_delegate extendBottomFrom: _scrollBeginRow to: _scrollEndRow];
+//                  }
                     cell *emptyLine = _grid[_scrollBeginRow];
                     [self clearRow: _scrollBeginRow];
                     
@@ -134,16 +143,33 @@ if (_cursorX <= _column - 1) { \
 					_cursorY++;
                     if (_cursorY >= _row) _cursorY = _row - 1;
 				}
-			} else if (c == 0x0D) { // Carriage Return
+			} else if (c == 0x0D) { // Carriage Return (CR)
 				_cursorX = 0;
+            //} else if (c == 0x0E) { // SO		(Shift Out)
+                //Selects G1 character set designated by a select character set sequence.
+            //} else if (c == 0x0F) { // SI		(Shift In)
+                //Selects G0 character set designated by a select character set sequence.
+            //} else if (c == 0x10) { // not listed at VT100
+            //} else if (c == 0x11) { // Processed as XON
+            //} else if (c == 0x12) { // Processed as XOFF
+            //} else if (c == 0x13) {
+            //} else if (c == 0x14) {
+            //} else if (c == 0x15) {
+            //} else if (c == 0x16) {
+            //} else if (c == 0x17) {
+            //} else if (c == 0x18 || 0x1A) { // CAN(Cancel) or SUB(Substitute)
+                //If received during an escape or control sequence, 
+                //cancels the sequence and displays substitution character ().
+                //SUB is processed as CAN
+            //} else if (c == 0x19) {
 			} else if (c == 0x1B) { // ESC
 				_state = TP_ESCAPE;
-			} /* else if (c == 0x9B) { // Control Sequence Introducer
-				_csBuf->clear();
-				_csArg->clear();
-				_csTemp = 0;
-				_state = TP_CONTROL;
-			} */ else {
+//			} else if (c == 0x9B) { // Control Sequence Introducer
+//				_csBuf->clear();
+//				_csArg->clear();
+//				_csTemp = 0;
+//				_state = TP_CONTROL;
+			} else {
                 SET_GRID_BYTE(c);
                 if (c >= 0x81 && c <= 0xFE)
                     _state = TP_NEXT_BYTE;
@@ -162,7 +188,9 @@ if (_cursorX <= _column - 1) { \
             break;
 
         case TP_ESCAPE:
-			if (c == 0x5B) { // 0x5B == '['
+			if (c == 0x1B) { // ESCESC according to zterm this happens
+				_state = TP_ESCAPE;
+			} else if (c == 0x5B) { // 0x5B == '['
 				_csBuf->clear();
 				_csArg->clear();
 				_csTemp = 0;
@@ -207,17 +235,38 @@ if (_cursorX <= _column - 1) { \
                 _cursorX = _savedCursorX;
                 _cursorY = _savedCursorY;
                 _state = TP_NORMAL;
+            } else if (c == 0x28 ) { // '(' is threw by /usr/bin/top
+                _state = TP_SCS;
+            } else if (c == 0x29 ) { // ')' is threw by /usr/bin/top
+                _state = TP_SCS;
             } else if (c == 0x3D ) { // Application keypad mode (vt52)
-				NSLog(@"Application keypad mode request ignored");
+				NSLog(@"unprocessed request of application keypad mode");
                 _state = TP_NORMAL;
             } else if (c == 0x3E ) { // Numeric keypad mode (vt52)
-				NSLog(@"Numeric keypad mode request ignored");
+				NSLog(@"unprocessed request of numeric keypad mode");
                 _state = TP_NORMAL;
             } else {
 				NSLog(@"unprocessed esc: %c(0x%X)", c, c);
 				_state = TP_NORMAL;
 			}
 
+            break;
+
+        case TP_SCS:
+            if (c == '0') { //Special characters and line drawing set
+				_state = TP_NORMAL;
+            } else if (c == '1') { //Alternate character ROM
+				_state = TP_NORMAL;
+            } else if (c == '2') { //Alternate character ROM - special characters
+				_state = TP_NORMAL;
+            } else if (c == 'A') { //United Kingdom (UK)
+				_state = TP_NORMAL;
+            } else if (c == 'B') { //United States (US)
+				_state = TP_NORMAL;
+            } else {
+				NSLog(@"SCS argument exception: %c(0x%X)", c, c);
+				_state = TP_NORMAL;
+            }
             break;
 
         case TP_CONTROL:
@@ -352,10 +401,12 @@ if (_cursorX <= _column - 1) { \
                     }
                     for (i = _cursorY; i < _row; i++)
                         [self setDirtyForRow: i];
+				} else if (c == 'P') {		// xterm?
+					NSLog(@"CSI: should delete character but not implemented.");
 				} else if (c == 'h') {		// set mode
-					NSLog(@"control sequence: set mode is not implemented yet.");
+					NSLog(@"CSI: set mode is not implemented yet.");
 				} else if (c == 'l') {		// reset mode
-					NSLog(@"control sequence: reset mode is not implemented yet.");
+					NSLog(@"CSI: reset mode is not implemented yet.");
 				} else if (c == 'm') { 
 					if (_csArg->empty()) { // clear
 						_fgColor = 7;
