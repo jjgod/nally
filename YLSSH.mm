@@ -25,7 +25,7 @@
     if (self = [super init]) {
         _pid = 0;
         _fileDescriptor = -1;
-        _ifLoginAsBBS = FALSE;
+        _ifLoginAsBBS = false;
     }
     return self;
 }
@@ -131,7 +131,7 @@
         } else {
             char * argv[7];
             argv[0] = "/usr/bin/env";
-            argv[1] = "TERM=vt102";
+            argv[1] = "TERM=vt102"; // should be customizable in the future
             argv[2] = "/usr/bin/ssh";
             argv[3] = "-p";
             argv[4] = (char *)[[NSString stringWithFormat: @"%d", port] UTF8String];
