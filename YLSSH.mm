@@ -25,7 +25,7 @@
     if (self = [super init]) {
         _pid = 0;
         _fileDescriptor = -1;
-        _ifLoginAsBBS = false;
+        _loginAsBBS = NO;
     }
     return self;
 }
@@ -59,10 +59,10 @@
     if (NO) {
     } else if ([addr hasPrefix: @"ssh://bbs"]) {
         addr = [addr substringFromIndex: 6];
-        _ifLoginAsBBS=true;
+        _loginAsBBS = YES;
     } else if ([addr hasPrefix: @"ssh://"]) {
         addr = [addr substringFromIndex: 6];
-		_ifLoginAsBBS=false;
+		_loginAsBBS = NO;
     }
     NSArray *a = [addr componentsSeparatedByString: @":"];
     if ([a count] == 2) {
@@ -118,22 +118,17 @@
     
     _pid = forkpty(&_fileDescriptor, slaveName, &term, &size);
     if (_pid == 0) { /* child */
-        if (_ifLoginAsBBS) {
-            char * argv[6];
-            argv[0] = "/usr/bin/ssh";
-            argv[1] = "-x";
-            argv[2] = "-p";
+        if (_loginAsBBS) {
+            char *argv[6] = { "/usr/bin/ssh", "-x", "-p" };
+
             argv[3] = (char *)[[NSString stringWithFormat: @"%d", port] UTF8String];
             argv[4] = (char *)[addr UTF8String];
             argv[5] = NULL;
             execvp(argv[0], argv);
             fprintf(stderr, "fork error");
         } else {
-            char * argv[7];
-            argv[0] = "/usr/bin/env";
-            argv[1] = "TERM=vt102"; // should be customizable in the future
-            argv[2] = "/usr/bin/ssh";
-            argv[3] = "-p";
+            char *argv[7] = { "/usr/bin/env", "TERM=vt102", // should be customizable in the future
+                              "/usr/bin/ssh", "-p" };
             argv[4] = (char *)[[NSString stringWithFormat: @"%d", port] UTF8String];
             argv[5] = (char *)[addr UTF8String];
             argv[6] = NULL;
