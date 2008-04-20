@@ -294,12 +294,11 @@
     NSString *name = [sender stringValue];
     if ([[name lowercaseString] hasPrefix: @"ssh://"]) 
         ssh = YES;
-//        name = [name substringFromIndex: 6];
+//      name = [name substringFromIndex: 6];
     if ([[name lowercaseString] hasPrefix: @"telnet://"])
         name = [name substringFromIndex: 9];
     if ([[name lowercaseString] hasPrefix: @"bbs://"])
         name = [name substringFromIndex: 6];
-    //NSLog(@"%@",name);
     
     NSMutableArray *matchedSites = [NSMutableArray array];
     YLSite *s = [YLSite site];
@@ -312,7 +311,7 @@
             [matchedSites sortUsingDescriptors: [NSArray arrayWithObject: [[[NSSortDescriptor alloc] initWithKey:@"address.length" ascending:YES] autorelease]]];
             s = [[[matchedSites objectAtIndex: 0] copy] autorelease];
         } else {
-            [s setAddress: [sender stringValue]];
+            [s setAddress: name];
             [s setName: name];
             [s setEncoding: [[YLLGlobalConfig sharedInstance] defaultEncoding]];
             [s setAnsiColorKey: [[YLLGlobalConfig sharedInstance] defaultANSIColorKey]];
