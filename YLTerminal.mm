@@ -171,8 +171,8 @@ if (_cursorX <= _column - 1) { \
 //				_state = TP_CONTROL;
 			} else {
                 SET_GRID_BYTE(c);
-                if (c >= 0x81 && c <= 0xFE)
-                    _state = TP_NEXT_BYTE;
+//              if (c >= 0x81 && c <= 0xFE)
+//                  _state = TP_NEXT_BYTE;
 			}
 
             break;
