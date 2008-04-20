@@ -169,22 +169,9 @@ if (_cursorX <= _column - 1) { \
 //				_csArg->clear();
 //				_csTemp = 0;
 //				_state = TP_CONTROL;
-			} else {
+			} else
                 SET_GRID_BYTE(c);
-//              if (c >= 0x81 && c <= 0xFE)
-//                  _state = TP_NEXT_BYTE;
-			}
 
-            break;
-
-        case TP_NEXT_BYTE:
-            if (c == 0x1B)
-                _state = TP_ESCAPE;
-            else
-            {
-                SET_GRID_BYTE(c);
-                _state = TP_NORMAL;
-            }
             break;
 
         case TP_ESCAPE:
