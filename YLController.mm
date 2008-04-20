@@ -298,7 +298,8 @@
     if ([[name lowercaseString] hasPrefix: @"telnet://"])
         name = [name substringFromIndex: 9];
     if ([[name lowercaseString] hasPrefix: @"bbs://"])
-        name = [name substringFromIndex: 9];
+        name = [name substringFromIndex: 6];
+    //NSLog(@"%@",name);
     
     NSMutableArray *matchedSites = [NSMutableArray array];
     YLSite *s = [YLSite site];
