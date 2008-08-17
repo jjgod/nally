@@ -10,6 +10,7 @@
 #import "YLView.h"
 #import <PSMTabBarControl/PSMTabBarControl.h>
 #import "YLSite.h"
+#import "YLPluginLoader.h"
 
 @class YLTerminal;
 
@@ -33,6 +34,8 @@
     IBOutlet NSTextField *_siteNameField;
     IBOutlet NSMenuItem *_showHiddenTextMenuItem;
     IBOutlet NSMenuItem *_encodingMenuItem;
+    
+    YLPluginLoader *pluginLoader;
 }
 
 - (void) updateSitesMenu ;

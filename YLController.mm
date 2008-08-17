@@ -13,6 +13,10 @@
 #import "DBPrefsWindowController.h"
 #import "YLEmoticon.h"
 
+@interface NSWindow (YLAdditions)
+- (void) _setContentHasShadow: (BOOL) has;
+@end
+
 @interface YLController (Private)
 - (BOOL)tabView:(NSTabView *)tabView shouldCloseTabViewItem:(NSTabViewItem *)tabViewItem ;
 - (void)tabView:(NSTabView *)tabView willCloseTabViewItem:(NSTabViewItem *)tabViewItem ;
@@ -45,6 +49,8 @@
     [self loadSites];
     [self updateSitesMenu];
     [self loadEmoticons];
+    
+    pluginLoader = [[YLPluginLoader alloc] init];
 
     [_mainWindow _setContentHasShadow: NO];
     [_mainWindow setOpaque: NO];
@@ -58,6 +64,12 @@
     [NSTimer scheduledTimerWithTimeInterval: 1 target: self selector: @selector(updateBlinkTicker:) userInfo: nil repeats: YES];
 
     
+}
+
+- (void) dealloc
+{
+    [pluginLoader release];
+    [super dealloc];
 }
 
 - (void) updateSitesMenu {
