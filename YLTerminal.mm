@@ -109,19 +109,20 @@ if (_cursorX <= _column - 1) { \
         {
         case TP_NORMAL:
             if (NO) { // code alignment
-            } else if (c == 0x00) { // Null
+            } else if (c == 0x00) { // NUL (Null)
                 // do nothing
-//          } else if (c == 0x03) { // ETX
-//          } else if (c == 0x04) { // EOT
-//          } else if (c == 0x05) { // Enquire(ENQ)
-            } else if (c == 0x07) { // Beep(BEL)
+//          } else if (c == 0x03) { // ETX (End of Text)
+//          } else if (c == 0x04) { // EOT (End of Transmission)
+//          } else if (c == 0x05) { // ENQ (Enquire) (are you there?)
+//          } else if (c == 0x06) { // ACK (Acknowledge) (yes I am there)
+            } else if (c == 0x07) { // BEL (Beep)
 				[[NSSound soundNamed: @"Whit.aiff"] play];
                 [self setHasMessage: YES];
-			} else if (c == 0x08) { // Backspace(BS)
+			} else if (c == 0x08) { // BS  (Backspace)
 				if (_cursorX > 0)
 					_cursorX--;
 				//mjhsieh: zterm seems to implement more
-			} else if (c == 0x09) { // Tab(HT)
+			} else if (c == 0x09) { // HT  (Horizontal TABulation)
                 _cursorX=(int(_cursorX/8) + 1) * 8;
                 //mjhsieh: this implement is not yet tested
 			} else if (c == 0x0A || c == 0x0B || c == 0x0C) {
@@ -143,32 +144,43 @@ if (_cursorX <= _column - 1) { \
 					_cursorY++;
                     if (_cursorY >= _row) _cursorY = _row - 1;
 				}
-			} else if (c == 0x0D) { // Carriage Return (CR)
+			} else if (c == 0x0D) { // CR  (Carriage Return)
 				_cursorX = 0;
-            //} else if (c == 0x0E) { // SO		(Shift Out)
+//          } else if (c == 0x0E) { // SO  (Shift Out)
                 //Selects G1 character set designated by a select character set sequence.
-            //} else if (c == 0x0F) { // SI		(Shift In)
+//          } else if (c == 0x0F) { // SI  (Shift In)
                 //Selects G0 character set designated by a select character set sequence.
-            //} else if (c == 0x10) { // not listed at VT100
-            //} else if (c == 0x11) { // Processed as XON
-            //} else if (c == 0x12) { // Processed as XOFF
-            //} else if (c == 0x13) {
-            //} else if (c == 0x14) {
-            //} else if (c == 0x15) {
-            //} else if (c == 0x16) {
-            //} else if (c == 0x17) {
-            //} else if (c == 0x18 || 0x1A) { // CAN(Cancel) or SUB(Substitute)
+//          } else if (c == 0x10) { // DLE (Data Link Escape, normally MODEM)
+//          } else if (c == 0x11) { // DC1 (Device Control One, XON)
+//          } else if (c == 0x12) { // DC2 (Device Control Two)
+//          } else if (c == 0x13) { // DC3 (Device Control Three, XOFF)
+//          } else if (c == 0x14) { // DC4 (Device Control Four)
+//          } else if (c == 0x15) { // NAK (Negative Acknowledge)
+//          } else if (c == 0x16) { // SYN (Synchronous Idle)
+//          } else if (c == 0x17) { // ETB (End of Transmission Block)
+//          } else if (c == 0x18 || 0x1A) { // CAN (Cancel) or SUB (Substitute)
                 //If received during an escape or control sequence, 
                 //cancels the sequence and displays substitution character ().
                 //SUB is processed as CAN
-            //} else if (c == 0x19) {
-			} else if (c == 0x1B) { // ESC
+//          } else if (c == 0x19) { // EM  (End of Medium)
+			} else if (c == 0x1B) { // ESC (Escape)
 				_state = TP_ESCAPE;
-//			} else if (c == 0x9B) { // Control Sequence Introducer
+//          } else if (c == 0x1C) { // FS  (File Separator)
+//          } else if (c == 0x1D) { // GS  (Group Separator)
+//          } else if (c == 0x1E) { // RS  (Record Separator)
+//          } else if (c == 0x1F) { // US  (Unit Separator)
+//          } else if (c >= 0x80 && c <= 0x99) { // Ignore anyway
+//          } else if (c == 0x9A) { // SCI (Single Character Introducer)
+//			} else if (c == 0x9B) { // CSI (Control Sequence Introducer) single-
+                                    // -character CSI is China-Sea incompatible.
 //				_csBuf->clear();
 //				_csArg->clear();
 //				_csTemp = 0;
 //				_state = TP_CONTROL;
+//			} else if (c == 0x9C) {
+//			} else if (c == 0x9D) {
+//			} else if (c == 0x9E) {
+//			} else if (c == 0x9F) {
 			} else
                 SET_GRID_BYTE(c);
 
@@ -222,9 +234,9 @@ if (_cursorX <= _column - 1) { \
                 _cursorX = _savedCursorX;
                 _cursorY = _savedCursorY;
                 _state = TP_NORMAL;
-            } else if (c == 0x28 ) { // '(' is threw by /usr/bin/top
+            } else if (c == 0x28 ) { // '(' Font Set G0
                 _state = TP_SCS;
-            } else if (c == 0x29 ) { // ')' is threw by /usr/bin/top
+            } else if (c == 0x29 ) { // ')' Font Set G1
                 _state = TP_SCS;
             } else if (c == 0x3D ) { // Application keypad mode (vt52)
 				NSLog(@"unprocessed request of application keypad mode");
@@ -241,14 +253,19 @@ if (_cursorX <= _column - 1) { \
 
         case TP_SCS:
             if (c == '0') { //Special characters and line drawing set
+				NSLog(@"SCS argument: %c(0x%X)", c, c);
 				_state = TP_NORMAL;
             } else if (c == '1') { //Alternate character ROM
+				NSLog(@"SCS argument: %c(0x%X)", c, c);
 				_state = TP_NORMAL;
             } else if (c == '2') { //Alternate character ROM - special characters
+				NSLog(@"SCS argument: %c(0x%X)", c, c);
 				_state = TP_NORMAL;
             } else if (c == 'A') { //United Kingdom (UK)
+				NSLog(@"SCS argument: %c(0x%X)", c, c);
 				_state = TP_NORMAL;
             } else if (c == 'B') { //United States (US)
+				NSLog(@"SCS argument: %c(0x%X)", c, c);
 				_state = TP_NORMAL;
             } else {
 				NSLog(@"SCS argument exception: %c(0x%X)", c, c);
