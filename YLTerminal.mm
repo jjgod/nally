@@ -146,12 +146,20 @@ if (_cursorX <= _column - 1) { \
 				}
 			} else if (c == 0x0D) { // CR  (Carriage Return)
 				_cursorX = 0;
-//          } else if (c == 0x0E) { // SO  (Shift Out)
+            } else if (c == 0x0E) { // SO  (Shift Out)
                 //LS1 (Locked Shift-One in Unicode)
                 //Selects G1 character set designated by a select character set sequence.
-//          } else if (c == 0x0F) { // SI  (Shift In)
+                //However we drop it for now
+  				_csBuf->clear();
+  				_csArg->clear();
+  				_csTemp = 0;
+            } else if (c == 0x0F) { // SI  (Shift In) (^O)
                 //LS0 (Locked Shift-Zero in Unicode)
                 //Selects G0 character set designated by a select character set sequence.
+                //However we drop it for now
+  				_csBuf->clear();
+  				_csArg->clear();
+  				_csTemp = 0;
 //          } else if (c == 0x10) { // DLE (Data Link Escape, normally MODEM)
 //          } else if (c == 0x11) { // DC1 (Device Control One, XON)
 //          } else if (c == 0x12) { // DC2 (Device Control Two)
@@ -407,12 +415,38 @@ if (_cursorX <= _column - 1) { \
                     }
                     for (i = _cursorY; i < _row; i++)
                         [self setDirtyForRow: i];
-				} else if (c == 'P') {		// xterm?
+				} else if (c == 'P') {	// xterm?
 					NSLog(@"CSI: should delete character but not implemented.");
-				} else if (c == 'h') {		// set mode
-					NSLog(@"CSI: set mode is not implemented yet.");
-				} else if (c == 'l') {		// reset mode
-					NSLog(@"CSI: reset mode is not implemented yet.");
+				} else if (c == 'h') {	// set mode
+                    while (!_csArg->empty()){
+                        int p = _csArg->front();
+                        _csArg->pop_front();
+                        if (p == 2) {
+                            NSLog(@"not setting Keyboard Action Mode (AM)");
+                        } else if (p == 4) {
+                            NSLog(@"not setting Replace Mode (IRM)");
+                        } else if (p == 12) {
+                            NSLog(@"not setting Send/receive (SRM)");
+                        } else if (p == 20) {
+                            NSLog(@"not setting Normal Linefeed (LNM)");
+                        } else
+                            NSLog(@"unsupported setting %d",p);
+                    }
+				} else if (c == 'l') {	// reset mode
+                    while (!_csArg->empty()){
+                        int p = _csArg->front();
+                        _csArg->pop_front();
+                        if (p == 2) {
+                            NSLog(@"ignoring reset Keyboard Action Mode (AM)");
+                        } else if (p == 4) {
+                            NSLog(@"ignoring reset Replace Mode (IRM)");
+                        } else if (p == 12) {
+                            NSLog(@"ignoring reset Send/receive (SRM)");
+                        } else if (p == 20) {
+                            NSLog(@"ignoring reset Normal Linefeed (LNM)");
+                        } else
+                            NSLog(@"unsupported setting %d",p);
+                    }
 				} else if (c == 'm') { 
 					if (_csArg->empty()) { // clear
 						_fgColor = 7;
@@ -444,7 +478,7 @@ if (_cursorX <= _column - 1) { \
 								_blink = YES;
 							} else if (p == 7) {
 								_reverse = YES;
-							}
+                            }
 						}
 					}
 				} else if (c == 'r') {

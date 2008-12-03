@@ -9,7 +9,7 @@ clean:
 	rm -f MacBlueTelnet.xcodeproj/${USER}.*
 
 install: all
-	rsync -avx --delete build/Release/Nally.app/ /Applications/Nally.app/
+	rm -r /Applications/Nally.app; mv build/Release/Nally.app /Applications/
 
 release: all
 	hdiutil create -srcfolder build/Release -volname "Nally 1.4.2b" build/Nally142b.dmg; \
