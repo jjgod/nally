@@ -147,8 +147,10 @@ if (_cursorX <= _column - 1) { \
 			} else if (c == 0x0D) { // CR  (Carriage Return)
 				_cursorX = 0;
 //          } else if (c == 0x0E) { // SO  (Shift Out)
+                //LS1 (Locked Shift-One in Unicode)
                 //Selects G1 character set designated by a select character set sequence.
 //          } else if (c == 0x0F) { // SI  (Shift In)
+                //LS0 (Locked Shift-Zero in Unicode)
                 //Selects G0 character set designated by a select character set sequence.
 //          } else if (c == 0x10) { // DLE (Data Link Escape, normally MODEM)
 //          } else if (c == 0x11) { // DC1 (Device Control One, XON)
@@ -253,19 +255,19 @@ if (_cursorX <= _column - 1) { \
 
         case TP_SCS:
             if (c == '0') { //Special characters and line drawing set
-				NSLog(@"SCS argument: %c(0x%X)", c, c);
+				//NSLog(@"SCS argument: %c(0x%X)", c, c);
 				_state = TP_NORMAL;
             } else if (c == '1') { //Alternate character ROM
-				NSLog(@"SCS argument: %c(0x%X)", c, c);
+				//NSLog(@"SCS argument: %c(0x%X)", c, c);
 				_state = TP_NORMAL;
             } else if (c == '2') { //Alternate character ROM - special characters
-				NSLog(@"SCS argument: %c(0x%X)", c, c);
+				//NSLog(@"SCS argument: %c(0x%X)", c, c);
 				_state = TP_NORMAL;
             } else if (c == 'A') { //United Kingdom (UK)
-				NSLog(@"SCS argument: %c(0x%X)", c, c);
+				//NSLog(@"SCS argument: %c(0x%X)", c, c);
 				_state = TP_NORMAL;
             } else if (c == 'B') { //United States (US)
-				NSLog(@"SCS argument: %c(0x%X)", c, c);
+				//NSLog(@"SCS argument: %c(0x%X)", c, c);
 				_state = TP_NORMAL;
             } else {
 				NSLog(@"SCS argument exception: %c(0x%X)", c, c);
