@@ -249,10 +249,13 @@ if (_cursorX <= _column - 1) { \
             } else if (c == 0x29 ) { // ')' Font Set G1
                 _state = TP_SCS;
             } else if (c == 0x3D ) { // Application keypad mode (vt52)
-				NSLog(@"unprocessed request of application keypad mode");
+				//NSLog(@"unprocessed request of application keypad mode");
                 _state = TP_NORMAL;
             } else if (c == 0x3E ) { // Numeric keypad mode (vt52)
-				NSLog(@"unprocessed request of numeric keypad mode");
+				//NSLog(@"unprocessed request of numeric keypad mode");
+                _state = TP_NORMAL;
+            } else if (c == 0x48 ) { // Set a tab at the current column
+                //ignore for now
                 _state = TP_NORMAL;
             } else {
 				NSLog(@"unprocessed esc: %c(0x%X)", c, c);
@@ -415,37 +418,56 @@ if (_cursorX <= _column - 1) { \
                     }
                     for (i = _cursorY; i < _row; i++)
                         [self setDirtyForRow: i];
-				} else if (c == 'P') {	// xterm?
-					NSLog(@"CSI: should delete character but not implemented.");
-				} else if (c == 'h') {	// set mode
-                    while (!_csArg->empty()){
-                        int p = _csArg->front();
-                        _csArg->pop_front();
-                        if (p == 2) {
-                            NSLog(@"not setting Keyboard Action Mode (AM)");
-                        } else if (p == 4) {
-                            NSLog(@"not setting Replace Mode (IRM)");
-                        } else if (p == 12) {
-                            NSLog(@"not setting Send/receive (SRM)");
-                        } else if (p == 20) {
-                            NSLog(@"not setting Normal Linefeed (LNM)");
-                        } else
-                            NSLog(@"unsupported setting %d",p);
+				} else if (c == 'P') {
+                    int i;
+                    int p;
+                    if (_csArg->size() == 1) {
+                        p = _csArg->front();
+                    } else {
+                        p = 1;
                     }
-				} else if (c == 'l') {	// reset mode
-                    while (!_csArg->empty()){
+                    if (p > 0) {
+                        for (i = _cursorX; i <= _column - 1; i++){
+                            if ( i <= _column - 1 - p ) {
+                                _grid[_cursorY][i] = _grid[_cursorY][i+p];
+                            } else {
+                                _grid[_cursorY][i].byte = '\0';
+						        _grid[_cursorY][i].attr.v = gEmptyAttr;
+                                _grid[_cursorY][i].attr.f.bgColor = _bgColor;
+                                _dirty[_cursorY * _column + i] = YES;
+                            }
+                        }
+                    }
+				} else if (c == 'g') {	// Clear a tab at the current column
+                    int p = 1;
+                    if (_csArg->size() == 1){
+                        p = _csArg->front();
+                    }
+                    if (p == 3) {
+                        NSLog(@"Ignoring request to clear all horizontal tab stops.");
+                    } else
+                        NSLog(@"Ignoring request to clear one horizontal tab stop.");
+
+				} else if (c == 'h' || c == 'l') {	// set mode/reset mode
+                    while (!_csArg->empty()) {
                         int p = _csArg->front();
-                        _csArg->pop_front();
-                        if (p == 2) {
-                            NSLog(@"ignoring reset Keyboard Action Mode (AM)");
+						_csArg->pop_front();
+                        if (p == 0) {
+//                          NSLog(@"ignore re/setting mode 0");
+                        } else if (p == 1) {
+//When set, the cursor keys send an ESC O prefix, rather than ESC [
+                        } else if (p == 2) {
+//                          NSLog(@"ignore re/setting Keyboard Action Mode (AM)");
                         } else if (p == 4) {
-                            NSLog(@"ignoring reset Replace Mode (IRM)");
+//                          NSLog(@"ignore re/setting Replace Mode (IRM)");
+                        } else if (p == 7) {
+// wrap
                         } else if (p == 12) {
-                            NSLog(@"ignoring reset Send/receive (SRM)");
+//                          NSLog(@"ignore re/setting Send/receive (SRM)");
                         } else if (p == 20) {
-                            NSLog(@"ignoring reset Normal Linefeed (LNM)");
+//                          NSLog(@"ignore re/setting Normal Linefeed (LNM)");
                         } else
-                            NSLog(@"unsupported setting %d",p);
+                            NSLog(@"unsupported mode re/setting %d",p);
                     }
 				} else if (c == 'm') { 
 					if (_csArg->empty()) { // clear
