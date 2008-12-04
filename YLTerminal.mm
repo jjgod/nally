@@ -151,15 +151,11 @@ if (_cursorX <= _column - 1) { \
                 //Selects G1 character set designated by a select character set sequence.
                 //However we drop it for now
   				_csBuf->clear();
-  				_csArg->clear();
-  				_csTemp = 0;
             } else if (c == 0x0F) { // SI  (Shift In) (^O)
                 //LS0 (Locked Shift-Zero in Unicode)
                 //Selects G0 character set designated by a select character set sequence.
                 //However we drop it for now
   				_csBuf->clear();
-  				_csArg->clear();
-  				_csTemp = 0;
 //          } else if (c == 0x10) { // DLE (Data Link Escape, normally MODEM)
 //          } else if (c == 0x11) { // DC1 (Device Control One, XON)
 //          } else if (c == 0x12) { // DC2 (Device Control Two)
@@ -259,6 +255,7 @@ if (_cursorX <= _column - 1) { \
                 _state = TP_NORMAL;
 			} else if (c == 0x63 ) { // 'c' RIS reset
 				[self clearAll];
+                _cursorX = 0, _cursorY = 0;
 				_state = TP_NORMAL;
             } else {
 				NSLog(@"unprocessed esc: %c(0x%X)", c, c);
@@ -441,6 +438,21 @@ if (_cursorX <= _column - 1) { \
                             }
                         }
                     }
+                } else if (c == 'c') {  // Device Attributes (DA)
+                                        // Computer requests terminal identify itself.
+                    if ( _csArg->empty() || _csArg->size() == 1 ){
+                        unsigned char cmd[10]; // 10 should be enough for now
+                        unsigned int cmdLength = 0;
+                        // Assuming I am a vt102, TODO: have a global variable for TERM
+				        cmd[cmdLength++] = 0x1B;
+				        cmd[cmdLength++] = 0x5B;
+				        cmd[cmdLength++] = 0x3F;
+				        cmd[cmdLength++] = 0x36;
+				        cmd[cmdLength++] = 0x63;
+                        //[[self frontMostConnection] sendBytes: cmd length: cmdLength];
+                        [[self connection] sendBytes:cmd length:cmdLength];
+                    }
+//              } else if (c == 'd') {  //
 				} else if (c == 'g') {	// Clear a tab at the current column
                     int p = 1;
                     if (_csArg->size() == 1){
