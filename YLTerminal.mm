@@ -483,7 +483,7 @@ if (_cursorX <= _column - 1) { \
                     while (!_csArg->empty()) {
                         int p = _csArg->front();
 						_csArg->pop_front();
-//                      if (p == 0) {
+                        if (p == 0) {
 //                          NSLog(@"ignore re/setting mode 0");
 //                      } else if (p == 1) {
 //When set, the cursor keys send an ESC O prefix, rather than ESC [
@@ -497,8 +497,8 @@ if (_cursorX <= _column - 1) { \
 //                          NSLog(@"ignore re/setting Send/receive (SRM)");
 //                      } else if (p == 20) {
 //                          NSLog(@"ignore re/setting Normal Linefeed (LNM)");
-//                      } else
-                        NSLog(@"unsupported mode setting %d",p);
+                        } else
+                            NSLog(@"unsupported mode setting %d",p);
                     }
 				} else if (c == 'l') {// reset mode
                     while (!_csArg->empty()) {
