@@ -121,7 +121,7 @@ if (_cursorX <= _column - 1) { \
 			} else if (c == 0x08) { // BS  (Backspace)
 				if (_cursorX > 0)
 					_cursorX--;
-				//mjhsieh: zterm seems to implement more
+				// If wrap is available, then need to take care of it.
 			} else if (c == 0x09) { // HT  (Horizontal TABulation)
                 _cursorX=(int(_cursorX/8) + 1) * 8;
                 //mjhsieh: this implement is not yet tested
@@ -240,19 +240,35 @@ if (_cursorX <= _column - 1) { \
                 _cursorX = _savedCursorX;
                 _cursorY = _savedCursorY;
                 _state = TP_NORMAL;
+//			} else if (c == 0x23) { // #,8 --> fill with E
+//				_state = TP_FILL
             } else if (c == 0x28 ) { // '(' Font Set G0
                 _state = TP_SCS;
             } else if (c == 0x29 ) { // ')' Font Set G1
                 _state = TP_SCS;
-            } else if (c == 0x3D ) { // '=' Application keypad mode (vt52)
-				//NSLog(@"unprocessed request of application keypad mode");
-                _state = TP_NORMAL;
-            } else if (c == 0x3E ) { // '>' Numeric keypad mode (vt52)
-				//NSLog(@"unprocessed request of numeric keypad mode");
-                _state = TP_NORMAL;
-            } else if (c == 0x48 ) { // Set a tab at the current column
-                //ignore for now
-                _state = TP_NORMAL;
+//          } else if (c == 0x3D ) { // '=' Application keypad mode (vt52)
+//				NSLog(@"unprocessed request of application keypad mode");
+//              _state = TP_NORMAL;
+//          } else if (c == 0x3E ) { // '>' Numeric keypad mode (vt52)
+//				NSLog(@"unprocessed request of numeric keypad mode");
+//              _state = TP_NORMAL;
+			} else if (NO) { //c == 0x45 ) { //  'E' NEL Next Line
+				_cursorX = 0;
+				if (_cursorY == _scrollEndRow) {
+                    cell *emptyLine = _grid[_scrollBeginRow];
+                    [self clearRow: _scrollBeginRow];
+                    
+                    for (x = _scrollBeginRow; x < _scrollEndRow; x++) 
+                        _grid[x] = _grid[x + 1];
+                    _grid[_scrollEndRow] = emptyLine;
+					[self setAllDirty];
+				} else {
+					_cursorY++;
+                    if (_cursorY >= _row) _cursorY = _row - 1;
+				}
+//          } else if (c == 0x48 ) { // Set a tab at the current column
+//              ignore for now
+//              _state = TP_NORMAL;
 			} else if (c == 0x63 ) { // 'c' RIS reset
 				[self clearAll];
                 _cursorX = 0, _cursorY = 0;
@@ -463,27 +479,33 @@ if (_cursorX <= _column - 1) { \
                     } else
                         NSLog(@"Ignoring request to clear one horizontal tab stop.");
 
-				} else if (c == 'h' || c == 'l') {	// set mode/reset mode
+				} else if (c == 'h') {	// set mode
                     while (!_csArg->empty()) {
                         int p = _csArg->front();
 						_csArg->pop_front();
-                        if (p == 0) {
+//                      if (p == 0) {
 //                          NSLog(@"ignore re/setting mode 0");
-                        } else if (p == 1) {
+//                      } else if (p == 1) {
 //When set, the cursor keys send an ESC O prefix, rather than ESC [
-                        } else if (p == 2) {
+//                      } else if (p == 2) {
 //                          NSLog(@"ignore re/setting Keyboard Action Mode (AM)");
-                        } else if (p == 4) {
+//                      } else if (p == 4) {
 //                          NSLog(@"ignore re/setting Replace Mode (IRM)");
-                        } else if (p == 7) {
+//                      } else if (p == 7) {
 // wrap
-                        } else if (p == 12) {
+//                      } else if (p == 12) {
 //                          NSLog(@"ignore re/setting Send/receive (SRM)");
-                        } else if (p == 20) {
+//                      } else if (p == 20) {
 //                          NSLog(@"ignore re/setting Normal Linefeed (LNM)");
-                        } else
-                            NSLog(@"unsupported mode re/setting %d",p);
+//                      } else
+                        NSLog(@"unsupported mode setting %d",p);
                     }
+				} else if (c == 'l') {// reset mode
+                    while (!_csArg->empty()) {
+                        int p = _csArg->front();
+						_csArg->pop_front();
+						NSLog(@"unsupported mode resetting %d",p);
+                    }						
 				} else if (c == 'm') { 
 					if (_csArg->empty()) { // clear
 						_fgColor = 7;
