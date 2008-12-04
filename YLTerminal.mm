@@ -248,15 +248,18 @@ if (_cursorX <= _column - 1) { \
                 _state = TP_SCS;
             } else if (c == 0x29 ) { // ')' Font Set G1
                 _state = TP_SCS;
-            } else if (c == 0x3D ) { // Application keypad mode (vt52)
+            } else if (c == 0x3D ) { // '=' Application keypad mode (vt52)
 				//NSLog(@"unprocessed request of application keypad mode");
                 _state = TP_NORMAL;
-            } else if (c == 0x3E ) { // Numeric keypad mode (vt52)
+            } else if (c == 0x3E ) { // '>' Numeric keypad mode (vt52)
 				//NSLog(@"unprocessed request of numeric keypad mode");
                 _state = TP_NORMAL;
             } else if (c == 0x48 ) { // Set a tab at the current column
                 //ignore for now
                 _state = TP_NORMAL;
+			} else if (c == 0x63 ) { // 'c' RIS reset
+				[self clearAll];
+				_state = TP_NORMAL;
             } else {
 				NSLog(@"unprocessed esc: %c(0x%X)", c, c);
 				_state = TP_NORMAL;
