@@ -11,6 +11,9 @@ clean:
 install: all
 	rm -r /Applications/Nally.app; mv build/Release/Nally.app /Applications/
 
+test: all
+	build/Release/Nally.app/Contents/MacOS/Nally
+
 release: all
 	hdiutil create -srcfolder build/Release -volname "Nally 1.4.2b" build/Nally142b.dmg; \
 	hdiutil internet-enable -yes build/Nally142b.dmg
