@@ -7,12 +7,26 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		071EDE3F0EADB3A1007BE5AE /* ImagePreviewer.bundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8D5B49B6048680CD000E48DA /* ImagePreviewer.bundle */; };
 		077CD77F0E5956E300A7A9B3 /* ImagePreviewer.m in Sources */ = {isa = PBXBuildFile; fileRef = 077CD77E0E5956E300A7A9B3 /* ImagePreviewer.m */; };
 		077CD7830E59570200A7A9B3 /* YLBundle.m in Sources */ = {isa = PBXBuildFile; fileRef = 077CD7820E59570200A7A9B3 /* YLBundle.m */; };
 		077CD7870E59575E00A7A9B3 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 077CD7860E59575E00A7A9B3 /* Localizable.strings */; };
 		8D5B49B0048680CD000E48DA /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C167DFE841241C02AAC07 /* InfoPlist.strings */; };
 		8D5B49B4048680CD000E48DA /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7ADFEA557BF11CA2CBB /* Cocoa.framework */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		071EDE4D0EADB3BF007BE5AE /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(HOME)/Library/Application Support/Nally/PlugIns/";
+			dstSubfolderSpec = 0;
+			files = (
+				071EDE3F0EADB3A1007BE5AE /* ImagePreviewer.bundle in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		077CD77D0E5956E300A7A9B3 /* ImagePreviewer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImagePreviewer.h; sourceTree = "<group>"; };
@@ -128,6 +142,7 @@
 				8D5B49AF048680CD000E48DA /* Resources */,
 				8D5B49B1048680CD000E48DA /* Sources */,
 				8D5B49B3048680CD000E48DA /* Frameworks */,
+				071EDE4D0EADB3BF007BE5AE /* CopyFiles */,
 			);
 			buildRules = (
 			);
