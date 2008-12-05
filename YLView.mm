@@ -984,11 +984,14 @@ BOOL isSpecialSymbol(unichar ch) {
 	int runLength[gColumn];
 	CGPoint position[gColumn];
 	int bufLength = 0;
-    
+    YLEncoding termEncoding;
+
     CGFloat ePaddingLeft = [gConfig englishFontPaddingLeft], ePaddingBottom = [gConfig englishFontPaddingBottom];
     CGFloat cPaddingLeft = [gConfig chineseFontPaddingLeft], cPaddingBottom = [gConfig chineseFontPaddingBottom];
     
     YLTerminal *ds = [self frontMostTerminal];
+    termEncoding = [[[ds connection] site] encoding];
+
     [ds updateDoubleByteStateForRow: r];
 	
     cell *currRow = [ds cellsOfRow: r];
@@ -1020,7 +1023,7 @@ BOOL isSpecialSymbol(unichar ch) {
 			continue;
 		} else if (db == 2) {
 			unsigned short code = (((currRow + x - 1)->byte) << 8) + ((currRow + x)->byte) - 0x8000;
-			unichar ch = [[[self frontMostConnection] site] encoding] == YLBig5Encoding ? B2U[code] : G2U[code];
+			unichar ch = (termEncoding == YLBig5Encoding ? B2U[code] : G2U[code]);
 			if (isSpecialSymbol(ch)) {
 				[self drawSpecialSymbol: ch forRow: r column: (x - 1) leftAttribute: (currRow + x - 1)->attr rightAttribute: (currRow + x)->attr];
 			} else {
