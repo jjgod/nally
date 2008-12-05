@@ -12,7 +12,6 @@
 		07B3707A0D6840B20035E87D /* HMBlkAppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07B370790D6840B20035E87D /* HMBlkAppKit.framework */; };
 		07B3708E0D6840BB0035E87D /* HMBlkAppKit.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 07B370790D6840B20035E87D /* HMBlkAppKit.framework */; };
 		07B73D900E5816FF00CC97D3 /* YLPluginLoader.m in Sources */ = {isa = PBXBuildFile; fileRef = 07B73D8F0E5816FF00CC97D3 /* YLPluginLoader.m */; };
-		07B73D9F0E581E2C00CC97D3 /* YLBundle.m in Sources */ = {isa = PBXBuildFile; fileRef = 07B73D9E0E581E2C00CC97D3 /* YLBundle.m */; };
 		850711AB0CA7A347005F4734 /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 850711AA0CA7A347005F4734 /* ApplicationServices.framework */; };
 		85137B330D02192800833909 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 85137B320D02192800833909 /* Credits.rtf */; };
 		85145AA10AB40053009FC710 /* YLTelnet.mm in Sources */ = {isa = PBXBuildFile; fileRef = 85145AA00AB40053009FC710 /* YLTelnet.mm */; };
@@ -76,7 +75,6 @@
 		07B73D8E0E5816FF00CC97D3 /* YLPluginLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLPluginLoader.h; sourceTree = "<group>"; };
 		07B73D8F0E5816FF00CC97D3 /* YLPluginLoader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YLPluginLoader.m; sourceTree = "<group>"; };
 		07B73D9D0E581E2C00CC97D3 /* YLBundle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLBundle.h; sourceTree = "<group>"; };
-		07B73D9E0E581E2C00CC97D3 /* YLBundle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YLBundle.m; sourceTree = "<group>"; };
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -179,7 +177,6 @@
 				07B73D8E0E5816FF00CC97D3 /* YLPluginLoader.h */,
 				07B73D8F0E5816FF00CC97D3 /* YLPluginLoader.m */,
 				07B73D9D0E581E2C00CC97D3 /* YLBundle.h */,
-				07B73D9E0E581E2C00CC97D3 /* YLBundle.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -410,7 +407,6 @@
 				07B370690D6840600035E87D /* YLImagePreviewer.m in Sources */,
 				070D50430D9BF40400EC2660 /* YLImageView.m in Sources */,
 				07B73D900E5816FF00CC97D3 /* YLPluginLoader.m in Sources */,
-				07B73D9F0E581E2C00CC97D3 /* YLBundle.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -78,6 +78,7 @@ static unsigned short gEmptyAttr;
 # pragma mark Input Interface
 - (void) feedData: (NSData *) data connection: (id) connection{
 	[self feedBytes: (const unsigned char *)[data bytes] length: [data length] connection: connection];
+    [_pluginLoader feedData: data];
 }
 
 #define SET_GRID_BYTE(c) \
@@ -873,5 +874,14 @@ if (_cursorX <= _column - 1) { \
     _connection = value;
 }
 
+- (YLPluginLoader *)pluginLoader
+{
+    return _pluginLoader;
+}
+
+- (void)setPluginLoader:(YLPluginLoader *)value
+{
+    _pluginLoader = value;
+}
 
 @end

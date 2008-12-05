@@ -23,10 +23,10 @@
         title = [[NSBundle bundleForClass: [self class]] localizedStringForKey: @"BundleTitle" 
                                                                          value: @"" 
                                                                          table: nil];
-        NSLog(@"Loading Bundle HelloNally.");        
+        NSLog(@"Loading Bundle HelloNally.");
         [self addMenuItemWithTitle: @"Hey" 
                             action: nil 
-                     keyEquivalent: @""];
+                     keyEquivalent: @""];        
     }
 	
 	return self;

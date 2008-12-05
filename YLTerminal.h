@@ -11,6 +11,7 @@
 #import "CommonType.h"
 #import "YLView.h"
 #import "YLConnection.h"
+#import "YLPluginLoader.h"
 
 @interface YLTerminal : NSObject {	
 @public
@@ -47,6 +48,7 @@
     
     BOOL _hasMessage;
     YLConnection *_connection;
+    YLPluginLoader *_pluginLoader;
 }
 
 /* Input Interface */
@@ -89,5 +91,7 @@
 - (void)setHasMessage:(BOOL)value;
 - (YLConnection *)connection;
 - (void)setConnection:(YLConnection *)value;
+- (YLPluginLoader *)pluginLoader;
+- (void)setPluginLoader:(YLPluginLoader *)value;
 
 @end

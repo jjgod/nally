@@ -35,7 +35,7 @@
     IBOutlet NSMenuItem *_showHiddenTextMenuItem;
     IBOutlet NSMenuItem *_encodingMenuItem;
     
-    YLPluginLoader *pluginLoader;
+    YLPluginLoader *_pluginLoader;
 }
 
 - (void) updateSitesMenu ;

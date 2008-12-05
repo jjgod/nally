@@ -53,6 +53,7 @@
         NSMenuItem *pluginMenuItem = [[NSMenuItem alloc] initWithTitle: [self title] 
                                                                 action: nil 
                                                          keyEquivalent: @""];
+        [pluginMenuItem setToolTip: [self description]];
         [pluginsMenu addItem: pluginMenuItem];
         [pluginMenuItem release];
         
@@ -64,8 +65,16 @@
     return pluginMenu;
 }
 
+- (NSString *) localizedStringForKey: (NSString *) key
+{
+    return [[NSBundle bundleForClass: [self class]] localizedStringForKey: key 
+                                                                    value: @"" 
+                                                                    table: nil];
+}
+
 - (void) addMenuItem: (NSMenuItem *) item
 {
+    [item setTarget: self];
     [[self pluginMenu] addItem: item];
 }
 

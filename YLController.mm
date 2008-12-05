@@ -50,7 +50,7 @@
     [self updateSitesMenu];
     [self loadEmoticons];
     
-    pluginLoader = [[YLPluginLoader alloc] init];
+    _pluginLoader = [[YLPluginLoader alloc] init];
 
     [_mainWindow _setContentHasShadow: NO];
     [_mainWindow setOpaque: NO];
@@ -68,7 +68,7 @@
 
 - (void) dealloc
 {
-    [pluginLoader release];
+    [_pluginLoader release];
     [super dealloc];
 }
 
@@ -131,6 +131,7 @@
     [connection setConnectionName: [s name]];
     [connection setConnectionAddress: [s address]];
 	[terminal setDelegate: _telnetView];
+    [terminal setPluginLoader: _pluginLoader];
     
     NSTabViewItem *tabItem;
     

@@ -19,6 +19,7 @@
 @property (copy) NSString *description;
 - (NSImage *) icon;
 
+- (NSString *) localizedStringForKey: (NSString *) key;
 - (NSMenu *) pluginMenu;
 - (void) addMenuItem: (NSMenuItem *) item;
 - (NSMenuItem *) addMenuItemWithTitle: (NSString *) title 

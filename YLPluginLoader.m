@@ -41,7 +41,9 @@ NSString * const kPrefixBundleIDStr = @"org.yllan.Nally.Plugin";
                                                                       NSUserDomainMask, YES);
     pathEnum = [librarySearchPaths objectEnumerator];
     while (currPath = [pathEnum nextObject])
-        [bundleSearchPaths addObject: [NSString stringWithFormat: @"%@/%@/PlugIns", currPath, [[NSProcessInfo processInfo] processName]]];
+        [bundleSearchPaths addObject: [NSString stringWithFormat: @"%@/%@/PlugIns",
+                                       currPath,
+                                       [[NSProcessInfo processInfo] processName]]];
 
     pathEnum = [bundleSearchPaths objectEnumerator];
     while (currPath = [pathEnum nextObject])
@@ -92,6 +94,10 @@ NSString * const kPrefixBundleIDStr = @"org.yllan.Nally.Plugin";
     }
     
     return nil;
+}
+
+- (void) feedData: (NSData *) data
+{
 }
 
 @end
