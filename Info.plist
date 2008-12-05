@@ -49,6 +49,6 @@
 	<key>NSPrincipalClass</key>
 	<string>YLApplication</string>
 	<key>SUFeedURL</key>
-	<string>http://jjgod.org/program/Nally.xml</string>
+	<string>https://macbluetelnet.svn.sourceforge.net/svnroot/macbluetelnet/trunk/Nally.xml</string>
 </dict>
 </plist>
