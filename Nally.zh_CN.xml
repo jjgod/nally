@@ -15,10 +15,10 @@
       <description><![CDATA[<h3>1.4.2 的修改</h3>
 
 <ul>
-<li>SSH 到 BBS 時關閉 X11 Forwarding。(mjhsieh)</li>
-<li>修正半型處理中引發的重繪問題。(mjhsieh)</li>
-<li>正確處理地址欄輸入的地址。(mjhsieh)</li>
-<li>其他終端相關的相容性改進。(mjhsieh)</li>
+<li>SSH 到 BBS 时禁用 X11 Forwarding。(mjhsieh)</li>
+<li>修正半字处理中引发的重绘问题。(mjhsieh)</li>
+<li>正确处理地址栏输入的地址。(mjhsieh)</li>
+<li>其他终端相关的兼容性改进。(mjhsieh)</li>
 </ul>
 
 <h3>1.4.1 的修改</h3>

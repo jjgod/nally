@@ -24,21 +24,21 @@
 <h3>1.4.1 的修改</h3>
 
 <ul>
-<li>(新增) 加入对保存预览图片的试验性支持。</li>
-<li>修正 GBK 特定高字节 (0x9B) 处理问题。</li>
-<li>将 GBK 中原映射到 PUA 的字符根据 Unicode 5.0 改为映射到 CJK Ext-A 区。</li>
-<li>修正对光标处于窗口边界时的检查。(fayewong 报告)</li>
-<li>修正预览图片时部分内容被窗口标题栏覆盖的问题。(fayewong 报告)</li>
+<li>(新增) 加入對預覽圖片存檔的試驗性支援。</li>
+<li>修正 GBK 特定高位元 (0x9B) 處理問題。</li>
+<li>將 GBK 中原來對應到 PUA 的字元根據 Unicode 5.0 改為對應到 CJK Ext-A 區。</li>
+<li>修正對游標處於窗口邊界時的檢查。(fayewong 報告)</li>
+<li>修正預覽圖片時部分內容被窗口標題欄覆蓋的問題。(fayewong 報告)</li>
 </ul>
 
 <h3>1.4.0 的修改</h3>
 
 <ul>
-<li>修正 GBK 特定低字节处理问题。</li>
-<li>加入对属于 GBK 但不属于 CP936 的 80 个汉字的支持。</li>
-<li>修正背景色不能延伸到行末的问题。(Evan 报告)</li>
-<li>修正一些半透明背景绘制的问题。(fishy 报告)</li>
-<li>修正输入到窗口边沿光标判断的问题。(fayewong)</li>
+<li>修正 GBK 特定低位元處理問題。</li>
+<li>加入對屬於 GBK 但不屬於 CP936 的 80 個漢字的支援。</li>
+<li>修正背景色不能延伸到行末的問題。(Evan 報告)</li>
+<li>修正一些半透明背景繪製的問題。(fishy 報告)</li>
+<li>修正輸入到窗口邊緣游標判斷的問題。(fayewong)</li>
 </ul>]]></description>
       <pubDate>Mon, 21 Apr 2008 01:36:06 +0800</pubDate>
       <enclosure url="http://jjgod.org/program/Nally-1.4.2.zip" length="1605876" type="application/zip" sparkle:version="1.4.2"/>
