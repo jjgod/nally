@@ -241,8 +241,12 @@ if (_cursorX <= _column - 1) { \
                 _cursorX = _savedCursorX;
                 _cursorY = _savedCursorY;
                 _state = TP_NORMAL;
-//			} else if (c == 0x23) { // #,8 --> fill with E
-//				_state = TP_FILL
+            } else if (NO){//c == 0x23) { // #
+				if (i<len-1 && bytes[i+1] == 0x38){ // 8  --> fill with E
+					i++;
+				} else
+					NSLog(@"Unhandled ESC# case");
+		        _state = TP_NORMAL;
             } else if (c == 0x28 ) { // '(' Font Set G0
                 _state = TP_SCS;
             } else if (c == 0x29 ) { // ')' Font Set G1
@@ -253,7 +257,7 @@ if (_cursorX <= _column - 1) { \
 //          } else if (c == 0x3E ) { // '>' Numeric keypad mode (vt52)
 //				NSLog(@"unprocessed request of numeric keypad mode");
 //              _state = TP_NORMAL;
-			} else if (NO) { //c == 0x45 ) { //  'E' NEL Next Line
+			} else if (c == 0x45 ) { //  'E' NEL Next Line
 				_cursorX = 0;
 				if (_cursorY == _scrollEndRow) {
                     cell *emptyLine = _grid[_scrollBeginRow];
@@ -267,6 +271,7 @@ if (_cursorX <= _column - 1) { \
 					_cursorY++;
                     if (_cursorY >= _row) _cursorY = _row - 1;
 				}
+				_state = TP_NORMAL;
 //          } else if (c == 0x48 ) { // Set a tab at the current column
 //              ignore for now
 //              _state = TP_NORMAL;
