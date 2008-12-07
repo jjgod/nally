@@ -325,6 +325,13 @@ if (_cursorX <= _column - 1) { \
 					_csTemp = 0;
 					_csBuf->clear();
 				}
+			} else if (c == 0x08) { // BS  (Backspace)
+				if (_cursorX > 0)
+					_cursorX--;
+				_state = TP_NORMAL;
+			} else if (c == 0x0D) { // CR  (Carriage Return)
+				_cursorX = 0;
+				_state = TP_NORMAL;
 			} else {
 				if (!_csBuf->empty()) {
 					_csArg->push_back(_csTemp);
