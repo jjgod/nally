@@ -111,11 +111,15 @@ if (_cursorX <= _column - 1) { \
         case TP_NORMAL:
             if (NO) { // code alignment
             } else if (c == 0x00) { // NUL (Null)
-                // do nothing
-//          } else if (c == 0x03) { // ETX (End of Text)
-//          } else if (c == 0x04) { // EOT (End of Transmission)
-//          } else if (c == 0x05) { // ENQ (Enquire) (are you there?)
-//          } else if (c == 0x06) { // ACK (Acknowledge) (yes I am there)
+                // do nothing (eat the code)
+            } else if (c == 0x03) { // ETX (End of Text)
+                // FLOW CONTROL?
+            } else if (c == 0x04) { // EOT (End of Transmission)
+                // FLOW CONTROL?
+            } else if (c == 0x05) { // ENQ (Enquire)
+                // FLOW CONTROL?
+            } else if (c == 0x06) { // ACK (Acknowledge)
+                // FLOW CONTROL?
             } else if (c == 0x07) { // BEL (Beep)
 				[[NSSound soundNamed: @"Whit.aiff"] play];
                 [self setHasMessage: YES];
@@ -157,14 +161,14 @@ if (_cursorX <= _column - 1) { \
                 //Selects G0 character set designated by a select character set sequence.
                 //However we drop it for now
   				_csBuf->clear();
-//          } else if (c == 0x10) { // DLE (Data Link Escape, normally MODEM)
-//          } else if (c == 0x11) { // DC1 (Device Control One, XON)
-//          } else if (c == 0x12) { // DC2 (Device Control Two)
-//          } else if (c == 0x13) { // DC3 (Device Control Three, XOFF)
-//          } else if (c == 0x14) { // DC4 (Device Control Four)
-//          } else if (c == 0x15) { // NAK (Negative Acknowledge)
-//          } else if (c == 0x16) { // SYN (Synchronous Idle)
-//          } else if (c == 0x17) { // ETB (End of Transmission Block)
+            } else if (c == 0x10) { // DLE (Data Link Escape, normally MODEM)
+            } else if (c == 0x11) { // DC1 (Device Control One, XON)
+            } else if (c == 0x12) { // DC2 (Device Control Two)
+            } else if (c == 0x13) { // DC3 (Device Control Three, XOFF)
+            } else if (c == 0x14) { // DC4 (Device Control Four)
+            } else if (c == 0x15) { // NAK (Negative Acknowledge)
+            } else if (c == 0x16) { // SYN (Synchronous Idle)
+            } else if (c == 0x17) { // ETB (End of Transmission Block)
 //          } else if (c == 0x18 || 0x1A) { // CAN (Cancel) or SUB (Substitute)
                 //If received during an escape or control sequence, 
                 //cancels the sequence and displays substitution character ().
@@ -176,6 +180,7 @@ if (_cursorX <= _column - 1) { \
 //          } else if (c == 0x1D) { // GS  (Group Separator)
 //          } else if (c == 0x1E) { // RS  (Record Separator)
 //          } else if (c == 0x1F) { // US  (Unit Separator)
+            } else if (c == 0x7F) { // DEL Ignored on input; not stored in buffer.
 //          } else if (c >= 0x80 && c <= 0x99) { // Ignore anyway
 //          } else if (c == 0x9A) { // SCI (Single Character Introducer)
 //			} else if (c == 0x9B) { // CSI (Control Sequence Introducer) single-
@@ -217,7 +222,7 @@ if (_cursorX <= _column - 1) { \
                     if (_cursorY < 0) _cursorY = 0;
 				}
 				_state = TP_NORMAL;
-            } else if (c == 'D') { // scroll up (cursor down)
+            } else if (c == 'D') { // Index, scroll up/cursor down
                 if (_cursorY == _scrollEndRow) {
 					[_delegate updateBackedImage];
 					[_delegate extendBottomFrom: _scrollBeginRow to: _scrollEndRow];
@@ -257,9 +262,11 @@ if (_cursorX <= _column - 1) { \
 //          } else if (c == 0x3E ) { // '>' Numeric keypad mode (vt52)
 //				NSLog(@"unprocessed request of numeric keypad mode");
 //              _state = TP_NORMAL;
-			} else if (c == 0x45 ) { //  'E' NEL Next Line
+			} else if (c == 0x45 ) { //  'E' NEL Next Line (CR+Index)
 				_cursorX = 0;
-				if (_cursorY == _scrollEndRow) {
+                if (_cursorY == _scrollEndRow) {
+					[_delegate updateBackedImage];
+					[_delegate extendBottomFrom: _scrollBeginRow to: _scrollEndRow];
                     cell *emptyLine = _grid[_scrollBeginRow];
                     [self clearRow: _scrollBeginRow];
                     
@@ -324,9 +331,9 @@ if (_cursorX <= _column - 1) { \
 					_csTemp = 0;
 					_csBuf->clear();
 				}
-				
-				if (NO) {
-					// just for code alignment...
+
+                if (NO) {
+					NSLog(@"blah");
 				} else if (c == 'A') {		// Cursor Up
 					if (_csArg->size() > 0)
 						_cursorY -= _csArg->front();
@@ -440,7 +447,7 @@ if (_cursorX <= _column - 1) { \
                     }
                     for (i = _cursorY; i < _row; i++)
                         [self setDirtyForRow: i];
-				} else if (c == 'P') {
+				} else if (c == 'P') { // Delete characters at the current cursor position.
                     int i;
                     int p;
                     if (_csArg->size() == 1) {
@@ -459,19 +466,19 @@ if (_cursorX <= _column - 1) { \
                                 _dirty[_cursorY * _column + i] = YES;
                             }
                         }
-                    }
+                    } else
+                        NSLog(@"unprocess number of delete: %d",p);
                 } else if (c == 'c') {  // Device Attributes (DA)
                                         // Computer requests terminal identify itself.
                     if ( _csArg->empty() || _csArg->size() == 1 ){
                         unsigned char cmd[10]; // 10 should be enough for now
                         unsigned int cmdLength = 0;
                         // Assuming I am a vt102, TODO: have a global variable for TERM
-				        cmd[cmdLength++] = 0x1B;
-				        cmd[cmdLength++] = 0x5B;
-				        cmd[cmdLength++] = 0x3F;
-				        cmd[cmdLength++] = 0x36;
-				        cmd[cmdLength++] = 0x63;
-                        //[[self frontMostConnection] sendBytes: cmd length: cmdLength];
+				        cmd[cmdLength++] = 0x1B; // Esc
+				        cmd[cmdLength++] = 0x5B; // [
+				        cmd[cmdLength++] = 0x3F; // ?
+				        cmd[cmdLength++] = 0x36; // 6
+				        cmd[cmdLength++] = 0x63; // c
                         [[self connection] sendBytes:cmd length:cmdLength];
                     }
 //              } else if (c == 'd') {  //
@@ -484,12 +491,10 @@ if (_cursorX <= _column - 1) { \
                         NSLog(@"Ignoring request to clear all horizontal tab stops.");
                     } else
                         NSLog(@"Ignoring request to clear one horizontal tab stop.");
-
 				} else if (c == 'h') {	// set mode
                     while (!_csArg->empty()) {
-                        int p = _csArg->front();
-						_csArg->pop_front();
-                        if (p == 0) {
+//                      int p = _csArg->front();
+//                      if (p == 0) {
 //                          NSLog(@"ignore re/setting mode 0");
 //                      } else if (p == 1) {
 //When set, the cursor keys send an ESC O prefix, rather than ESC [
@@ -503,16 +508,17 @@ if (_cursorX <= _column - 1) { \
 //                          NSLog(@"ignore re/setting Send/receive (SRM)");
 //                      } else if (p == 20) {
 //                          NSLog(@"ignore re/setting Normal Linefeed (LNM)");
-                        } else
-                            NSLog(@"unsupported mode setting %d",p);
+//						} else
+//                          NSLog(@"unsupported mode setting %d",p);
+						_csArg->pop_front();
                     }
 				} else if (c == 'l') {// reset mode
                     while (!_csArg->empty()) {
-                        int p = _csArg->front();
+                        //int p = _csArg->front();
+						//NSLog(@"unsupported mode resetting %d",p);
 						_csArg->pop_front();
-						NSLog(@"unsupported mode resetting %d",p);
                     }						
-				} else if (c == 'm') { 
+				} else if (c == 'm') { // Character Attributes
 					if (_csArg->empty()) { // clear
 						_fgColor = 7;
 						_bgColor = 9;
@@ -546,7 +552,7 @@ if (_cursorX <= _column - 1) { \
                             }
 						}
 					}
-				} else if (c == 'r') {
+				} else if (c == 'r') { // Assigning Scrolling Region
                     if (_csArg->size() == 0) {
                         _scrollBeginRow = 0;
                         _scrollEndRow = _row - 1;
@@ -565,8 +571,9 @@ if (_cursorX <= _column - 1) { \
                         _cursorX = _savedCursorX;
                         _cursorY = _savedCursorY;
                     }
+				} else if () {
 				} else {
-					NSLog(@"unsupported control sequence: %c", c);
+					NSLog(@"unsupported control sequence: 0x%X", c);
 				}
 				_csArg->clear();
 				_state = TP_NORMAL;
