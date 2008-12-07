@@ -571,7 +571,6 @@ if (_cursorX <= _column - 1) { \
                         _cursorX = _savedCursorX;
                         _cursorY = _savedCursorY;
                     }
-				} else if () {
 				} else {
 					NSLog(@"unsupported control sequence: 0x%X", c);
 				}
