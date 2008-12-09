@@ -15,7 +15,11 @@
                                     if (_cursorX < 0) _cursorX = 0; if (_cursorX >= _column) _cursorX = _column - 1;\
                                     if (_cursorY < 0) _cursorY = 0; if (_cursorY >= _row) _cursorY = _row - 1;\
                                 } while(0);
-
+#define ASC_NUL=0x00
+#define ASC_SOH=0x01
+#define ASC_STX=0x02
+#define ASC_ETX=0x03
+#define ASC_EQT=0x04
 
 //BOOL isC0Control(unsigned char c) { return (c <= 0x1F); }
 //BOOL isSPACE(unsigned char c) { return (c == 0x20 || c == 0xA0); }
@@ -110,6 +114,7 @@ if (_cursorX <= _column - 1) { \
         {
         case TP_NORMAL:
             if (NO) { // code alignment
+// C0CONTROL
             } else if (c == 0x00) { // NUL (Null)
                 // do nothing (eat the code)
             } else if (c == 0x03) { // ETX (End of Text)
@@ -180,6 +185,7 @@ if (_cursorX <= _column - 1) { \
 //          } else if (c == 0x1D) { // GS  (Group Separator)
 //          } else if (c == 0x1E) { // RS  (Record Separator)
 //          } else if (c == 0x1F) { // US  (Unit Separator)
+//          C1CONTROL
             } else if (c == 0x7F) { // DEL Ignored on input; not stored in buffer.
 //          } else if (c >= 0x80 && c <= 0x99) { // Ignore anyway
 //          } else if (c == 0x9A) { // SCI (Single Character Introducer)
@@ -339,8 +345,7 @@ if (_cursorX <= _column - 1) { \
                     _csBuf->clear();
                 }
 
-                if (NO) {
-                    NSLog(@"blah");
+                if (NO) {                   // code alignment
                 } else if (c == 'A') {		// Cursor Up
                     if (_csArg->size() > 0)
                         _cursorY -= _csArg->front();
