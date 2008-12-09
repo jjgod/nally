@@ -15,11 +15,14 @@
                                     if (_cursorX < 0) _cursorX = 0; if (_cursorX >= _column) _cursorX = _column - 1;\
                                     if (_cursorY < 0) _cursorY = 0; if (_cursorY >= _row) _cursorY = _row - 1;\
                                 } while(0);
-#define ASC_NUL=0x00
-#define ASC_SOH=0x01
-#define ASC_STX=0x02
-#define ASC_ETX=0x03
-#define ASC_EQT=0x04
+#define ASC_NUL     0x00 //
+#define ASC_SOH     0x01 //
+#define ASC_STX     0x02 //
+#define ASC_ETX     0x03 //
+#define ASC_EQT     0x04 //
+#define ASC_ENQ     0x05 //
+#define ASC_ACK     0x06 //
+#define ASC_BEL     0x07 //
 
 //BOOL isC0Control(unsigned char c) { return (c <= 0x1F); }
 //BOOL isSPACE(unsigned char c) { return (c == 0x20 || c == 0xA0); }
