@@ -17,28 +17,28 @@
 								} while(0);
 
 
-BOOL isC0Control(unsigned char c) { return (c <= 0x1F); }
-BOOL isSPACE(unsigned char c) { return (c == 0x20 || c == 0xA0); }
-BOOL isIntermediate(unsigned char c) { return (c >= 0x20 && c <= 0x2F); }
+//BOOL isC0Control(unsigned char c) { return (c <= 0x1F); }
+//BOOL isSPACE(unsigned char c) { return (c == 0x20 || c == 0xA0); }
+//BOOL isIntermediate(unsigned char c) { return (c >= 0x20 && c <= 0x2F); }
 BOOL isParameter(unsigned char c) { return (c >= 0x30 && c <= 0x3F); }
-BOOL isUppercase(unsigned char c) { return (c >= 0x40 && c <= 0x5F); }
-BOOL isLowercase(unsigned char c) { return (c >= 0x60 && c <= 0x7E); }
-BOOL isDelete(unsigned char c) { return (c == 0x7F); }
-BOOL isC1Control(unsigned char c) { return(c >= 0x80 && c <= 0x9F); }
-BOOL isG1Displayable(unsigned char c) { return(c >= 0xA1 && c <= 0xFE); }
-BOOL isSpecial(unsigned char c) { return(c == 0xA0 || c == 0xFF); }
-BOOL isAlphabetic(unsigned char c) { return(c >= 0x40 && c <= 0x7E); }
+//BOOL isUppercase(unsigned char c) { return (c >= 0x40 && c <= 0x5F); }
+//BOOL isLowercase(unsigned char c) { return (c >= 0x60 && c <= 0x7E); }
+//BOOL isDelete(unsigned char c) { return (c == 0x7F); }
+//BOOL isC1Control(unsigned char c) { return(c >= 0x80 && c <= 0x9F); }
+//BOOL isG1Displayable(unsigned char c) { return(c >= 0xA1 && c <= 0xFE); }
+//BOOL isSpecial(unsigned char c) { return(c == 0xA0 || c == 0xFF); }
+//BOOL isAlphabetic(unsigned char c) { return(c >= 0x40 && c <= 0x7E); }
 
-ASCII_CODE asciiCodeFamily(unsigned char c) {
-	if (isC0Control(c)) return C0;
-	if (isIntermediate(c)) return INTERMEDIATE;
-	if (isAlphabetic(c)) return ALPHABETIC;
-	if (isDelete(c)) return DELETE;
-	if (isC1Control(c)) return C1;
-	if (isG1Displayable(c)) return G1;
-	if (isSpecial(c)) return SPECIAL;
-	return ERROR;
-}
+//ASCII_CODE asciiCodeFamily(unsigned char c) {
+//	if (isC0Control(c)) return C0;
+//	if (isIntermediate(c)) return INTERMEDIATE;
+//	if (isAlphabetic(c)) return ALPHABETIC;
+//	if (isDelete(c)) return DELETE;
+//	if (isC1Control(c)) return C1;
+//	if (isG1Displayable(c)) return G1;
+//	if (isSpecial(c)) return SPECIAL;
+//	return ERROR;
+//}
 
 
 static unsigned short gEmptyAttr;
