@@ -15,14 +15,39 @@
                                     if (_cursorX < 0) _cursorX = 0; if (_cursorX >= _column) _cursorX = _column - 1;\
                                     if (_cursorY < 0) _cursorY = 0; if (_cursorY >= _row) _cursorY = _row - 1;\
                                 } while(0);
-#define ASC_NUL     0x00 //
+#define ASC_NUL     0x00 // Null
 #define ASC_SOH     0x01 //
 #define ASC_STX     0x02 //
-#define ASC_ETX     0x03 //
-#define ASC_EQT     0x04 //
-#define ASC_ENQ     0x05 //
-#define ASC_ACK     0x06 //
-#define ASC_BEL     0x07 //
+#define ASC_ETX     0x03 // End of Text
+#define ASC_EQT     0x04 // End of Transmission
+#define ASC_ENQ     0x05 // Enquire
+#define ASC_ACK     0x06 // Acknowledge
+#define ASC_BEL     0x07 // Bell (Beep)
+#define ASC_BS      0x08 // Backspace
+#define ASC_HT      0x09 // Horizontal Tabulation
+#define ASC_LF      0x0A // Line Feed
+#define ASC_VT      0x0B // Virtical Tabulation
+#define ASC_FF      0x0C // Form Feed
+#define ASC_CR      0x0D // Carriage Return
+#define ASC_SO      0x0E // Shift Out
+#define ASC_SI      0x0F // Shift In
+#define ASC_DLE     0x10 // Data Link Escape, normally MODEM
+#define ASC_DC1     0x11 // Device Control One, XON
+#define ASC_DC2     0x12 // Device Control Two
+#define ASC_DC3     0x13 // Device Control Three, XOFF
+#define ASC_DC4     0x14 // Device Control Four
+#define ASC_NAK     0x15 // Negative Acknowledge
+#define ASC_SYN     0x16 // Synchronous Idle
+#define ASC_ETB     0x17 // End of Transmission Block
+#define ASC_CAN     0x18 // Cancel
+#define ASC_EM      0x19 // End of Medium
+#define ASC_SUB     0x1A // Substitute
+#define ASC_ESC     0x1B // Escape
+#define ASC_FS      0x1C // File Separator
+#define ASC_GS      0x1D // Group Separator
+#define ASC_RS      0x1E // Record Separator
+#define ASC_US      0x1F // Unit Separator
+#define ASC_DEL     0x7F // Delete, Ignored on input; not stored in buffer.
 
 //BOOL isC0Control(unsigned char c) { return (c <= 0x1F); }
 //BOOL isSPACE(unsigned char c) { return (c == 0x20 || c == 0xA0); }
@@ -118,20 +143,20 @@ if (_cursorX <= _column - 1) { \
         case TP_NORMAL:
             if (NO) { // code alignment
 // C0CONTROL
-            } else if (c == 0x00) { // NUL (Null)
+            } else if (c == ASC_NUL) {
                 // do nothing (eat the code)
-            } else if (c == 0x03) { // ETX (End of Text)
+            } else if (c == ASC_ETX) {
                 // FLOW CONTROL?
-            } else if (c == 0x04) { // EOT (End of Transmission)
+            } else if (c == 0x04) {
                 // FLOW CONTROL?
-            } else if (c == 0x05) { // ENQ (Enquire)
+            } else if (c == 0x05) {
                 // FLOW CONTROL?
-            } else if (c == 0x06) { // ACK (Acknowledge)
+            } else if (c == 0x06) {
                 // FLOW CONTROL?
-            } else if (c == 0x07) { // BEL (Beep)
+            } else if (c == 0x07) {
                 [[NSSound soundNamed: @"Whit.aiff"] play];
                 [self setHasMessage: YES];
-            } else if (c == 0x08) { // BS  (Backspace)
+            } else if (c == 0x08) {
                 if (_cursorX > 0)
                     _cursorX--;
                 // If wrap is available, then need to take care of it.
@@ -182,7 +207,7 @@ if (_cursorX <= _column - 1) { \
                 //cancels the sequence and displays substitution character ().
                 //SUB is processed as CAN
 //          } else if (c == 0x19) { // EM  (End of Medium)
-            } else if (c == 0x1B) { // ESC (Escape)
+            } else if (c == ASC_ESC) {
                 _state = TP_ESCAPE;
 //          } else if (c == 0x1C) { // FS  (File Separator)
 //          } else if (c == 0x1D) { // GS  (Group Separator)
