@@ -147,20 +147,20 @@ if (_cursorX <= _column - 1) { \
                 // do nothing (eat the code)
             } else if (c == ASC_ETX) {
                 // FLOW CONTROL?
-            } else if (c == 0x04) {
+            } else if (c == ASC_EQT) {
                 // FLOW CONTROL?
-            } else if (c == 0x05) {
+            } else if (c == ASC_ENQ) {
                 // FLOW CONTROL?
-            } else if (c == 0x06) {
+            } else if (c == ASC_ACK) {
                 // FLOW CONTROL?
-            } else if (c == 0x07) {
+            } else if (c == ASC_BEL) {
                 [[NSSound soundNamed: @"Whit.aiff"] play];
                 [self setHasMessage: YES];
-            } else if (c == 0x08) {
+            } else if (c == ASC_BS ) {
                 if (_cursorX > 0)
                     _cursorX--;
                 // If wrap is available, then need to take care of it.
-            } else if (c == 0x09) { // HT  (Horizontal TABulation)
+            } else if (c == ASC_HT ) { // HT  (Horizontal TABulation)
                 _cursorX=(int(_cursorX/8) + 1) * 8;
                 //mjhsieh: this implement is not yet tested
             } else if (c == 0x0A || c == 0x0B || c == 0x0C) {
@@ -182,7 +182,7 @@ if (_cursorX <= _column - 1) { \
                     _cursorY++;
                     if (_cursorY >= _row) _cursorY = _row - 1;
                 }
-            } else if (c == 0x0D) { // CR  (Carriage Return)
+            } else if (c == ASC_CR ) { // Carriage Return
                 _cursorX = 0;
             } else if (c == 0x0E) { // SO  (Shift Out)
                 //LS1 (Locked Shift-One in Unicode)
@@ -214,7 +214,7 @@ if (_cursorX <= _column - 1) { \
 //          } else if (c == 0x1E) { // RS  (Record Separator)
 //          } else if (c == 0x1F) { // US  (Unit Separator)
 //          C1CONTROL
-            } else if (c == 0x7F) { // DEL Ignored on input; not stored in buffer.
+            } else if (c == ASC_DEL) { // DEL Ignored on input; not stored in buffer.
 //          } else if (c >= 0x80 && c <= 0x99) { // Ignore anyway
 //          } else if (c == 0x9A) { // SCI (Single Character Introducer)
 //          } else if (c == 0x9B) { // CSI (Control Sequence Introducer) single-
