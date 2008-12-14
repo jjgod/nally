@@ -143,16 +143,11 @@ if (_cursorX <= _column - 1) { \
         case TP_NORMAL:
             if (NO) { // code alignment
 // C0CONTROL
-            } else if (c == ASC_NUL) {
-                // do nothing (eat the code)
-            } else if (c == ASC_ETX) {
-                // FLOW CONTROL?
-            } else if (c == ASC_EQT) {
-                // FLOW CONTROL?
-            } else if (c == ASC_ENQ) {
-                // FLOW CONTROL?
-            } else if (c == ASC_ACK) {
-                // FLOW CONTROL?
+            } else if (c == ASC_NUL) { // do nothing (eat the code)
+            } else if (c == ASC_ETX) { // FLOW CONTROL?
+            } else if (c == ASC_EQT) { // FLOW CONTROL?
+            } else if (c == ASC_ENQ) { // FLOW CONTROL?
+            } else if (c == ASC_ACK) { // FLOW CONTROL?
             } else if (c == ASC_BEL) {
                 [[NSSound soundNamed: @"Whit.aiff"] play];
                 [self setHasMessage: YES];
@@ -182,38 +177,38 @@ if (_cursorX <= _column - 1) { \
                     _cursorY++;
                     if (_cursorY >= _row) _cursorY = _row - 1;
                 }
-            } else if (c == ASC_CR ) { // Carriage Return
+            } else if (c == ASC_CR ) { // Go to the begin of this line
                 _cursorX = 0;
-            } else if (c == 0x0E) { // SO  (Shift Out)
-                //LS1 (Locked Shift-One in Unicode)
-                //Selects G1 character set designated by a select character set sequence.
+            } else if (c == ASC_SO ) { //
+                //LS1 (Locked Shift-One in Unicode) Selects G1 characteri
+                //set designated by a select character set sequence.
                 //However we drop it for now
                 _csBuf->clear();
-            } else if (c == 0x0F) { // SI  (Shift In) (^O)
-                //LS0 (Locked Shift-Zero in Unicode)
-                //Selects G0 character set designated by a select character set sequence.
+            } else if (c == ASC_SI ) { // (^O)
+                //LS0 (Locked Shift-Zero in Unicode) Selects G0 character
+                //set designated by a select character set sequence.
                 //However we drop it for now
                 _csBuf->clear();
-            } else if (c == 0x10) { // DLE (Data Link Escape, normally MODEM)
-            } else if (c == 0x11) { // DC1 (Device Control One, XON)
-            } else if (c == 0x12) { // DC2 (Device Control Two)
-            } else if (c == 0x13) { // DC3 (Device Control Three, XOFF)
-            } else if (c == 0x14) { // DC4 (Device Control Four)
-            } else if (c == 0x15) { // NAK (Negative Acknowledge)
-            } else if (c == 0x16) { // SYN (Synchronous Idle)
-            } else if (c == 0x17) { // ETB (End of Transmission Block)
-//          } else if (c == 0x18 || 0x1A) { // CAN (Cancel) or SUB (Substitute)
+            } else if (c == ASC_DLE) { // Normally for MODEM
+            } else if (c == ASC_DC1) { // XON
+            } else if (c == ASC_DC2) { // 
+            } else if (c == ASC_DC3) { // XOFF
+            } else if (c == ASC_DC4) { // 
+            } else if (c == ASC_NAK) { // 
+            } else if (c == ASC_SYN) { // 
+            } else if (c == ASC_ETB) { //
+            } else if (c == ASC_CAN || c == ASC_SUB) {
                 //If received during an escape or control sequence, 
                 //cancels the sequence and displays substitution character ().
                 //SUB is processed as CAN
-//          } else if (c == 0x19) { // EM  (End of Medium)
+                //This is not implemented here
+            } else if (c == ASC_EM ) {
             } else if (c == ASC_ESC) {
                 _state = TP_ESCAPE;
-//          } else if (c == 0x1C) { // FS  (File Separator)
+            } else if (c == ASC_FS ) {
 //          } else if (c == 0x1D) { // GS  (Group Separator)
 //          } else if (c == 0x1E) { // RS  (Record Separator)
 //          } else if (c == 0x1F) { // US  (Unit Separator)
-//          C1CONTROL
             } else if (c == ASC_DEL) { // DEL Ignored on input; not stored in buffer.
 //          } else if (c >= 0x80 && c <= 0x99) { // Ignore anyway
 //          } else if (c == 0x9A) { // SCI (Single Character Introducer)
