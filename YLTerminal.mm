@@ -142,7 +142,6 @@ if (_cursorX <= _column - 1) { \
         {
         case TP_NORMAL:
             if (NO) { // code alignment
-// C0CONTROL
             } else if (c == ASC_NUL) { // do nothing (eat the code)
             } else if (c == ASC_ETX) { // FLOW CONTROL?
             } else if (c == ASC_EQT) { // FLOW CONTROL?
@@ -183,20 +182,20 @@ if (_cursorX <= _column - 1) { \
                 //LS1 (Locked Shift-One in Unicode) Selects G1 characteri
                 //set designated by a select character set sequence.
                 //However we drop it for now
-                _csBuf->clear();
+                //_csBuf->clear();
             } else if (c == ASC_SI ) { // (^O)
                 //LS0 (Locked Shift-Zero in Unicode) Selects G0 character
                 //set designated by a select character set sequence.
                 //However we drop it for now
-                _csBuf->clear();
+                //_csBuf->clear();
             } else if (c == ASC_DLE) { // Normally for MODEM
             } else if (c == ASC_DC1) { // XON
             } else if (c == ASC_DC2) { // 
             } else if (c == ASC_DC3) { // XOFF
-            } else if (c == ASC_DC4) { // 
-            } else if (c == ASC_NAK) { // 
-            } else if (c == ASC_SYN) { // 
-            } else if (c == ASC_ETB) { //
+            } else if (c == ASC_DC4) { 
+            } else if (c == ASC_NAK) { 
+            } else if (c == ASC_SYN) {
+            } else if (c == ASC_ETB) {
             } else if (c == ASC_CAN || c == ASC_SUB) {
                 //If received during an escape or control sequence, 
                 //cancels the sequence and displays substitution character ().
@@ -206,22 +205,22 @@ if (_cursorX <= _column - 1) { \
             } else if (c == ASC_ESC) {
                 _state = TP_ESCAPE;
             } else if (c == ASC_FS ) {
-//          } else if (c == 0x1D) { // GS  (Group Separator)
-//          } else if (c == 0x1E) { // RS  (Record Separator)
-//          } else if (c == 0x1F) { // US  (Unit Separator)
+            } else if (c == ASC_GS ) {
+            } else if (c == ASC_RS ) {
+            } else if (c == ASC_US ) {
             } else if (c == ASC_DEL) { // DEL Ignored on input; not stored in buffer.
-//          } else if (c >= 0x80 && c <= 0x99) { // Ignore anyway
-//          } else if (c == 0x9A) { // SCI (Single Character Introducer)
-//          } else if (c == 0x9B) { // CSI (Control Sequence Introducer) single-
+            } else if (c >= 0x80 && c <= 0x99) { // Ignore anyway
+            } else if (c == 0x9A) { // SCI (Single Character Introducer)
+            } else if (c == 0x9B) { // CSI (Control Sequence Introducer) single-
                                     // -character CSI is China-Sea incompatible.
 //              _csBuf->clear();
 //              _csArg->clear();
 //              _csTemp = 0;
 //              _state = TP_CONTROL;
-//          } else if (c == 0x9C) {
-//          } else if (c == 0x9D) {
-//          } else if (c == 0x9E) {
-//          } else if (c == 0x9F) {
+            } else if (c == 0x9C) {
+            } else if (c == 0x9D) {
+            } else if (c == 0x9E) {
+            } else if (c == 0x9F) {
             } else
                 SET_GRID_BYTE(c);
 
