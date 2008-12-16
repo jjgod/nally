@@ -208,11 +208,17 @@ if (_cursorX <= _column - 1) { \
             } else if (c == ASC_GS ) {
             } else if (c == ASC_RS ) {
             } else if (c == ASC_US ) {
+// 0x20 ~ 0x7E ascii readible bytes... (btw Big5 second byte 0x40 ~ 0x7E)
             } else if (c == ASC_DEL) { // DEL Ignored on input; not stored in buffer.
-//          } else if (c >= 0x80 && c <= 0x99) {
-                // Warning! some character(s) in this range are used by Big5-E/HKSCS
+//          } else if (c == 0x80){
+// Following characters are used by Big5 or Big5-HKSCS
+// Big5 first byte: 0x81 ~ 0xfe
+// Big5 second byte: 0x40 ~ 0x7e + 0xa1 ~ 0xfe
+// HKSCS first byte: 0x81 ~ 0xa0
+/*
+            } else if (c >= 0x81 && c <= 0x99) {
             } else if (c == 0x9A) { // SCI (Single Character Introducer)
-//          } else if (c == 0x9B) { // CSI (Control Sequence Introducer)
+            } else if (c == 0x9B) { // CSI (Control Sequence Introducer)
                 // Single-character CSI is China-Sea incompatible.
                 //_csBuf->clear();
                 //_csArg->clear();
@@ -222,6 +228,7 @@ if (_cursorX <= _column - 1) { \
             } else if (c == 0x9D) {
             } else if (c == 0x9E) {
             } else if (c == 0x9F) {
+*/
             } else
                 SET_GRID_BYTE(c);
 
