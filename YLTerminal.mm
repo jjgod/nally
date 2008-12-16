@@ -209,14 +209,15 @@ if (_cursorX <= _column - 1) { \
             } else if (c == ASC_RS ) {
             } else if (c == ASC_US ) {
             } else if (c == ASC_DEL) { // DEL Ignored on input; not stored in buffer.
-            } else if (c >= 0x80 && c <= 0x99) { // Ignore anyway
+//          } else if (c >= 0x80 && c <= 0x99) {
+                // Warning! some character(s) in this range are used by Big5-E/HKSCS
             } else if (c == 0x9A) { // SCI (Single Character Introducer)
-            } else if (c == 0x9B) { // CSI (Control Sequence Introducer) single-
-                                    // -character CSI is China-Sea incompatible.
-//              _csBuf->clear();
-//              _csArg->clear();
-//              _csTemp = 0;
-//              _state = TP_CONTROL;
+//          } else if (c == 0x9B) { // CSI (Control Sequence Introducer)
+                // Single-character CSI is China-Sea incompatible.
+                //_csBuf->clear();
+                //_csArg->clear();
+                //_csTemp = 0;
+                //_state = TP_CONTROL;
             } else if (c == 0x9C) {
             } else if (c == 0x9D) {
             } else if (c == 0x9E) {
