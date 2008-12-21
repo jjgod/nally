@@ -83,6 +83,9 @@
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		32CA4F630368D1EE00C91783 /* MacBlueTelnet_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MacBlueTelnet_Prefix.pch; sourceTree = "<group>"; };
 		7119D1820EE7DC46003F98C8 /* Nally.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Nally.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		71585BD70EFE06C200E04E4E /* zh_CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = zh_CN; path = zh_CN.lproj/Localizable.strings; sourceTree = "<group>"; };
+		71585BD80EFE086B00E04E4E /* zh_CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = zh_CN; path = zh_CN.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		71585BD90EFE08D200E04E4E /* zh_CN */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = zh_CN; path = zh_CN.lproj/MainMenu.nib; sourceTree = "<group>"; };
 		850711AA0CA7A347005F4734 /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = /System/Library/Frameworks/ApplicationServices.framework; sourceTree = "<absolute>"; };
 		85137B320D02192800833909 /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
 		85145A9F0AB40053009FC710 /* YLTelnet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLTelnet.h; sourceTree = "<group>"; };
@@ -351,6 +354,7 @@
 				French,
 				German,
 				zh_TW,
+				zh_CN,
 			);
 			mainGroup = 29B97314FDCFA39411CA2CEA /* MacBlueTelnet */;
 			projectDirPath = "";
@@ -435,6 +439,7 @@
 			children = (
 				089C165DFE840E0CC02AAC07 /* English */,
 				85EA93240D0791240098C94B /* zh_TW */,
+				71585BD80EFE086B00E04E4E /* zh_CN */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
@@ -444,6 +449,7 @@
 			children = (
 				29B97319FDCFA39411CA2CEA /* English */,
 				85EA93270D0791240098C94B /* zh_TW */,
+				71585BD90EFE08D200E04E4E /* zh_CN */,
 			);
 			name = MainMenu.nib;
 			sourceTree = "<group>";
@@ -453,6 +459,7 @@
 			children = (
 				85A0E73C0D06B72900ACA26F /* English */,
 				85EA93250D0791240098C94B /* zh_TW */,
+				71585BD70EFE06C200E04E4E /* zh_CN */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
