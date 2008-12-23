@@ -48,6 +48,55 @@
 #define ASC_RS      0x1E // Record Separator
 #define ASC_US      0x1F // Unit Separator
 #define ASC_DEL     0x7F // Delete, Ignored on input; not stored in buffer.
+#define CSI_ICH     0x40 // INSERT CHARACTER requires DCSM implementation
+#define CSI_CUU     0x41 // A, Cursor Up
+#define CSI_CUD     0x42 // B, Cursor Down
+#define CSI_CUF     0x43 // C, Cursor Forward
+#define CSI_CUB     0x44 // D, Cursor Backward
+#define CSI_CNL     0x45 // E, Cursor Next Line
+#define CSI_CPL     0x46 // F, Cursor Preceding Line
+#define CSI_CHA     0x47 // G, Cursor Character Absolute
+#define CSI_CUP     0x48 // H, Cursor Position
+#define CSI_CHT     0x49 // I, Cursor Forward Tabulation
+#define CSI_ED      0x4A // J, Erase in Page
+#define CSI_EL      0x4B // K, ERASE IN Line
+#define CSI_IL      0x4C // L,
+#define CSI_DL      0x4D // M, DELETE LINE
+#define CSI_EF      0x4E // N, ERASE IN FIELD
+#define CSI_EA      0x4F // O, ERASE IN AREA
+#define CSI_DCH     0x50 // P,
+#define CSI_SSE     0x51 // Q,
+#define CSI_CPR     0x52 // R,
+#define CSI_SU      0x53 // S,
+#define CSI_SD      0x54 // T,
+#define CSI_NP      0x55 // U,
+#define CSI_PP      0x56 // V,
+#define CSI_CTC     0x57 // W,
+#define CSI_ECH     0x58 // X, ERASE CHARACTER
+#define CSI_CVT     0x59 // Y,
+#define CSI_CBT     0x5A // Z,
+#define CSI_SRS     0x5B // [,
+#define CSI_PTX     0x5C // \,
+#define CSI_SDS     0x5D // ],
+#define CSISIMD     0x5E // ^,
+#define CSI_HPA     0x60 // _,
+#define CSI_HPR     0x61 // a,
+#define CSI_REP     0x62 // b,
+#define CSI_DA      0x63 // c,
+#define CSI_VPA     0x64 // d,
+#define CSI_VPR     0x65 // e,
+#define CSI_HVP     0x66 // f,
+#define CSI_TBC     0x67 // g,
+#define CSI_SM      0x68 // h, SHOW
+#define CSI_MC      0x69 // i,
+#define CSI_HPB     0x6A // j,
+#define CSI_VPB     0x6B // k,
+#define CSI_RM      0x6C // l,
+#define CSI_SGR     0x6D // m,
+#define CSI_DSR     0x6E // n,
+#define CSI_DAQ     0x6F // o,
+#define CSI_SCP     0x73 // s,
+#define CSI_RCP     0x75 // u,
 
 //BOOL isC0Control(unsigned char c) { return (c <= 0x1F); }
 //BOOL isSPACE(unsigned char c) { return (c == 0x20 || c == 0xA0); }
@@ -182,12 +231,10 @@ if (_cursorX <= _column - 1) { \
                 //LS1 (Locked Shift-One in Unicode) Selects G1 characteri
                 //set designated by a select character set sequence.
                 //However we drop it for now
-                //_csBuf->clear();
             } else if (c == ASC_SI ) { // (^O)
                 //LS0 (Locked Shift-Zero in Unicode) Selects G0 character
                 //set designated by a select character set sequence.
                 //However we drop it for now
-                //_csBuf->clear();
             } else if (c == ASC_DLE) { // Normally for MODEM
             } else if (c == ASC_DC1) { // XON
             } else if (c == ASC_DC2) { // 
@@ -201,21 +248,21 @@ if (_cursorX <= _column - 1) { \
                 //cancels the sequence and displays substitution character ().
                 //SUB is processed as CAN
                 //This is not implemented here
-            } else if (c == ASC_EM ) {
-            } else if (c == ASC_ESC) {
+            } else if (c == ASC_EM ) { // ^Y
+            } else if (c == ASC_ESC) { // ^[
                 _state = TP_ESCAPE;
-            } else if (c == ASC_FS ) {
-            } else if (c == ASC_GS ) {
-            } else if (c == ASC_RS ) {
-            } else if (c == ASC_US ) {
+            } else if (c == ASC_FS ) { // ^\
+            } else if (c == ASC_GS ) { // ^]
+            } else if (c == ASC_RS ) { // ^^
+            } else if (c == ASC_US ) { // ^_
 // 0x20 ~ 0x7E ascii readible bytes... (btw Big5 second byte 0x40 ~ 0x7E)
             } else if (c == ASC_DEL) { // DEL Ignored on input; not stored in buffer.
 //          } else if (c == 0x80){
+/*
 // Following characters are used by Big5 or Big5-HKSCS
 // Big5 first byte: 0x81 ~ 0xfe
 // Big5 second byte: 0x40 ~ 0x7e + 0xa1 ~ 0xfe
 // HKSCS first byte: 0x81 ~ 0xa0
-/*
             } else if (c >= 0x81 && c <= 0x99) {
             } else if (c == 0x9A) { // SCI (Single Character Introducer)
             } else if (c == 0x9B) { // CSI (Control Sequence Introducer)
@@ -235,7 +282,7 @@ if (_cursorX <= _column - 1) { \
             break;
 
         case TP_ESCAPE:
-            if (c == 0x1B) { // ESCESC according to zterm this happens
+            if (c == ASC_ESC) { // ESCESC according to zterm this happens
                 _state = TP_ESCAPE;
             } else if (c == 0x5B) { // 0x5B == '['
                 _csBuf->clear();
@@ -376,34 +423,35 @@ if (_cursorX <= _column - 1) { \
                 }
 
                 if (NO) {                   // code alignment
-                } else if (c == 'A') {		// Cursor Up
+                } else if (c == CSI_CUU) {
                     if (_csArg->size() > 0)
                         _cursorY -= _csArg->front();
                     else
                         _cursorY--;
                     
                     if (_cursorY < 0) _cursorY = 0;
-                } else if (c == 'B') {		// Cursor Down
+                } else if (c == CSI_CUD) {
                     if (_csArg->size() > 0)
                         _cursorY += _csArg->front();
                     else
                         _cursorY++;
                     
                     if (_cursorY >= _row) _cursorY = _row - 1;
-                } else if (c == 'C') {		// Cursor Right
+                } else if (c == CSI_CUF) {
                     if (_csArg->size() > 0)
                         _cursorX += _csArg->front();
                     else
                         _cursorX++;
                     
                     if (_cursorX >= _column) _cursorX = _column - 1;
-                } else if (c == 'D') {		// Cursor Left
+                } else if (c == CSI_CUB) {
                     if (_csArg->size() > 0)
                         _cursorX -= _csArg->front();
                     else
                         _cursorX--;
                     
                     if (_cursorX < 0) _cursorX = 0;
+//              } else if (c == CSI_CHA) { // move to Pn position of current line
                 } else if (c == 'f' || c == 'H') {	// Cursor Position
                     /* 
                         ^[H			: go to row 1, column 1
