@@ -15,57 +15,60 @@
                                     if (_cursorX < 0) _cursorX = 0; if (_cursorX >= _column) _cursorX = _column - 1;\
                                     if (_cursorY < 0) _cursorY = 0; if (_cursorY >= _row) _cursorY = _row - 1;\
                                 } while(0);
-#define ASC_NUL     0x00 // Null
-#define ASC_SOH     0x01 //
-#define ASC_STX     0x02 //
-#define ASC_ETX     0x03 // End of Text
-#define ASC_EQT     0x04 // End of Transmission
-#define ASC_ENQ     0x05 // Enquire
-#define ASC_ACK     0x06 // Acknowledge
-#define ASC_BEL     0x07 // Bell (Beep)
-#define ASC_BS      0x08 // Backspace
-#define ASC_HT      0x09 // Horizontal Tabulation
-#define ASC_LF      0x0A // Line Feed
-#define ASC_VT      0x0B // Virtical Tabulation
-#define ASC_FF      0x0C // Form Feed
-#define ASC_CR      0x0D // Carriage Return
-#define ASC_SO      0x0E // Shift Out
-#define ASC_SI      0x0F // Shift In
-#define ASC_DLE     0x10 // Data Link Escape, normally MODEM
-#define ASC_DC1     0x11 // Device Control One, XON
-#define ASC_DC2     0x12 // Device Control Two
-#define ASC_DC3     0x13 // Device Control Three, XOFF
-#define ASC_DC4     0x14 // Device Control Four
-#define ASC_NAK     0x15 // Negative Acknowledge
-#define ASC_SYN     0x16 // Synchronous Idle
-#define ASC_ETB     0x17 // End of Transmission Block
-#define ASC_CAN     0x18 // Cancel
-#define ASC_EM      0x19 // End of Medium
-#define ASC_SUB     0x1A // Substitute
-#define ASC_ESC     0x1B // Escape
-#define ASC_FS      0x1C // File Separator
-#define ASC_GS      0x1D // Group Separator
-#define ASC_RS      0x1E // Record Separator
-#define ASC_US      0x1F // Unit Separator
-#define ASC_DEL     0x7F // Delete, Ignored on input; not stored in buffer.
+// Elements of the C0 set
+#define C0S_NUL     0x00 // NULL
+#define C0S_SOH     0x01 // START OF HEADING
+#define C0S_STX     0x02 // START OF TEXT
+#define C0S_ETX     0x03 // END OF TEXT
+#define C0S_EQT     0x04 // END OF TRANSMISSION
+#define C0S_ENQ     0x05 // ENQUIRE
+#define C0S_ACK     0x06 // ACKNOWLEDGE
+#define C0S_BEL     0x07 // BELL (BEEP)
+#define C0S_BS      0x08 // BACKSPACE
+#define C0S_HT      0x09 // HORIZONTAL TABULATION
+#define C0S_LF      0x0A // LINE FEED
+#define C0S_VT      0x0B // Virtical Tabulation
+#define C0S_FF      0x0C // Form Feed
+#define C0S_CR      0x0D // Carriage Return
+#define C0S_LS1     0x0E // Shift Out
+#define C0S_LS0     0x0F // Shift In
+#define C0S_DLE     0x10 // Data Link Escape, normally MODEM
+#define C0S_DC1     0x11 // Device Control One, XON
+#define C0S_DC2     0x12 // Device Control Two
+#define C0S_DC3     0x13 // Device Control Three, XOFF
+#define C0S_DC4     0x14 // Device Control Four
+#define C0S_NAK     0x15 // Negative Acknowledge
+#define C0S_SYN     0x16 // Synchronous Idle
+#define C0S_ETB     0x17 // End of Transmission Block
+#define C0S_CAN     0x18 // Cancel
+#define C0S_EM      0x19 // End of Medium
+#define C0S_SUB     0x1A // Substitute
+#define C0S_ESC     0x1B // Escape
+#define C0S_FS      0x1C // File Separator
+#define C0S_GS      0x1D // Group Separator
+#define C0S_RS      0x1E // Record Separator
+#define C0S_US      0x1F // Unit Separator
+
+//#define ASC_DEL     0x7F // Delete, Ignored on input; not stored in buffer.
+
 #define CSI_ICH     0x40 // INSERT CHARACTER requires DCSM implementation
-#define CSI_CUU     0x41 // A, Cursor Up
-#define CSI_CUD     0x42 // B, Cursor Down
-#define CSI_CUF     0x43 // C, Cursor Forward
-#define CSI_CUB     0x44 // D, Cursor Backward
-#define CSI_CNL     0x45 // E, Cursor Next Line
-#define CSI_CPL     0x46 // F, Cursor Preceding Line
-#define CSI_CHA     0x47 // G, Cursor Character Absolute
-#define CSI_CUP     0x48 // H, Cursor Position
-#define CSI_CHT     0x49 // I, Cursor Forward Tabulation
-#define CSI_ED      0x4A // J, Erase in Page
-#define CSI_EL      0x4B // K, ERASE IN Line
-#define CSI_IL      0x4C // L,
+#define CSI_CUU     0x41 // A, CURSOR UP
+#define CSI_CUD     0x42 // B, CURSOR DOWN
+#define CSI_CUF     0x43 // C, CURSOR FORWARD
+#define CSI_CUB     0x44 // D, CURSOR BACKWARD
+#define CSI_CNL     0x45 // E, CURSOR NEXT LINE
+#define CSI_CPL     0x46 // F, CURSOR PRECEDING LINE
+#define CSI_CHA     0x47 // G, CURSOR CHARACTER ABSOLUTE
+#define CSI_CUP     0x48 // H, CURSOR POSITION
+#define CSI_CHT     0x49 // I, CURSOR FORWARD TABULATION
+#define CSI_ED      0x4A // J, ERASE IN PAGE
+#define CSI_EL      0x4B // K, ERASE IN LINE
+#define CSI_IL      0x4C // L, INSERT LINE
 #define CSI_DL      0x4D // M, DELETE LINE
-#define CSI_EF      0x4E // N, ERASE IN FIELD
-#define CSI_EA      0x4F // O, ERASE IN AREA
-#define CSI_DCH     0x50 // P,
-#define CSI_SSE     0x51 // Q,
+#define CSI_EF      0x4E // N, Erase in Field 未實作
+#define CSI_EA      0x4F // O, Erase in Area 未實作
+#define CSI_DCH     0x50 // P, DELETE CHARACTER 
+#define CSI_SSE     0x51 // Q, 
 #define CSI_CPR     0x52 // R,
 #define CSI_SU      0x53 // S,
 #define CSI_SD      0x54 // T,
@@ -82,21 +85,24 @@
 #define CSI_HPA     0x60 // _,
 #define CSI_HPR     0x61 // a,
 #define CSI_REP     0x62 // b,
-#define CSI_DA      0x63 // c,
+#define CSI_DA      0x63 // c, DEVICE ATTRIBUTES
 #define CSI_VPA     0x64 // d,
 #define CSI_VPR     0x65 // e,
-#define CSI_HVP     0x66 // f,
+#define CSI_HVP     0x66 // f, CHARACTER AND LINE POSITION
 #define CSI_TBC     0x67 // g,
-#define CSI_SM      0x68 // h, SHOW
+#define CSI_SM      0x68 // h, Set Mode. 未實作
 #define CSI_MC      0x69 // i,
 #define CSI_HPB     0x6A // j,
 #define CSI_VPB     0x6B // k,
 #define CSI_RM      0x6C // l,
-#define CSI_SGR     0x6D // m,
+#define CSI_SGR     0x6D // m, SELECT GRAPHIC RENDITION
 #define CSI_DSR     0x6E // n,
 #define CSI_DAQ     0x6F // o,
-#define CSI_SCP     0x73 // s,
-#define CSI_RCP     0x75 // u,
+                  //0x70 // p,
+                  //0x71 // q,
+                  //0x72 // r,
+#define CSI_SCP     0x73 // s, Saves the cursor position. 未實作
+#define CSI_RCP     0x75 // u, Restores the cursor position. 未實作
 
 //BOOL isC0Control(unsigned char c) { return (c <= 0x1F); }
 //BOOL isSPACE(unsigned char c) { return (c == 0x20 || c == 0xA0); }
@@ -191,19 +197,19 @@ if (_cursorX <= _column - 1) { \
         {
         case TP_NORMAL:
             if (NO) { // code alignment
-            } else if (c == ASC_NUL) { // do nothing (eat the code)
-            } else if (c == ASC_ETX) { // FLOW CONTROL?
-            } else if (c == ASC_EQT) { // FLOW CONTROL?
-            } else if (c == ASC_ENQ) { // FLOW CONTROL?
-            } else if (c == ASC_ACK) { // FLOW CONTROL?
-            } else if (c == ASC_BEL) {
+            } else if (c == C0S_NUL) { // do nothing (eat the code)
+            } else if (c == C0S_ETX) { // FLOW CONTROL?
+            } else if (c == C0S_EQT) { // FLOW CONTROL?
+            } else if (c == C0S_ENQ) { // FLOW CONTROL?
+            } else if (c == C0S_ACK) { // FLOW CONTROL?
+            } else if (c == C0S_BEL) {
                 [[NSSound soundNamed: @"Whit.aiff"] play];
                 [self setHasMessage: YES];
-            } else if (c == ASC_BS ) {
+            } else if (c == C0S_BS ) {
                 if (_cursorX > 0)
                     _cursorX--;
                 // If wrap is available, then need to take care of it.
-            } else if (c == ASC_HT ) { // HT  (Horizontal TABulation)
+            } else if (c == C0S_HT ) { // HT  (Horizontal TABulation)
                 _cursorX=(int(_cursorX/8) + 1) * 8;
                 //mjhsieh: this implement is not yet tested
             } else if (c == 0x0A || c == 0x0B || c == 0x0C) {
@@ -225,38 +231,38 @@ if (_cursorX <= _column - 1) { \
                     _cursorY++;
                     if (_cursorY >= _row) _cursorY = _row - 1;
                 }
-            } else if (c == ASC_CR ) { // Go to the begin of this line
+            } else if (c == C0S_CR ) { // Go to the begin of this line
                 _cursorX = 0;
-            } else if (c == ASC_SO ) { //
+            } else if (c == C0S_LS1) { //
                 //LS1 (Locked Shift-One in Unicode) Selects G1 characteri
                 //set designated by a select character set sequence.
                 //However we drop it for now
-            } else if (c == ASC_SI ) { // (^O)
+            } else if (c == C0S_LS0) { // (^O)
                 //LS0 (Locked Shift-Zero in Unicode) Selects G0 character
                 //set designated by a select character set sequence.
                 //However we drop it for now
-            } else if (c == ASC_DLE) { // Normally for MODEM
-            } else if (c == ASC_DC1) { // XON
-            } else if (c == ASC_DC2) { // 
-            } else if (c == ASC_DC3) { // XOFF
-            } else if (c == ASC_DC4) { 
-            } else if (c == ASC_NAK) { 
-            } else if (c == ASC_SYN) {
-            } else if (c == ASC_ETB) {
-            } else if (c == ASC_CAN || c == ASC_SUB) {
+            } else if (c == C0S_DLE) { // Normally for MODEM
+            } else if (c == C0S_DC1) { // XON
+            } else if (c == C0S_DC2) { // 
+            } else if (c == C0S_DC3) { // XOFF
+            } else if (c == C0S_DC4) { 
+            } else if (c == C0S_NAK) { 
+            } else if (c == C0S_SYN) {
+            } else if (c == C0S_ETB) {
+            } else if (c == C0S_CAN || c == C0S_SUB) {
                 //If received during an escape or control sequence, 
                 //cancels the sequence and displays substitution character ().
                 //SUB is processed as CAN
                 //This is not implemented here
-            } else if (c == ASC_EM ) { // ^Y
-            } else if (c == ASC_ESC) { // ^[
+            } else if (c == C0S_EM ) { // ^Y
+            } else if (c == C0S_ESC) { // ^[
                 _state = TP_ESCAPE;
-            } else if (c == ASC_FS ) { // ^\
-            } else if (c == ASC_GS ) { // ^]
-            } else if (c == ASC_RS ) { // ^^
-            } else if (c == ASC_US ) { // ^_
+            } else if (c == C0S_FS ) { // ^backslash
+            } else if (c == C0S_GS ) { // ^]
+            } else if (c == C0S_RS ) { // ^^
+            } else if (c == C0S_US ) { // ^_
 // 0x20 ~ 0x7E ascii readible bytes... (btw Big5 second byte 0x40 ~ 0x7E)
-            } else if (c == ASC_DEL) { // DEL Ignored on input; not stored in buffer.
+//          } else if (c == ASC_DEL) { // DEL Ignored on input; not stored in buffer.
 //          } else if (c == 0x80){
 /*
 // Following characters are used by Big5 or Big5-HKSCS
@@ -282,7 +288,7 @@ if (_cursorX <= _column - 1) { \
             break;
 
         case TP_ESCAPE:
-            if (c == ASC_ESC) { // ESCESC according to zterm this happens
+            if (c == C0S_ESC) { // ESCESC according to zterm this happens
                 _state = TP_ESCAPE;
             } else if (c == 0x5B) { // 0x5B == '['
                 _csBuf->clear();
@@ -451,8 +457,30 @@ if (_cursorX <= _column - 1) { \
                         _cursorX--;
                     
                     if (_cursorX < 0) _cursorX = 0;
-//              } else if (c == CSI_CHA) { // move to Pn position of current line
-                } else if (c == 'f' || c == 'H') {	// Cursor Position
+                } else if (c == CSI_CNL) {
+                    _cursorX=0;
+                    if (_csArg->size() > 0)
+                        _cursorY += _csArg->front();
+                    else
+                        _cursorY++;
+                    if (_cursorY >= _row) _cursorY = _row - 1;
+                } else if (c == CSI_CPL) {
+                    _cursorX=0;
+                    if (_csArg->size() > 0)
+                        _cursorY -= _csArg->front();
+                    else
+                        _cursorY--;
+                    if (_cursorY < 0) _cursorY = 0;
+                } else if (c == CSI_CHA) { // move to Pn position of current line
+                    if (_csArg->size() == 0) {
+                       _cursorX = 0;
+                    } else if (_csArg->size() > 0) {
+                       if ((*_csArg)[0] < 1) (*_csArg)[0] = 1;
+                       CURSOR_MOVETO((*_csArg)[1] - 1,_cursorY);
+                    } else {
+                       CURSOR_MOVETO((*_csArg)[1] - 1,_cursorY);
+                    }
+                } else if (c == CSI_HVP || c == CSI_CUP) { // Cursor Position
                     /* 
                         ^[H			: go to row 1, column 1
                         ^[3H		: go to row 3, column 1
@@ -470,12 +498,10 @@ if (_cursorX <= _column - 1) { \
                         CURSOR_MOVETO((*_csArg)[1] - 1, (*_csArg)[0] - 1);
 //                        [self setDirty: YES atRow: _cursorY column: _cursorX];
                     }
-                } else if (c == 'J') {		// Erase Region (cursor does not move)
-                    /* 
-                        ^[J, ^[0J	: clear from cursor position to end
+                } else if (c == CSI_ED ) { // Erase Page (cursor does not move)
+                    /*  ^[J, ^[0J	: clear from cursor position to end
                         ^[1J		: clear from start to cursor position
-                        ^[2J		: clear all
-                     */
+                        ^[2J		: clear all */
                     int j;
                     if (_csArg->size() == 0 || _csArg->front() == 0) {
                         [self clearRow: _cursorY fromStart: _cursorX toEnd: _column - 1];
@@ -488,7 +514,7 @@ if (_cursorX <= _column - 1) { \
                     } else if (_csArg->size() == 1 && _csArg->front() == 2) {
                         [self clearAll];
                     }
-                } else if (c == 'K') {		// Erase Line (cursor does not move)
+                } else if (c == CSI_EL ) { // Erase Line (cursor does not move)
                     /* 
                         ^[K, ^[0K	: clear from cursor position to end of line
                         ^[1K		: clear from start of line to cursor position
@@ -501,7 +527,7 @@ if (_cursorX <= _column - 1) { \
                     } else if (_csArg->size() == 1 && _csArg->front() == 2) {
                         [self clearRow: _cursorY];
                     }
-                } else if (c == 'L') {      // Insert Line
+                } else if (c == CSI_IL ) { // Insert Line
                     int lineNumber = 0;
                     if (_csArg->size() == 0) 
                         lineNumber = 1;
@@ -519,7 +545,7 @@ if (_cursorX <= _column - 1) { \
                     }
                     for (i = _cursorY; i < _row; i++)
                         [self setDirtyForRow: i];
-                } else if (c == 'M') {      // Delete Line
+                } else if (c == CSI_DL ) { // Delete Line
                     int lineNumber = 0;
                     if (_csArg->size() == 0) 
                         lineNumber = 1;
@@ -537,7 +563,7 @@ if (_cursorX <= _column - 1) { \
                     }
                     for (i = _cursorY; i < _row; i++)
                         [self setDirtyForRow: i];
-                } else if (c == 'P') { // Delete characters at the current cursor position.
+                } else if (c == CSI_DCH) { // Delete characters at the current cursor position.
                     int i;
                     int p;
                     if (_csArg->size() == 1) {
@@ -558,8 +584,7 @@ if (_cursorX <= _column - 1) { \
                         }
                     } else
                         NSLog(@"unprocess number of delete: %d",p);
-                } else if (c == 'c') {  // Device Attributes (DA)
-                                        // Computer requests terminal identify itself.
+                } else if (c == CSI_DA ) { // Computer requests terminal identify itself.
                     if ( _csArg->empty() || _csArg->size() == 1 ){
                         unsigned char cmd[10]; // 10 should be enough for now
                         unsigned int cmdLength = 0;
@@ -608,7 +633,7 @@ if (_cursorX <= _column - 1) { \
                         //NSLog(@"unsupported mode resetting %d",p);
                         _csArg->pop_front();
                     }
-                } else if (c == 'm') { // Character Attributes
+                } else if (c == CSI_SGR) { // Character Attributes
                     if (_csArg->empty()) { // clear
                         _fgColor = 7;
                         _bgColor = 9;
