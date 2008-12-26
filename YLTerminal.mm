@@ -97,13 +97,13 @@ if (_cursorX <= _column - 1) { \
 - (void) feedBytes: (const unsigned char *) bytes length: (int) len connection: (id) connection {
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
 
-    int i, x;
+    int i, x, y;
     unsigned char c;
 
 //    NSLog(@"length: %d", len);
     for (i = 0; i < len; i++) {
         c = bytes[i];
-//        if (c == 0x00) continue;
+//      if (c == 0x00) continue;
         
         switch (_state)
         {
@@ -247,23 +247,30 @@ if (_cursorX <= _column - 1) { \
                 _cursorX = _savedCursorX;
                 _cursorY = _savedCursorY;
                 _state = TP_NORMAL;
-            } else if (NO){//c == 0x23) { // #
+            } else if (c == 0x23) { // #
                 if (i<len-1 && bytes[i+1] == 0x38){ // 8  --> fill with E
                     i++;
+					for (y = 0; y <= _row-1; y++) {
+					    for (x = 0; x <= _column-1; x++) {
+							_grid[y][x].byte = 'E';
+							_grid[y][x].attr.v = gEmptyAttr;
+							_dirty[y * _column + x] = YES;
+						}
+					}
                 } else
-                    NSLog(@"Unhandled ESC# case");
+                    NSLog(@"Unhandled <ESC># case");
                 _state = TP_NORMAL;
             } else if (c == 0x28 ) { // '(' Font Set G0
                 _state = TP_SCS;
             } else if (c == 0x29 ) { // ')' Font Set G1
                 _state = TP_SCS;
-//          } else if (c == 0x3D ) { // '=' Application keypad mode (vt52)
+            } else if (c == 0x3D ) { // '=' Application keypad mode (vt52)
 //              NSLog(@"unprocessed request of application keypad mode");
-//              _state = TP_NORMAL;
-//          } else if (c == 0x3E ) { // '>' Numeric keypad mode (vt52)
+                _state = TP_NORMAL;
+            } else if (c == 0x3E ) { // '>' Numeric keypad mode (vt52)
 //              NSLog(@"unprocessed request of numeric keypad mode");
-//              _state = TP_NORMAL;
-            } else if (c == 0x45 ) { //  'E' NEL Next Line (CR+Index)
+                _state = TP_NORMAL;
+            } else if (c == 0x45 ) { // 'E' NEL Next Line (CR+Index)
                 _cursorX = 0;
                 if (_cursorY == _scrollEndRow) {
                     [_delegate updateBackedImage];
@@ -281,7 +288,7 @@ if (_cursorX <= _column - 1) { \
                 }
                 _state = TP_NORMAL;
 //          } else if (c == 0x48 ) { // Set a tab at the current column
-//              ignore for now
+//              Won't implement
 //              _state = TP_NORMAL;
             } else if (c == 0x63 ) { // 'c' RIS reset
                 [self clearAll];
