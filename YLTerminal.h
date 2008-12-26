@@ -65,7 +65,7 @@
 #define CSI_EA      0x4F // O, Erase in Area, not implemented
 #define CSI_DCH     0x50 // P, DELETE CHARACTER 
 #define CSI_SSE     0x51 // Q, ?
-#define CSI_CPR     0x52 // R, ACTIVE POSITION REPORT, not implemented
+#define CSI_CPR     0x52 // R, ACTIVE POSITION REPORT, this is for responding
 #define CSI_SU      0x53 // S, ?
 #define CSI_SD      0x54 // T, ?
 #define CSI_NP      0x55 // U, ?
@@ -92,9 +92,9 @@
 #define CSI_VPB     0x6B // k, LINE POSITION BACKWARD
 #define CSI_RM      0x6C // l, Reset Mode. not implemented, ignored
 #define CSI_SGR     0x6D // m, SELECT GRAPHIC RENDITION
-#define CSI_DSR     0x6E // n, DEVICE STATUS REPORT, not implemented
+#define CSI_DSR     0x6E // n, DEVICE STATUS REPORT
 #define CSI_DAQ     0x6F // o, DEFINE AREA QUALIFICATION, not implemented
-//0x70 // p,
+#define CSI_DFNKY   0x70 // p, shouldn't be implemented
 //0x71 // q,
 #define CSI_DECSTBM 0x72 // r, Set Top and Bottom Margins
 #define CSI_SCP     0x73 // s, Saves the cursor position.

@@ -425,11 +425,9 @@ if (_cursorX <= _column - 1) { \
                         [self clearAll];
                     }
                 } else if (c == CSI_EL ) { // Erase Line (cursor does not move)
-                    /* 
-                        ^[K, ^[0K	: clear from cursor position to end of line
+                    /*  ^[K, ^[0K	: clear from cursor position to end of line
                         ^[1K		: clear from start of line to cursor position
-                        ^[2K		: clear whole line
-                     */
+                        ^[2K		: clear whole line */
                     if (_csArg->size() == 0 || _csArg->front() == 0) {
                         [self clearRow: _cursorY fromStart: _cursorX toEnd: _column - 1];
                     } else if (_csArg->size() == 1 && _csArg->front() == 1) {
@@ -514,17 +512,21 @@ if (_cursorX <= _column - 1) { \
 						}
                     }
 					CURSOR_MOVETO(_cursorX+p,_cursorY);					
-//				} else if (c == CSI_REP) {
+//				} else if (c == CSI_REP) { // REPEAT, not going to implement unless ESC#8 gets it
                 } else if (c == CSI_DA ) { // Computer requests terminal identify itself.
-                    if ( _csArg->empty() || _csArg->size() == 1 ){
-                        unsigned char cmd[10]; // 10 should be enough for now
-                        unsigned int cmdLength = 0;
-                        // Assuming I am a vt102, TODO: have a global variable for TERM
-                        cmd[cmdLength++] = 0x1B; // Esc
-                        cmd[cmdLength++] = 0x5B; // [
-                        cmd[cmdLength++] = 0x3F; // ?
-                        cmd[cmdLength++] = 0x36; // 6
-                        cmd[cmdLength++] = 0x63; // c
+					unsigned char cmd[10]; // 10 should be enough for now
+					unsigned int cmdLength = 0;
+					// TODO: have a global variable for TERM
+					// Assuming I am a vt102, I respond ESC[?6c
+					cmd[cmdLength++] = 0x1B;
+					cmd[cmdLength++] = 0x5B;
+					cmd[cmdLength++] = 0x3F;
+					cmd[cmdLength++] = 0x36;
+					cmd[cmdLength++] = 0x63;
+					// if VT100 is specified, use ESC[?1;0c
+                    if ( _csArg->empty() ) {
+						[[self connection] sendBytes:cmd length:cmdLength];
+					} else if ( _csArg->size() == 1 && (*_csArg)[0] == 0 ){
                         [[self connection] sendBytes:cmd length:cmdLength];
                     }
                 } else if (c == CSI_VPA) { // move to Pn line, col remaind the same
@@ -556,25 +558,25 @@ if (_cursorX <= _column - 1) { \
                         NSLog(@"Ignoring request to clear all horizontal tab stops.");
                     } else
                         NSLog(@"Ignoring request to clear one horizontal tab stop.");
-                } else if (c == 'h') {  // set mode
+                } else if (c == CSI_SM ) {  // set mode
                     while (!_csArg->empty()) {
-//                      int p = _csArg->front();
-//                      if (p == 0) {
+                        int p = _csArg->front();
+                        if (p == 0) {
 //                          NSLog(@"ignore re/setting mode 0");
-//                      } else if (p == 1) {
+                        } else if (p == 1) {
 //When set, the cursor keys send an ESC O prefix, rather than ESC [
-//                      } else if (p == 2) {
+                        } else if (p == 2) {
 //                          NSLog(@"ignore re/setting Keyboard Action Mode (AM)");
-//                      } else if (p == 4) {
+                        } else if (p == 4) {
 //                          NSLog(@"ignore re/setting Replace Mode (IRM)");
-//                      } else if (p == 7) {
-// wrap
-//                      } else if (p == 12) {
+                        } else if (p == 7) { // Text wraps to next line if longer than the length of the display area.
+                        } else if (p == 12) {
 //                          NSLog(@"ignore re/setting Send/receive (SRM)");
-//                      } else if (p == 20) {
+                        } else if (p == 20) {
 //                          NSLog(@"ignore re/setting Normal Linefeed (LNM)");
-//                      } else
+                        } else {
 //                          NSLog(@"unsupported mode setting %d",p);
+						}
                         _csArg->pop_front();
                     }
                 } else if (c == CSI_HPB) { // move to Pn Location in backward direction, same raw
@@ -597,10 +599,24 @@ if (_cursorX <= _column - 1) { \
 						}
                     }
 					CURSOR_MOVETO(_cursorX,_cursorY-p);
-                } else if (c == 'l') { // reset mode
+                } else if (c == CSI_RM ) { // reset mode
                     while (!_csArg->empty()) {
-                        //int p = _csArg->front();
-                        //NSLog(@"unsupported mode resetting %d",p);
+						NSLog(@"0x%X",(*_csArg)[0]);
+                        int p = _csArg->front();
+					    if ((*_csArg)[0] == 0x3F) {
+//							_csArg->pop_front();
+//							p = _csArg->front();
+//							while (!_csArg->empty()) {
+//								_csArg->pop_front();
+//							}
+ 							NSLog(@"132-column mode is not supported 0x%XX",(*_csArg)[0]);
+					    } else if (p == 0) {
+							//NSLog(@"ignore re/setting mode 0");
+						} else if (p == 7) {
+							//Disables line wrapping.
+						} else {
+                            NSLog(@"unsupported mode resetting %d",p);
+						}
                         _csArg->pop_front();
                     }
                 } else if (c == CSI_SGR) { // Character Attributes
@@ -637,6 +653,28 @@ if (_cursorX <= _column - 1) { \
                             }
                         }
                     }
+				} else if (c == CSI_DSR) {
+					if (_csArg->size() != 1) {
+						//do nothing
+					} else if ((*_csArg)[0] == 5) {
+						unsigned char cmd[4];
+						unsigned int cmdLength = 0;
+						// Report Device OK	<ESC>[0n
+						cmd[cmdLength++] = 0x1B;
+						cmd[cmdLength++] = 0x5B;
+						cmd[cmdLength++] = 0x30;
+						cmd[cmdLength++] = CSI_DSR;
+					} else if ((*_csArg)[0] == 6) {
+						unsigned char cmd[6];
+						unsigned int cmdLength = 0;
+						// Report Device OK	<ESC>[y;xR
+						cmd[cmdLength++] = 0x1B;
+						cmd[cmdLength++] = 0x5B;
+						cmd[cmdLength++] = _cursorY+1;
+						cmd[cmdLength++] = 0x3B;
+						cmd[cmdLength++] = _cursorX+1;
+						cmd[cmdLength++] = CSI_CPR;
+					}
                 } else if (c == CSI_DECSTBM) { // Assigning Scrolling Region
                     if (_csArg->size() == 0) {
                         _scrollBeginRow = 0;
