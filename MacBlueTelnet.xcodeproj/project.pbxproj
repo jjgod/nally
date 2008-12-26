@@ -85,6 +85,7 @@
 		7119D1820EE7DC46003F98C8 /* Nally.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Nally.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		71585BD70EFE06C200E04E4E /* zh_CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = zh_CN; path = zh_CN.lproj/Localizable.strings; sourceTree = "<group>"; };
 		71585BD80EFE086B00E04E4E /* zh_CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = zh_CN; path = zh_CN.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		717C30260F04E10A00B06BCE /* zh_CN */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = zh_CN; path = zh_CN.lproj/Preferences.nib; sourceTree = "<group>"; };
 		71EB91850EFE0C9000C7D4C1 /* zh_CN */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = zh_CN; path = zh_CN.lproj/MainMenu.nib; sourceTree = "<group>"; };
 		850711AA0CA7A347005F4734 /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = /System/Library/Frameworks/ApplicationServices.framework; sourceTree = "<absolute>"; };
 		85137B320D02192800833909 /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
@@ -469,6 +470,7 @@
 			children = (
 				85EA93220D0791180098C94B /* English */,
 				85D258B00D1CE575002BD294 /* zh_TW */,
+				717C30260F04E10A00B06BCE /* zh_CN */,
 			);
 			name = Preferences.nib;
 			sourceTree = "<group>";

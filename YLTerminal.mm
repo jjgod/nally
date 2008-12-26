@@ -321,6 +321,10 @@ if (_cursorX <= _column - 1) { \
                 _csBuf->push_back(c);
                 if (c >= '0' && c <= '9') {
                     _csTemp = _csTemp * 10 + (c - '0');
+				} else if (c == 0x3F) {
+					_csArg->push_back(-1);
+					_csTemp = 0;
+					_csBuf->clear();
                 } else if (!_csBuf->empty()) {
                     _csArg->push_back(_csTemp);
                     _csTemp = 0;
@@ -562,20 +566,32 @@ if (_cursorX <= _column - 1) { \
                     while (!_csArg->empty()) {
                         int p = _csArg->front();
                         if (p == 0) {
-//                          NSLog(@"ignore re/setting mode 0");
+                            //NSLog(@"ignore re/setting mode 0");
                         } else if (p == 1) {
-//When set, the cursor keys send an ESC O prefix, rather than ESC [
+                            //When set, the cursor keys send an ESC O prefix, rather than ESC [
                         } else if (p == 2) {
-//                          NSLog(@"ignore re/setting Keyboard Action Mode (AM)");
+						    //NSLog(@"ignore re/setting Keyboard Action Mode (AM)");
                         } else if (p == 4) {
-//                          NSLog(@"ignore re/setting Replace Mode (IRM)");
+                            //NSLog(@"ignore re/setting Replace Mode (IRM)");
                         } else if (p == 7) { // Text wraps to next line if longer than the length of the display area.
                         } else if (p == 12) {
-//                          NSLog(@"ignore re/setting Send/receive (SRM)");
+                            //NSLog(@"ignore re/setting Send/receive (SRM)");
                         } else if (p == 20) {
-//                          NSLog(@"ignore re/setting Normal Linefeed (LNM)");
+                            //NSLog(@"ignore re/setting Normal Linefeed (LNM)");
+						} else if (p == -1) {
+							_csArg->pop_front();
+							if (_csArg->size()==1) {
+								p = _csArg->front();
+								if (p == 3) {
+									NSLog(@"132-column mode (re)setting are not supported.");
+								} else {
+								    //NSLog(@"unsupported mode (re)setting <ESC>[?3 ....");
+								}
+							} else {
+								//NSLog(@"unsupported mode (re)setting <ESC>[? ....");
+							}
                         } else {
-//                          NSLog(@"unsupported mode setting %d",p);
+                            //NSLog(@"unsupported mode setting %d",p);
 						}
                         _csArg->pop_front();
                     }
@@ -601,21 +617,25 @@ if (_cursorX <= _column - 1) { \
 					CURSOR_MOVETO(_cursorX,_cursorY-p);
                 } else if (c == CSI_RM ) { // reset mode
                     while (!_csArg->empty()) {
-						NSLog(@"0x%X",(*_csArg)[0]);
                         int p = _csArg->front();
-					    if ((*_csArg)[0] == 0x3F) {
-//							_csArg->pop_front();
-//							p = _csArg->front();
-//							while (!_csArg->empty()) {
-//								_csArg->pop_front();
-//							}
- 							NSLog(@"132-column mode is not supported 0x%XX",(*_csArg)[0]);
-					    } else if (p == 0) {
+					    if (p == 0) {
 							//NSLog(@"ignore re/setting mode 0");
 						} else if (p == 7) {
 							//Disables line wrapping.
+						} else if (p == -1) {
+							_csArg->pop_front();
+							if (_csArg->size()==1) {
+								p = _csArg->front();
+								if (p == 3) {
+									NSLog(@"132-column mode (re)setting are not supported.");
+								} else {
+									//NSLog(@"unsupported mode resetting <ESC>[?3 ....");
+								}
+							} else {
+//							   NSLog(@"unsupported mode resetting <ESC>[? ....");
+							}
 						} else {
-                            NSLog(@"unsupported mode resetting %d",p);
+                            //NSLog(@"unsupported mode resetting %d",p);
 						}
                         _csArg->pop_front();
                     }
