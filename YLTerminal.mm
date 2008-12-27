@@ -609,6 +609,8 @@ if (_cursorX <= _column - 1) { \
                             //NSLog(@"unsupported mode setting %d",p);
 						}
                         _csArg->pop_front();
+						[self clearAll];
+						_cursorX = 0, _cursorY = 0;
                     }
                 } else if (c == CSI_HPB) { // move to Pn Location in backward direction, same raw
 					int p = 1;
@@ -653,6 +655,8 @@ if (_cursorX <= _column - 1) { \
                             //NSLog(@"unsupported mode resetting %d",p);
 						}
                         _csArg->pop_front();
+						[self clearAll];
+						_cursorX = 0, _cursorY = 0;
                     }
                 } else if (c == CSI_SGR) { // Character Attributes
                     if (_csArg->empty()) { // clear
