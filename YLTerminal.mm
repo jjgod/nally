@@ -353,30 +353,38 @@ if (_cursorX <= _column - 1) { \
 
                 if (NO) {                   // code alignment
                 } else if (c == CSI_CUU) {
-                    if (_csArg->size() > 0)
-                        _cursorY -= _csArg->front();
-                    else
+                    if (_csArg->size() > 0) {
+                        int p = _csArg->front();
+						if (p < 1) p = 1;
+						_cursorY -= p;
+                    } else
                         _cursorY--;
                     
                     if (_cursorY < 0) _cursorY = 0;
                 } else if (c == CSI_CUD) {
-                    if (_csArg->size() > 0)
-                        _cursorY += _csArg->front();
-                    else
+                    if (_csArg->size() > 0) {
+                        int p = _csArg->front();
+						if (p < 1) p = 1;
+                        _cursorY += p;
+                    } else
                         _cursorY++;
                     
                     if (_cursorY >= _row) _cursorY = _row - 1;
                 } else if (c == CSI_CUF) {
-                    if (_csArg->size() > 0)
-                        _cursorX += _csArg->front();
-                    else
+                    if (_csArg->size() > 0) {
+                        int p = _csArg->front();
+						if (p < 1) p = 1;
+                        _cursorX += p;
+                    } else
                         _cursorX++;
                     
                     if (_cursorX >= _column) _cursorX = _column - 1;
                 } else if (c == CSI_CUB) {
-                    if (_csArg->size() > 0)
-                        _cursorX -= _csArg->front();
-                    else
+                    if (_csArg->size() > 0) {
+                        int p = _csArg->front();
+						if (p < 1) p = 1;
+                        _cursorX -= p;
+                    } else
                         _cursorX--;
                     
                     if (_cursorX < 0) _cursorX = 0;

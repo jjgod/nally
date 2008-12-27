@@ -104,8 +104,8 @@
 @public
 	unsigned int _row;
 	unsigned int _column;
-	unsigned int _cursorX;
-	unsigned int _cursorY;
+	int _cursorX;
+	int _cursorY;
 	unsigned int _offset;
 	
 	int _savedCursorX;
