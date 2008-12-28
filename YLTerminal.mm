@@ -92,6 +92,10 @@ if (_cursorX <= _column - 1) { \
     _grid[_cursorY][_cursorX].attr.f.url = NO; \
     [self setDirty: YES atRow: _cursorY column: _cursorX]; \
     _cursorX++; \
+} else if (NO && _cursorX == _column) { \
+    _cursorY++; \
+	_cursorX=0; \
+    _cursorX++; \
 }
 
 - (void) feedBytes: (const unsigned char *) bytes length: (int) len connection: (id) connection {
@@ -338,12 +342,24 @@ if (_cursorX <= _column - 1) { \
                     _csBuf->clear();
                 }
             } else if (c == 0x08) { // BS  (Backspace)
-                if (_cursorX > 0)
-                    _cursorX--;
-                _state = TP_NORMAL;
+				if (!_csBuf->empty()) {
+					_csArg->pop_front();
+				}
+			} else if (c == 0x0B) { // VT
+                if (_cursorY == _scrollEndRow) {
+                    cell *emptyLine = _grid[_scrollBeginRow];
+                    [self clearRow: _scrollBeginRow];
+                    
+                    for (x = _scrollBeginRow; x < _scrollEndRow; x++) 
+                        _grid[x] = _grid[x + 1];
+                    _grid[_scrollEndRow] = emptyLine;
+                    [self setAllDirty];
+                } else {
+                    _cursorY++;
+                    if (_cursorY >= _row) _cursorY = _row - 1;
+                }
             } else if (c == 0x0D) { // CR  (Carriage Return)
                 _cursorX = 0;
-                _state = TP_NORMAL;
             } else {
                 if (!_csBuf->empty()) {
                     _csArg->push_back(_csTemp);
@@ -602,6 +618,8 @@ if (_cursorX <= _column - 1) { \
 								} else {
 								    //NSLog(@"unsupported mode (re)setting <ESC>[?3 ....");
 								}
+								//[self clearAll];
+								//_cursorX = 0, _cursorY = 0;
 							} else {
 								//NSLog(@"unsupported mode (re)setting <ESC>[? ....");
 							}
@@ -609,8 +627,6 @@ if (_cursorX <= _column - 1) { \
                             //NSLog(@"unsupported mode setting %d",p);
 						}
                         _csArg->pop_front();
-						[self clearAll];
-						_cursorX = 0, _cursorY = 0;
                     }
                 } else if (c == CSI_HPB) { // move to Pn Location in backward direction, same raw
 					int p = 1;
@@ -649,14 +665,12 @@ if (_cursorX <= _column - 1) { \
 									//NSLog(@"unsupported mode resetting <ESC>[?3 ....");
 								}
 							} else {
-//							   NSLog(@"unsupported mode resetting <ESC>[? ....");
+                              //NSLog(@"unsupported mode resetting <ESC>[? ....");
 							}
 						} else {
                             //NSLog(@"unsupported mode resetting %d",p);
 						}
                         _csArg->pop_front();
-						[self clearAll];
-						_cursorX = 0, _cursorY = 0;
                     }
                 } else if (c == CSI_SGR) { // Character Attributes
                     if (_csArg->empty()) { // clear
