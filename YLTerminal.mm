@@ -92,9 +92,30 @@ if (_cursorX <= _column - 1) { \
     _grid[_cursorY][_cursorX].attr.f.url = NO; \
     [self setDirty: YES atRow: _cursorY column: _cursorX]; \
     _cursorX++; \
-} else if (NO && _cursorX == _column) { \
-    _cursorY++; \
-	_cursorX=0; \
+} else if (_cursorX == _column) { \
+    _cursorX = 0; \
+    if (_cursorY == _scrollEndRow) { \
+    	[_delegate updateBackedImage]; \
+	    [_delegate extendBottomFrom: _scrollBeginRow to: _scrollEndRow]; \
+	    cell *emptyLine = _grid[_scrollBeginRow]; \
+	    [self clearRow: _scrollBeginRow]; \
+	    for (x = _scrollBeginRow; x < _scrollEndRow; x++) \
+		    _grid[x] = _grid[x + 1]; \
+	    _grid[_scrollEndRow] = emptyLine; \
+	    [self setAllDirty]; \
+    } else { \
+	    _cursorY++; \
+	    if (_cursorY >= _row) _cursorY = _row - 1; \
+    } \
+    _grid[_cursorY][_cursorX].byte = c; \
+    _grid[_cursorY][_cursorX].attr.f.fgColor = _fgColor; \
+    _grid[_cursorY][_cursorX].attr.f.bgColor = _bgColor; \
+    _grid[_cursorY][_cursorX].attr.f.bold = _bold; \
+    _grid[_cursorY][_cursorX].attr.f.underline = _underline; \
+    _grid[_cursorY][_cursorX].attr.f.blink = _blink; \
+    _grid[_cursorY][_cursorX].attr.f.reverse = _reverse; \
+    _grid[_cursorY][_cursorX].attr.f.url = NO; \
+    [self setDirty: YES atRow: _cursorY column: _cursorX]; \
     _cursorX++; \
 }
 
