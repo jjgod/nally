@@ -143,9 +143,13 @@ if (_cursorX <= _column - 1) { \
                 [[NSSound soundNamed: @"Whit.aiff"] play];
                 [self setHasMessage: YES];
             } else if (c == C0S_BS ) {
-                if (_cursorX > 0)
+				// When on the right edge, back twice
+				if (_cursorX == _column) {
+					_cursorX -= 2;
+				} else if (_cursorX > 0) {
                     _cursorX--;
-                // If wrap is available, then need to take care of it.
+				}
+                // not yet implement reverse-wrap
             } else if (c == C0S_HT ) { // HT  (Horizontal TABulation)
                 _cursorX=(int(_cursorX/8) + 1) * 8;
                 //mjhsieh: this implement is not yet tested
@@ -456,13 +460,15 @@ if (_cursorX <= _column - 1) { \
                         _cursorX = 0, _cursorY = 0;
                     } else if (_csArg->size() == 1) {
                         if ((*_csArg)[0] < 1) (*_csArg)[0] = 1;
-                        CURSOR_MOVETO(0, _csArg->front() - 1);
+						if (_scrollBeginRow > 0) (*_csArg)[0]+=_scrollBeginRow;
+                        CURSOR_MOVETO(0, (*_csArg)[0] - 1);
                     } else {
                         if ((*_csArg)[0] < 1) (*_csArg)[0] = 1;
                         if ((*_csArg)[1] < 1) (*_csArg)[1] = 1;
-//                        NSLog(@"jump %c, %d x=%d, %d %d", c, _column, _cursorX, (*_csArg)[0], (*_csArg)[1]);
+                        //NSLog(@"jump %c, %d x=%d, %d %d", c, _column, _cursorX, (*_csArg)[0], (*_csArg)[1]);
+						if (_scrollBeginRow > 0) (*_csArg)[0]+=_scrollBeginRow;
                         CURSOR_MOVETO((*_csArg)[1] - 1, (*_csArg)[0] - 1);
-//                        [self setDirty: YES atRow: _cursorY column: _cursorX];
+                        //[self setDirty: YES atRow: _cursorY column: _cursorX];
                     }
                 } else if (c == CSI_ED ) { // Erase Page (cursor does not move)
                     /*  ^[J, ^[0J	: clear from cursor position to end
@@ -615,6 +621,7 @@ if (_cursorX <= _column - 1) { \
                     } else
                         NSLog(@"Ignoring request to clear one horizontal tab stop.");
                 } else if (c == CSI_SM ) {  // set mode
+					int mode_cls=0;
                     while (!_csArg->empty()) {
                         int p = _csArg->front();
                         if (p == 0) {
@@ -636,6 +643,7 @@ if (_cursorX <= _column - 1) { \
 								p = _csArg->front();
 								if (p == 3) {
 									NSLog(@"132-column mode (re)setting are not supported.");
+									mode_cls=1;
 								} else {
 								    //NSLog(@"unsupported mode (re)setting <ESC>[?3 ....");
 								}
@@ -649,6 +657,10 @@ if (_cursorX <= _column - 1) { \
 						}
                         _csArg->pop_front();
                     }
+					if (mode_cls == 1) {
+						[self clearAll];
+					    _cursorX = 0, _cursorY = 0;
+					}
                 } else if (c == CSI_HPB) { // move to Pn Location in backward direction, same raw
 					int p = 1;
                     if (_csArg->size() > 0) {
@@ -670,6 +682,7 @@ if (_cursorX <= _column - 1) { \
                     }
 					CURSOR_MOVETO(_cursorX,_cursorY-p);
                 } else if (c == CSI_RM ) { // reset mode
+					int mode_cls=0;
                     while (!_csArg->empty()) {
                         int p = _csArg->front();
 					    if (p == 0) {
@@ -682,6 +695,7 @@ if (_cursorX <= _column - 1) { \
 								p = _csArg->front();
 								if (p == 3) {
 									NSLog(@"132-column mode (re)setting are not supported.");
+									mode_cls=1;
 								} else {
 									//NSLog(@"unsupported mode resetting <ESC>[?3 ....");
 								}
@@ -693,6 +707,10 @@ if (_cursorX <= _column - 1) { \
 						}
                         _csArg->pop_front();
                     }
+					if (mode_cls == 1) {
+						[self clearAll];
+					    _cursorX = 0, _cursorY = 0;
+					}
                 } else if (c == CSI_SGR) { // Character Attributes
                     if (_csArg->empty()) { // clear
                         _fgColor = 7;
@@ -759,6 +777,7 @@ if (_cursorX <= _column - 1) { \
                         if (s > e) s = (*_csArg)[1], e = (*_csArg)[0];
                         _scrollBeginRow = s - 1;
                         _scrollEndRow = e - 1;
+						NSLog(@"Assigning Scrolling Region between line %d and line %d",s,e);
                     }
                 } else if (c == CSI_SCP) {
                     _savedCursorX = _cursorX;
