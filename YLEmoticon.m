@@ -11,10 +11,11 @@
 
 @implementation YLEmoticon
 
-+ (YLEmoticon *) emoticonWithDictionary: (NSDictionary *) d {
++ (YLEmoticon *) emoticonWithDictionary: (NSDictionary *)dict
+{
     YLEmoticon *e = [[YLEmoticon alloc] init];
 //    [e setName: [d valueForKey: @"name"]];
-    [e setContent: [d valueForKey: @"content"]];
+    [e setContent: [dict valueForKey: @"content"]];
     return [e autorelease];    
 }
 
@@ -23,57 +24,40 @@
     [self setKeys: [NSArray arrayWithObjects: @"content", nil] triggerChangeNotificationsForDependentKey: @"description"];
 }
 
-- (NSDictionary *) dictionaryOfEmoticon {
+- (NSDictionary *) dictionaryOfEmoticon
+{
     return [NSDictionary dictionaryWithObjectsAndKeys: [self content], @"content", nil];
 }
      
-+ (YLEmoticon *) emoticonWithName: (NSString *) n content: (NSString *) c {
-    YLEmoticon *e = [[YLEmoticon alloc] init];
++ (YLEmoticon *) emoticonWithName: (NSString *)n content: (NSString *)c
+{
+    YLEmoticon *e = [YLEmoticon new];
 //    [e setName: n];
     [e setContent: c];
     return [e autorelease];
 }
 
-- (id) init {
-    if (self = [super init]) {
+- (YLEmoticon *) init
+{
+    if ([super init]) {
         [self setContent: @":)"];
-//        [self setName: @"smile"];
     }
     return self;
 }
 
-- (void) dealloc {
+- (void) dealloc
+{
     [_content release];
     [_name release];
     [super dealloc];
 }
 
-- (NSString *)content {
-    return [[_content retain] autorelease];
-}
+@synthesize name = _name;
+@synthesize content = _content;
 
-- (void)setContent:(NSString *)value {
-    if (_content != value) {
-        [_content release];
-        _content = [value copy];
-    }
-}
-
-- (NSString *)name {
-    return [[_name retain] autorelease];
-}
-
-- (void)setName:(NSString *)value {
-    if (_name != value) {
-        [_name release];
-        _name = [value copy];
-    }
-}
-
-- (NSString *) description {
+- (NSString *) description
+{
     return [NSString stringWithFormat: @"%@", [[[self content] componentsSeparatedByString: @"\n"] componentsJoinedByString: @""]];
 }
-
-- (void) setDescription: (NSString *) d { }
 
 @end

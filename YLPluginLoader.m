@@ -14,7 +14,7 @@ NSString * const kPrefixBundleIDStr = @"org.yllan.Nally.Plugin";
 
 - (id) init
 {
-    if (self = [super init])
+    if ([super init])
     {
         bundleInstanceList = [[NSMutableArray alloc] init];
         [NSThread detachNewThreadSelector: @selector(startSearch:)
@@ -25,7 +25,7 @@ NSString * const kPrefixBundleIDStr = @"org.yllan.Nally.Plugin";
     return self;
 }
 
-- (void) startSearch: (id) idObject
+- (void) startSearch: (id)idObject
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     NSString *currPath;
@@ -66,7 +66,7 @@ NSString * const kPrefixBundleIDStr = @"org.yllan.Nally.Plugin";
     [pool release];
 }
 
-- (Class) loadBundleAtPath: (NSString *) path
+- (Class) loadBundleAtPath: (NSString *)path
 {
     NSBundle *currBundle = [NSBundle bundleWithPath: path];
     NSRange searchRange = NSMakeRange(0, [kPrefixBundleIDStr length]);
@@ -96,7 +96,7 @@ NSString * const kPrefixBundleIDStr = @"org.yllan.Nally.Plugin";
     return nil;
 }
 
-- (void) feedData: (NSData *) data
+- (void) feedData: (NSData *)data
 {
 }
 

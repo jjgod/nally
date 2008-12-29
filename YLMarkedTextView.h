@@ -18,19 +18,10 @@
 	NSPoint _destination;
 }
 
-- (NSAttributedString *)string;
-- (void)setString:(NSAttributedString *)value;
-
-- (NSRange)markedRange;
-- (void)setMarkedRange:(NSRange)value;
-
-- (NSRange)selectedRange;
-- (void)setSelectedRange:(NSRange)value;
-
-- (NSFont *)defaultFont;
-- (void)setDefaultFont:(NSFont *)value;
-
-- (NSPoint)destination;
-- (void)setDestination:(NSPoint)value;
+@property (copy) NSAttributedString *string;
+@property NSRange markedRange;
+@property NSRange selectedRange;
+@property (retain) NSFont *defaultFont;
+@property NSPoint destination;
 
 @end

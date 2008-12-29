@@ -9,7 +9,7 @@
 #import <Cocoa/Cocoa.h>
 #import "YLConnection.h"
 
-@interface YLSSH : YLConnection <YLConnectionProtocol> {
+@interface YLSSH : YLConnection {
     pid_t _pid;
     int _fileDescriptor;
     BOOL _loginAsBBS;

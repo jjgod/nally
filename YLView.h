@@ -36,39 +36,36 @@ extern "C" {
     int _selectionLength;
 }
 
-- (void) configure ;
+- (void) configure;
 
-- (void) pasteWrap: (id) sender ;
-- (void) paste: (id) sender ;
-- (void) pasteColor: (id) sender ;
+- (IBAction) pasteWrap: (id)sender;
+- (IBAction) paste: (id)sender;
+- (IBAction) pasteColor: (id)sender;
 
-- (void) displayCellAtRow: (int) r column: (int) c;
+- (void) displayCellAtRow: (int)r column: (int)c;
 - (void) updateBackedImage;
-- (void) drawSpecialSymbol: (unichar) ch forRow: (int) r column: (int) c leftAttribute: (attribute) attr1 rightAttribute: (attribute) attr2 ;
-- (void) drawSelection ;
-- (void) drawBlink ;
+- (void) drawSpecialSymbol: (unichar)ch forRow: (int)r column: (int)c leftAttribute: (attribute)attr1 rightAttribute: (attribute)attr2;
+- (void) drawSelection;
+- (void) drawBlink;
 - (void) refreshHiddenRegion;
 
 - (void) clearSelection;
 
 - (YLTerminal *) frontMostTerminal;
 - (YLConnection *) frontMostConnection;
-- (BOOL)connected;
+- (BOOL) connected;
 
-- (void) extendBottomFrom: (int) start to: (int) end;
-- (void) extendTopFrom: (int) start to: (int) end ;
+- (void) extendBottomFrom: (int)start to: (int)end;
+- (void) extendTopFrom: (int)start to: (int)end;
 
-- (void) drawStringForRow: (int) r context: (CGContextRef) myCGContext ;
-- (void) updateBackgroundForRow: (int) r from: (int) start to: (int) end ;
+- (void) drawStringForRow: (int)r context: (CGContextRef)myCGContext;
+- (void) updateBackgroundForRow: (int)r from: (int)start to: (int)end;
 
-- (int)x;
-- (void)setX:(int)value;
+@property int x;
+@property int y;
 
-- (int)y;
-- (void)setY:(int)value;
+- (NSString *) selectedPlainString;
+- (BOOL) hasBlinkCell;
 
-- (NSString *) selectedPlainString ;
-- (BOOL) hasBlinkCell ;
-
-- (void) insertText: (id) aString withDelay: (int) microsecond ;
+- (void) insertText: (id)aString withDelay: (int)microsecond;
 @end

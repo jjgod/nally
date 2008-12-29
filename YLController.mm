@@ -14,18 +14,18 @@
 #import "YLEmoticon.h"
 
 @interface NSWindow (YLAdditions)
-- (void) _setContentHasShadow: (BOOL) has;
+- (void) _setContentHasShadow: (BOOL)hasShadow;
 @end
 
 @interface YLController (Private)
-- (BOOL)tabView:(NSTabView *)tabView shouldCloseTabViewItem:(NSTabViewItem *)tabViewItem ;
-- (void)tabView:(NSTabView *)tabView willCloseTabViewItem:(NSTabViewItem *)tabViewItem ;
-- (void)tabView:(NSTabView *)tabView didCloseTabViewItem:(NSTabViewItem *)tabViewItem ;
+- (BOOL)tabView: (NSTabView *)tabView shouldCloseTabViewItem: (NSTabViewItem *)tabViewItem;
+- (void)tabView: (NSTabView *)tabView willCloseTabViewItem: (NSTabViewItem *)tabViewItem;
+- (void)tabView: (NSTabView *)tabView didCloseTabViewItem: (NSTabViewItem *)tabViewItem;
 @end
 
 @implementation YLController
-
-- (void) awakeFromNib {
+- (void) awakeFromNib 
+{
     // Register URL
     [[NSAppleEventManager sharedAppleEventManager] setEventHandler:self andSelector:@selector(getUrl:withReplyEvent:) forEventClass:kInternetEventClass andEventID:kAEGetURL];
     
@@ -36,10 +36,7 @@
                             @"colorYellow", @"colorYellowHilite", @"colorBlue", @"colorBlueHilite", @"colorMagenta", @"colorMagentaHilite", 
                             @"colorCyan", @"colorCyanHilite", @"colorWhite", @"colorWhiteHilite", @"colorBG", @"colorBGHilite", nil];
     for (NSString *key in observeKeys)
-        [[YLLGlobalConfig sharedInstance] addObserver: self
-                                           forKeyPath: key
-                                              options: (NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
-                                              context: NULL];
+        [[YLLGlobalConfig sharedInstance] addObserver: self forKeyPath: key options: (NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context: NULL];
 
     [_tab setCanCloseOnlyTab: YES];
     /* Trigger the KVO to update the information properly. */
@@ -61,9 +58,7 @@
         [self loadLastConnections];
     
     [NSTimer scheduledTimerWithTimeInterval: 120 target: self selector: @selector(antiIdle:) userInfo: nil repeats: YES];
-    [NSTimer scheduledTimerWithTimeInterval: 1 target: self selector: @selector(updateBlinkTicker:) userInfo: nil repeats: YES];
-
-    
+    [NSTimer scheduledTimerWithTimeInterval: 1 target: self selector: @selector(updateBlinkTicker:) userInfo: nil repeats: YES];    
 }
 
 - (void) dealloc
@@ -72,22 +67,24 @@
     [super dealloc];
 }
 
-- (void) updateSitesMenu {
+- (void) updateSitesMenu
+{
     int total = [[_sitesMenu submenu] numberOfItems] ;
     int i;
     for (i = 3; i < total; i++) {
         [[_sitesMenu submenu] removeItemAtIndex: 3];
     }
     
-    for (YLSite *s in _sites) {
-        NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle: [s name] ?: @"" action: @selector(openSiteMenu:) keyEquivalent: @""];
-        [menuItem setRepresentedObject: s];
+    for (YLSite *site in _sites) {
+        NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle: [site name] ?: @"" action: @selector(openSiteMenu:) keyEquivalent: @""];
+        [menuItem setRepresentedObject: site];
         [[_sitesMenu submenu] addItem: menuItem];
         [menuItem release];
     }
 }
 
-- (void) updateEncodingMenu {
+- (void) updateEncodingMenu 
+{
     // Update encoding menu status
     NSMenu *m = [_encodingMenuItem submenu];
     int i;
@@ -99,37 +96,39 @@
     }
 }
 
-- (void) updateBlinkTicker: (NSTimer *) t {
+- (void) updateBlinkTicker: (NSTimer *)timer
+{
     [[YLLGlobalConfig sharedInstance] updateBlinkTicker];
     if ([_telnetView hasBlinkCell])
         [_telnetView setNeedsDisplay: YES];
 }
 
-- (void) antiIdle: (NSTimer *) t {
+- (void) antiIdle: (NSTimer *)timer
+{
     if (![[NSUserDefaults standardUserDefaults] boolForKey: @"AntiIdle"]) return;
-    NSArray *a = [_telnetView tabViewItems];
-    for (NSTabViewItem *item in a) {
+    NSArray *tabs = [_telnetView tabViewItems];
+    for (NSTabViewItem *item in tabs) {
         id telnet = [item identifier];
         if ([telnet connected] && [telnet lastTouchDate] && [[NSDate date] timeIntervalSinceDate: [telnet lastTouchDate]] >= 119) {
-//            unsigned char msg[] = {0x1B, 'O', 'A', 0x1B, 'O', 'B'};
             unsigned char msg[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-            [telnet sendBytes:msg length:6];
+            [telnet sendBytes: msg length: 6];
         }
     }
 }
 
-- (void) newConnectionWithSite: (YLSite *) s {
+- (void) newConnectionWithSite: (YLSite *)site
+{
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
     
 	id terminal = [YLTerminal new];
-    YLConnection *connection = [YLConnection connectionWithAddress: [s address]];
+    YLConnection *connection = [YLConnection connectionWithAddress: [site address]];
     
     BOOL emptyTab = [_telnetView frontMostConnection] && ([_telnetView frontMostTerminal] == nil);
     
-    [terminal setEncoding: [s encoding]];
+    [terminal setEncoding: [site encoding]];
 	[connection setTerminal: terminal];
-    [connection setConnectionName: [s name]];
-    [connection setConnectionAddress: [s address]];
+    [connection setConnectionName: [site name]];
+    [connection setConnectionAddress: [site address]];
 	[terminal setDelegate: _telnetView];
     [terminal setPluginLoader: _pluginLoader];
     
@@ -143,9 +142,9 @@
         [_telnetView addTabViewItem: tabItem];
     }
     
-    [tabItem setLabel: [s name]];
+    [tabItem setLabel: [site name]];
 	
-	[connection connectToSite: s];
+	[connection connectToSite: site];
     [_telnetView selectTabViewItem: tabItem];
     [terminal release];
     [self refreshTabLabelNumber: _telnetView];
@@ -158,10 +157,8 @@
 #pragma mark -
 #pragma mark KVO
 
-- (void)observeValueForKeyPath:(NSString *)keyPath
-                      ofObject:(id)object
-                        change:(NSDictionary *)change
-                       context:(void *)context {
+- (void) observeValueForKeyPath: (NSString *)keyPath ofObject: (id)object change: (NSDictionary *)change context: (void *)context
+{
     if ([keyPath isEqualToString: @"showHiddenText"]) {
         if ([[YLLGlobalConfig sharedInstance] showHiddenText]) 
             [_showHiddenTextMenuItem setState: NSOnState];
@@ -211,58 +208,65 @@
 #pragma mark -
 #pragma mark User Defaults
 
-- (void) loadSites {
-    NSArray *array = [[NSUserDefaults standardUserDefaults] arrayForKey: @"Sites"];
-    for (NSDictionary *d in array) 
-        [self insertObject: [YLSite siteWithDictionary: d] inSitesAtIndex: [self countOfSites]];    
+- (void) loadSites
+{
+    NSArray *dictionaries = [[NSUserDefaults standardUserDefaults] arrayForKey: @"Sites"];
+    for (NSDictionary *siteDictionay in dictionaries) 
+        [self insertObject: [YLSite siteWithDictionary: siteDictionay] inSitesAtIndex: [self countOfSites]];    
 }
 
-- (void) saveSites {
-    NSMutableArray *a = [NSMutableArray array];
-    for (YLSite *s in _sites) 
-        [a addObject: [s dictionaryOfSite]];
-    [[NSUserDefaults standardUserDefaults] setObject: a forKey: @"Sites"];
+- (void) saveSites
+{
+    NSMutableArray *dictionaries = [NSMutableArray array];
+    for (YLSite *site in _sites) 
+        [dictionaries addObject: [site dictionaryOfSite]];
+    [[NSUserDefaults standardUserDefaults] setObject: dictionaries forKey: @"Sites"];
     [[NSUserDefaults standardUserDefaults] synchronize];
     [self updateSitesMenu];
 }
 
-- (void) loadEmoticons {
-    NSArray *a = [[NSUserDefaults standardUserDefaults] arrayForKey: @"Emoticons"];
-    for (NSDictionary *d in a)
-        [self insertObject: [YLEmoticon emoticonWithDictionary: d] inEmoticonsAtIndex: [self countOfEmoticons]];
+- (void) loadEmoticons
+{
+    NSArray *dictionaries = [[NSUserDefaults standardUserDefaults] arrayForKey: @"Emoticons"];
+    for (NSDictionary *emoticonDictionary in dictionaries)
+        [self insertObject: [YLEmoticon emoticonWithDictionary: emoticonDictionary] inEmoticonsAtIndex: [self countOfEmoticons]];
 }
 
-- (void) saveEmoticons {
-    NSMutableArray *a = [NSMutableArray array];
-    for (YLEmoticon *e in _emoticons) 
-        [a addObject: [e dictionaryOfEmoticon]];
-    [[NSUserDefaults standardUserDefaults] setObject: a forKey: @"Emoticons"];    
+- (void) saveEmoticons 
+{
+    NSMutableArray *dictionaries = [NSMutableArray array];
+    for (YLEmoticon *emoticon in _emoticons) 
+        [dictionaries addObject: [emoticon dictionaryOfEmoticon]];
+    [[NSUserDefaults standardUserDefaults] setObject: dictionaries forKey: @"Emoticons"];    
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
-- (void) loadLastConnections {
-    NSArray *a = [[NSUserDefaults standardUserDefaults] arrayForKey: @"LastConnections"];
-    for (NSDictionary *d in a) {
-        [self newConnectionWithSite: [YLSite siteWithDictionary: d]];
+- (void) loadLastConnections 
+{
+    NSArray *dictionaries = [[NSUserDefaults standardUserDefaults] arrayForKey: @"LastConnections"];
+    for (NSDictionary *siteDictionay in dictionaries) {
+        [self newConnectionWithSite: [YLSite siteWithDictionary: siteDictionay]];
     }    
 }
 
-- (void) saveLastConnections {
+- (void) saveLastConnections 
+{
     int tabNumber = [_telnetView numberOfTabViewItems];
     int i;
-    NSMutableArray *a = [NSMutableArray array];
+    NSMutableArray *dictionaries = [NSMutableArray array];
     for (i = 0; i < tabNumber; i++) {
         id connection = [[_telnetView tabViewItemAtIndex: i] identifier];
         if ([connection terminal]) // not empty tab
-            [a addObject: [[connection site] dictionaryOfSite]];
+            [dictionaries addObject: [[connection site] dictionaryOfSite]];
     }
-    [[NSUserDefaults standardUserDefaults] setObject: a forKey: @"LastConnections"];
+    [[NSUserDefaults standardUserDefaults] setObject: dictionaries forKey: @"LastConnections"];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 #pragma mark -
 #pragma mark Actions
-- (IBAction) setDetectDoubleByteAction: (id) sender {
+- (IBAction) setDetectDoubleByteAction: (id)sender
+{
     BOOL ddb = [sender state];
     if ([sender isKindOfClass: [NSMenuItem class]])
         ddb = !ddb;
@@ -271,7 +275,8 @@
     [_detectDoubleByteMenuItem setState: ddb ? NSOnState : NSOffState];
 }
 
-- (IBAction) setEncoding: (id) sender {
+- (IBAction) setEncoding: (id)sender
+{
     int index = [[_encodingMenuItem submenu] indexOfItem: sender];
     if ([_telnetView frontMostTerminal]) {
         [[_telnetView frontMostTerminal] setEncoding: (YLEncoding)index];
@@ -282,7 +287,8 @@
     }
 }
 
-- (IBAction) newTab: (id) sender {
+- (IBAction) newTab: (id)sender
+{
     YLConnection *connection = [YLConnection new];
     [connection setConnectionAddress: @""];
     [connection setConnectionName: @""];
@@ -299,7 +305,8 @@
     [connection release];
 }
 
-- (IBAction) connect: (id) sender {
+- (IBAction) connect: (id)sender
+{
 	[sender abortEditing];
 	[[_telnetView window] makeFirstResponder: _telnetView];
     BOOL ssh = NO;
@@ -314,7 +321,7 @@
         name = [name substringFromIndex: 6];
     
     NSMutableArray *matchedSites = [NSMutableArray array];
-    YLSite *s = [YLSite site];
+    YLSite *connectSite = [YLSite site];
         
     if ([name rangeOfString: @"."].location != NSNotFound) { /* Normal address */        
         for (YLSite *site in _sites) 
@@ -322,13 +329,13 @@
                 [matchedSites addObject: site];
         if ([matchedSites count] > 0) {
             [matchedSites sortUsingDescriptors: [NSArray arrayWithObject: [[[NSSortDescriptor alloc] initWithKey:@"address.length" ascending:YES] autorelease]]];
-            s = [[[matchedSites objectAtIndex: 0] copy] autorelease];
+            connectSite = [[[matchedSites objectAtIndex: 0] copy] autorelease];
         } else {
-            [s setAddress: name];
-            [s setName: name];
-            [s setEncoding: [[YLLGlobalConfig sharedInstance] defaultEncoding]];
-            [s setAnsiColorKey: [[YLLGlobalConfig sharedInstance] defaultANSIColorKey]];
-            [s setDetectDoubleByte: [[YLLGlobalConfig sharedInstance] detectDoubleByte]];
+            [connectSite setAddress: name];
+            [connectSite setName: name];
+            [connectSite setEncoding: [[YLLGlobalConfig sharedInstance] defaultEncoding]];
+            [connectSite setAnsiColorKey: [[YLLGlobalConfig sharedInstance] defaultANSIColorKey]];
+            [connectSite setDetectDoubleByte: [[YLLGlobalConfig sharedInstance] detectDoubleByte]];
         }
     } else { /* Short Address? */
         for (YLSite *site in _sites) 
@@ -342,50 +349,56 @@
             [matchedSites sortUsingDescriptors: [NSArray arrayWithObject: [[[NSSortDescriptor alloc] initWithKey:@"address.length" ascending:YES] autorelease]]];
         } 
         if ([matchedSites count] > 0) {
-            s = [[[matchedSites objectAtIndex: 0] copy] autorelease];
+            connectSite = [[[matchedSites objectAtIndex: 0] copy] autorelease];
         } else {
-            [s setAddress: [sender stringValue]];
-            [s setName: name];
-            [s setEncoding: [[YLLGlobalConfig sharedInstance] defaultEncoding]];
-            [s setAnsiColorKey: [[YLLGlobalConfig sharedInstance] defaultANSIColorKey]];
-            [s setDetectDoubleByte: [[YLLGlobalConfig sharedInstance] detectDoubleByte]];
+            [connectSite setAddress: [sender stringValue]];
+            [connectSite setName: name];
+            [connectSite setEncoding: [[YLLGlobalConfig sharedInstance] defaultEncoding]];
+            [connectSite setAnsiColorKey: [[YLLGlobalConfig sharedInstance] defaultANSIColorKey]];
+            [connectSite setDetectDoubleByte: [[YLLGlobalConfig sharedInstance] detectDoubleByte]];
         }
     }
-    [self newConnectionWithSite: s];
-    [sender setStringValue: [s address]];
+    [self newConnectionWithSite: connectSite];
+    [sender setStringValue: [connectSite address]];
 }
 
-- (IBAction) openLocation: (id) sender {
+- (IBAction) openLocation: (id)sender
+{
     [_mainWindow makeKeyAndOrderFront: self];
 	[_telnetView resignFirstResponder];
 	[_addressBar becomeFirstResponder];
 }
 
-- (IBAction) reconnect: (id) sender {
+- (IBAction) reconnect: (id)sender
+{
     [[_telnetView frontMostConnection] reconnect];
 }
 
-- (IBAction) selectNextTab: (id) sender {
+- (IBAction) selectNextTab: (id)sender
+{
     if ([_telnetView indexOfTabViewItem: [_telnetView selectedTabViewItem]] == [_telnetView numberOfTabViewItems] - 1)
         [_telnetView selectFirstTabViewItem: self];
     else
         [_telnetView selectNextTabViewItem: self];
 }
 
-- (IBAction) selectPrevTab: (id) sender {
+- (IBAction) selectPrevTab: (id)sender
+{
     if ([_telnetView indexOfTabViewItem: [_telnetView selectedTabViewItem]] == 0)
         [_telnetView selectLastTabViewItem: self];
     else
         [_telnetView selectPreviousTabViewItem: self];
 }
 
-- (IBAction) selectTabNumber: (int) index {
+- (IBAction) selectTabNumber: (int)index
+{
     if (index <= [_telnetView numberOfTabViewItems]) {
         [_telnetView selectTabViewItemAtIndex: index - 1];
     }
 }
 
-- (IBAction) closeTab: (id) sender {
+- (IBAction) closeTab: (id)sender
+{
     if ([_telnetView numberOfTabViewItems] == 0) return;
     
     NSTabViewItem *tabItem = [_telnetView selectedTabViewItem];
@@ -397,47 +410,48 @@
     }
 }
 
-- (IBAction) editSites: (id) sender {
-    [NSApp beginSheet: _sitesWindow
-       modalForWindow: _mainWindow
-        modalDelegate: nil
-       didEndSelector: NULL
-          contextInfo: nil];
+- (IBAction) editSites: (id)sender
+{
+    [NSApp beginSheet: _sitesWindow modalForWindow: _mainWindow modalDelegate: nil didEndSelector: NULL contextInfo: nil];
 }
 
-- (IBAction) openSites: (id) sender {
-    NSArray *a = [_sitesController selectedObjects];
+- (IBAction) openSites: (id)sender
+{
+    NSArray *selectedSites = [_sitesController selectedObjects];
     [self closeSites: sender];
     
-    if ([a count] == 1) {
-        YLSite *s = [a objectAtIndex: 0];
+    if ([selectedSites count] == 1) {
+        YLSite *s = [selectedSites objectAtIndex: 0];
         [self newConnectionWithSite: [[s copy] autorelease]];
     }
 }
 
-- (IBAction) openSiteMenu: (id) sender {
-    YLSite *s = [sender representedObject];
-    [self newConnectionWithSite: s];
+- (IBAction) openSiteMenu: (id)sender
+{
+    YLSite *site = [sender representedObject];
+    [self newConnectionWithSite: site];
 }
 
-- (IBAction) closeSites: (id) sender {
+- (IBAction) closeSites: (id)sender
+{
     [_sitesWindow endEditingFor: nil];
     [NSApp endSheet: _sitesWindow];
     [_sitesWindow orderOut: self];
     [self saveSites];
 }
 
-- (IBAction) addSites: (id) sender {
+- (IBAction) addSites: (id)sender
+{
     if ([_telnetView numberOfTabViewItems] == 0) return;
     NSString *address = [[_telnetView frontMostConnection] connectionAddress];
     
-    for (YLSite *s in _sites) 
-        if ([[s address] isEqualToString: address]) 
+    for (YLSite *site in _sites) 
+        if ([[site address] isEqualToString: address]) 
             return;
     
-    YLSite *s = [[[[_telnetView frontMostConnection] site] copy] autorelease];
-    [_sitesController addObject: s];
-    [_sitesController setSelectedObjects: [NSArray arrayWithObject: s]];
+    YLSite *site = [[[[_telnetView frontMostConnection] site] copy] autorelease];
+    [_sitesController addObject: site];
+    [_sitesController setSelectedObjects: [NSArray arrayWithObject: site]];
     [self performSelector: @selector(editSites:) withObject: sender afterDelay: 0.1];
     if ([_siteNameField acceptsFirstResponder])
         [_sitesWindow makeFirstResponder: _siteNameField];
@@ -445,11 +459,11 @@
 
 
 
-- (IBAction) showHiddenText: (id) sender {
+- (IBAction) showHiddenText: (id)sender
+{
     BOOL show = ([sender state] == NSOnState);
-    if ([sender isKindOfClass: [NSMenuItem class]]) {
+    if ([sender isKindOfClass: [NSMenuItem class]])
         show = !show;
-    }
 
     [[YLLGlobalConfig sharedInstance] setShowHiddenText: show];
     [_telnetView refreshHiddenRegion];
@@ -457,30 +471,34 @@
     [_telnetView setNeedsDisplay: YES];
 }
 
-- (IBAction) openPreferencesWindow: (id) sender {
+- (IBAction) openPreferencesWindow: (id)sender
+{
     [[DBPrefsWindowController sharedPrefsWindowController] showWindow:nil];
 }
 
-- (IBAction) openEmoticonsWindow: (id) sender {
+- (IBAction) openEmoticonsWindow: (id)sender
+{
     [_emoticonsWindow makeKeyAndOrderFront: self];
 }
 
-- (IBAction) closeEmoticons: (id) sender {
+- (IBAction) closeEmoticons: (id)sender
+{
     [_emoticonsWindow endEditingFor: nil];
     [_emoticonsWindow makeFirstResponder: _emoticonsWindow];
     [_emoticonsWindow orderOut: self];
     [self saveEmoticons];
 }
 
-- (IBAction) inputEmoticons: (id) sender {
+- (IBAction) inputEmoticons: (id)sender
+{
     [self closeEmoticons: sender];
     
     if ([[_telnetView frontMostConnection] connected]) {
-        NSArray *a = [_emoticonsController selectedObjects];
+        NSArray *selectedEmoticons = [_emoticonsController selectedObjects];
         
-        if ([a count] == 1) {
-            YLEmoticon *e = [a objectAtIndex: 0];
-            [_telnetView insertText: [e content]];
+        if ([selectedEmoticons count] == 1) {
+            YLEmoticon *emoticon = [selectedEmoticons objectAtIndex: 0];
+            [_telnetView insertText: [emoticon content]];
         }
     }
 }
@@ -488,109 +506,121 @@
 #pragma mark -
 #pragma mark Accessor
 
-- (NSArray *)sites {
+- (NSArray *) sites
+{
     if (!_sites) {
         _sites = [[NSMutableArray alloc] init];
     }
     return [[_sites retain] autorelease];
 }
 
-- (unsigned)countOfSites {
+- (unsigned) countOfSites
+{
     if (!_sites) {
         _sites = [[NSMutableArray alloc] init];
     }
     return [_sites count];
 }
 
-- (id)objectInSitesAtIndex:(unsigned)theIndex {
+- (id) objectInSitesAtIndex: (unsigned)theIndex
+{
     if (!_sites) {
         _sites = [[NSMutableArray alloc] init];
     }
-    return [_sites objectAtIndex:theIndex];
+    return [_sites objectAtIndex: theIndex];
 }
 
-- (void)getSites:(id *)objsPtr range:(NSRange)range {
+- (void) getSites: (id *)objsPtr range: (NSRange)range
+{
     if (!_sites) {
         _sites = [[NSMutableArray alloc] init];
     }
-    [_sites getObjects:objsPtr range:range];
+    [_sites getObjects: objsPtr range: range];
 }
 
-- (void)insertObject:(id)obj inSitesAtIndex:(unsigned)theIndex {
+- (void) insertObject: (id)obj inSitesAtIndex: (unsigned)theIndex
+{
     if (!_sites) {
         _sites = [[NSMutableArray alloc] init];
     }
-    [_sites insertObject:obj atIndex:theIndex];
+    [_sites insertObject: obj atIndex: theIndex];
 }
 
-- (void)removeObjectFromSitesAtIndex:(unsigned)theIndex {
+- (void) removeObjectFromSitesAtIndex: (unsigned)theIndex
+{
     if (!_sites) {
         _sites = [[NSMutableArray alloc] init];
     }
-    [_sites removeObjectAtIndex:theIndex];
+    [_sites removeObjectAtIndex: theIndex];
 }
 
-- (void)replaceObjectInSitesAtIndex:(unsigned)theIndex withObject:(id)obj {
+- (void) replaceObjectInSitesAtIndex: (unsigned)theIndex withObject: (id)obj
+{
     if (!_sites) {
         _sites = [[NSMutableArray alloc] init];
     }
 }
 
-- (NSArray *)emoticons {
+- (NSArray *) emoticons
+{
     if (!_emoticons) {
         _emoticons = [[NSMutableArray alloc] init];
     }
     return [[_emoticons retain] autorelease];
 }
 
-- (unsigned)countOfEmoticons {
+- (unsigned) countOfEmoticons
+{
     if (!_emoticons) {
         _emoticons = [[NSMutableArray alloc] init];
     }
     return [_emoticons count];
 }
 
-- (id)objectInEmoticonsAtIndex:(unsigned)theIndex {
+- (id) objectInEmoticonsAtIndex: (unsigned)theIndex
+{
     if (!_emoticons) {
         _emoticons = [[NSMutableArray alloc] init];
     }
-    return [_emoticons objectAtIndex:theIndex];
+    return [_emoticons objectAtIndex: theIndex];
 }
 
-- (void)getEmoticons:(id *)objsPtr range:(NSRange)range {
+- (void) getEmoticons: (id *)objsPtr range: (NSRange)range
+{
     if (!_emoticons) {
         _emoticons = [[NSMutableArray alloc] init];
     }
-    [_emoticons getObjects:objsPtr range:range];
+    [_emoticons getObjects: objsPtr range: range];
 }
 
-- (void)insertObject:(id)obj inEmoticonsAtIndex:(unsigned)theIndex {
+- (void) insertObject: (id)obj inEmoticonsAtIndex: (unsigned)theIndex
+{
     if (!_emoticons) {
         _emoticons = [[NSMutableArray alloc] init];
     }
-    [_emoticons insertObject:obj atIndex:theIndex];
+    [_emoticons insertObject: obj atIndex: theIndex];
 }
 
-- (void)removeObjectFromEmoticonsAtIndex:(unsigned)theIndex {
+- (void) removeObjectFromEmoticonsAtIndex: (unsigned)theIndex
+{
     if (!_emoticons) {
         _emoticons = [[NSMutableArray alloc] init];
     }
-    [_emoticons removeObjectAtIndex:theIndex];
+    [_emoticons removeObjectAtIndex: theIndex];
 }
 
-- (void)replaceObjectInEmoticonsAtIndex:(unsigned)theIndex withObject:(id)obj {
+- (void) replaceObjectInEmoticonsAtIndex: (unsigned)theIndex withObject: (id)obj
+{
     if (!_emoticons) {
         _emoticons = [[NSMutableArray alloc] init];
     }
-    [_emoticons replaceObjectAtIndex:theIndex withObject:obj];
+    [_emoticons replaceObjectAtIndex: theIndex withObject: obj];
 }
-
-- (IBOutlet) view { return _telnetView; }
-- (void) setView: (IBOutlet) o {}
 
 #pragma mark -
 #pragma mark Application Delegation
-- (BOOL) validateMenuItem: (NSMenuItem *) item {
+- (BOOL) validateMenuItem: (NSMenuItem *)item
+{
     SEL action = [item action];
     if ((action == @selector(addSites:) ||
          action == @selector(reconnect:) ||
@@ -604,12 +634,14 @@
     return YES;
 }
 
-- (BOOL) applicationShouldHandleReopen: (id) s hasVisibleWindows: (BOOL) b {
+- (BOOL) applicationShouldHandleReopen: (id)s hasVisibleWindows: (BOOL)b
+{
     [_mainWindow makeKeyAndOrderFront: self];
     return NO;
 } 
 
-- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
+- (NSApplicationTerminateReply) applicationShouldTerminate: (NSApplication *)sender
+{
     int tabNumber = [_telnetView numberOfTabViewItems];
     int i;
     
@@ -638,12 +670,14 @@
     return NSTerminateLater;
 }
 
-- (void) confirmSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void  *)contextInfo {
+- (void) confirmSheetDidEnd: (NSWindow *)sheet returnCode: (int)returnCode contextInfo: (void  *)contextInfo
+{
     [[NSUserDefaults standardUserDefaults] synchronize];
     [NSApp replyToApplicationShouldTerminate: (returnCode == NSAlertDefaultReturn)];
 }
 
-- (void) confirmSheetDidDismiss:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void  *)contextInfo {
+- (void) confirmSheetDidDismiss: (NSWindow *)sheet returnCode: (int)returnCode contextInfo: (void  *)contextInfo
+{
     [[NSUserDefaults standardUserDefaults] synchronize];
     [NSApp replyToApplicationShouldTerminate: (returnCode == NSAlertDefaultReturn)];
 }
@@ -651,28 +685,33 @@
 #pragma mark -
 #pragma mark Window Delegation
 
-- (BOOL) windowShouldClose: (id) window {
+- (BOOL) windowShouldClose: (id)window
+{
     [_mainWindow orderOut: self];
     return NO;
 }
 
-- (BOOL) windowWillClose: (id) window {
+- (BOOL) windowWillClose: (id)window
+{
 //    [NSApp terminate: self];
 //    NSLog(@"WILL");
     return NO;
 }
 
-- (void) windowDidBecomeKey: (NSNotification *) notification {
+- (void) windowDidBecomeKey: (NSNotification *)notification
+{
     [_closeWindowMenuItem setKeyEquivalentModifierMask: NSCommandKeyMask | NSShiftKeyMask];
     [_closeTabMenuItem setKeyEquivalent: @"w"];
 }
 
-- (void) windowDidResignKey: (NSNotification *) notification {
+- (void) windowDidResignKey: (NSNotification *)notification
+{
     [_closeWindowMenuItem setKeyEquivalentModifierMask: NSCommandKeyMask];
     [_closeTabMenuItem setKeyEquivalent: @""];
 }
 
-- (void)getUrl:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent {
+- (void) getUrl: (NSAppleEventDescriptor *)event withReplyEvent: (NSAppleEventDescriptor *)replyEvent
+{
 	NSString *url = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
 	// now you can create an NSURL and grab the necessary parts
     if ([[url lowercaseString] hasPrefix: @"bbs://"])
@@ -684,14 +723,16 @@
 #pragma mark -
 #pragma mark Tab Delegation
 
-- (void) confirmTabSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void  *)contextInfo {
+- (void) confirmTabSheetDidEnd: (NSWindow *)sheet returnCode: (int)returnCode contextInfo: (void  *)contextInfo
+{
     if (returnCode == NSAlertDefaultReturn) {
         [[[(id)contextInfo identifier] terminal] setHasMessage: NO];
         [_telnetView removeTabViewItem: (id)contextInfo];
     }
 }
 
-- (BOOL)tabView:(NSTabView *)tabView shouldCloseTabViewItem:(NSTabViewItem *)tabViewItem {
+- (BOOL) tabView: (NSTabView *)tabView shouldCloseTabViewItem: (NSTabViewItem *)tabViewItem
+{
     if (![[tabViewItem identifier] connected]) return YES;
     if (![[NSUserDefaults standardUserDefaults] boolForKey: @"ConfirmOnClose"]) return YES;
     NSBeginAlertSheet(NSLocalizedString(@"Are you sure you want to close this tab?", @"Sheet Title"), 
@@ -706,13 +747,16 @@
     return NO;
 }
 
-- (void)tabView:(NSTabView *)tabView willCloseTabViewItem:(NSTabViewItem *)tabViewItem {
+- (void) tabView: (NSTabView *)tabView willCloseTabViewItem: (NSTabViewItem *)tabViewItem
+{
 }
 
-- (void)tabView:(NSTabView *)tabView didCloseTabViewItem:(NSTabViewItem *)tabViewItem {
+- (void) tabView: (NSTabView *)tabView didCloseTabViewItem: (NSTabViewItem *)tabViewItem
+{
 }
 
-- (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem {
+- (void) tabView: (NSTabView *)tabView didSelectTabViewItem: (NSTabViewItem *)tabViewItem
+{
     id identifier = [tabViewItem identifier];
     [_telnetView updateBackedImage];
     [_addressBar setStringValue: [identifier connectionAddress]];
@@ -724,37 +768,45 @@
     [_detectDoubleByteMenuItem setState: [[[_telnetView frontMostConnection] site] detectDoubleByte] ? NSOnState : NSOffState];
 }
 
-- (BOOL)tabView:(NSTabView *)tabView shouldSelectTabViewItem:(NSTabViewItem *)tabViewItem {
+- (BOOL) tabView: (NSTabView *)tabView shouldSelectTabViewItem: (NSTabViewItem *)tabViewItem
+{
     return YES;
 }
 
-- (void)tabView:(NSTabView *)tabView willSelectTabViewItem:(NSTabViewItem *)tabViewItem {
+- (void) tabView: (NSTabView *)tabView willSelectTabViewItem: (NSTabViewItem *)tabViewItem
+{
     id identifier = [tabViewItem identifier];
     [[identifier terminal] setAllDirty];
     [_telnetView clearSelection];
 }
 
-- (BOOL)tabView:(NSTabView*)aTabView shouldDragTabViewItem:(NSTabViewItem *)tabViewItem fromTabBar:(PSMTabBarControl *)tabBarControl {
+- (BOOL) tabView: (NSTabView*)aTabView shouldDragTabViewItem: (NSTabViewItem *)tabViewItem fromTabBar: (PSMTabBarControl *)tabBarControl
+{
 	return NO;
 }
 
-- (BOOL)tabView:(NSTabView*)aTabView shouldDropTabViewItem:(NSTabViewItem *)tabViewItem inTabBar:(PSMTabBarControl *)tabBarControl {
+- (BOOL) tabView: (NSTabView*)aTabView shouldDropTabViewItem: (NSTabViewItem *)tabViewItem inTabBar: (PSMTabBarControl *)tabBarControl
+{
 	return YES;
 }
 
-- (void)tabView:(NSTabView*)aTabView didDropTabViewItem:(NSTabViewItem *)tabViewItem inTabBar:(PSMTabBarControl *)tabBarControl {
+- (void) tabView: (NSTabView*)aTabView didDropTabViewItem: (NSTabViewItem *)tabViewItem inTabBar: (PSMTabBarControl *)tabBarControl
+{
 //    [self refreshTabLabelNumber: _telnetView];
 }
 
-- (NSImage *)tabView:(NSTabView *)aTabView imageForTabViewItem:(NSTabViewItem *)tabViewItem offset:(NSSize *)offset styleMask:(unsigned int *)styleMask {
+- (NSImage *) tabView: (NSTabView *)aTabView imageForTabViewItem: (NSTabViewItem *)tabViewItem offset: (NSSize *)offset styleMask: (unsigned int *)styleMask
+{
     return nil;
 }
 
-- (void)tabViewDidChangeNumberOfTabViewItems:(NSTabView *)tabView {
+- (void) tabViewDidChangeNumberOfTabViewItems: (NSTabView *)tabView
+{
     [self refreshTabLabelNumber: tabView];
 }
 
-- (void) refreshTabLabelNumber: (NSTabView *) tabView {
+- (void) refreshTabLabelNumber: (NSTabView *)tabView
+{
     int i, tabNumber;
     tabNumber = [tabView numberOfTabViewItems];
     for (i = 0; i < tabNumber; i++) {

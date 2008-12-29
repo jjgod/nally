@@ -19,11 +19,11 @@
 @property (copy) NSString *description;
 - (NSImage *) icon;
 
-- (NSString *) localizedStringForKey: (NSString *) key;
+- (NSString *) localizedStringForKey: (NSString *)key;
 - (NSMenu *) pluginMenu;
-- (void) addMenuItem: (NSMenuItem *) item;
-- (NSMenuItem *) addMenuItemWithTitle: (NSString *) title 
-                               action: (SEL) action 
-                        keyEquivalent: (NSString *) keyEquiv;
+- (void) addMenuItem: (NSMenuItem *)item;
+- (NSMenuItem *) addMenuItemWithTitle: (NSString *)title 
+                               action: (SEL)action 
+                        keyEquivalent: (NSString *)keyEquiv;
 
 @end

@@ -9,17 +9,15 @@
 #import "YLImageView.h"
 
 @interface NSBezierPath (RoundRect)
-
-- (void) appendBezierPathWithRoundedRect:(NSRect)rect cornerRadius: (float)radius;
-+ (NSBezierPath *) bezierPathWithRoundedRect:(NSRect)rect cornerRadius: (float)radius;
-
+- (void) appendBezierPathWithRoundedRect: (NSRect)rect cornerRadius: (float)radius;
++ (NSBezierPath *) bezierPathWithRoundedRect: (NSRect)rect cornerRadius: (float)radius;
 @end
 
 
 @implementation NSBezierPath (RoundRect)
-
-- (void) appendBezierPathWithRoundedRect:(NSRect)rect cornerRadius: (float)radius {
-    if (! NSIsEmptyRect(rect))
+- (void) appendBezierPathWithRoundedRect: (NSRect)rect cornerRadius: (float)radius
+{
+    if (!NSIsEmptyRect(rect))
     {
         if (radius > 0.0) {
             // Clamp radius to be no larger than half the rect's width or height.
@@ -47,7 +45,7 @@
     }
 }
 
-+ (NSBezierPath *) bezierPathWithRoundedRect:(NSRect)rect cornerRadius: (float)radius 
++ (NSBezierPath *) bezierPathWithRoundedRect: (NSRect)rect cornerRadius: (float)radius 
 {
     NSBezierPath *result = [NSBezierPath bezierPath];
     [result appendBezierPathWithRoundedRect:rect cornerRadius:radius];
@@ -58,7 +56,7 @@
 
 @implementation YLImageView
 
-- (id) initWithFrame: (NSRect) frame previewer: (YLImagePreviewer *) thePreviewer
+- (id) initWithFrame: (NSRect)frame previewer: (YLImagePreviewer *)thePreviewer
 {
     if ([super initWithFrame: frame])
     {
@@ -75,7 +73,7 @@
     return self;
 }
 
-- (void)drawRect:(NSRect)rect
+- (void) drawRect: (NSRect)rect
 {
     [super drawRect: rect];
 
@@ -108,7 +106,7 @@
     }
 }
 
-- (void) mouseDown: (NSEvent *) event
+- (void) mouseDown: (NSEvent *)event
 {
     NSPoint location = [event locationInWindow];
     NSPoint point = [self convertPoint: location fromView: nil];
@@ -120,7 +118,7 @@
     }
 }
 
-- (void) mouseUp: (NSEvent *) event
+- (void) mouseUp: (NSEvent *)event
 {
     NSPoint location = [event locationInWindow];
     NSPoint point = [self convertPoint: location fromView: nil];
@@ -142,19 +140,19 @@
     [self setNeedsDisplay: YES];
 }
 
-- (void) mouseEntered: (NSEvent *) event
+- (void) mouseEntered: (NSEvent *)event
 {
     tipsState = kShowTipsGray;
     [self setNeedsDisplay: YES];
 }
 
-- (void)mouseExited: (NSEvent *) event
+- (void)mouseExited: (NSEvent *)event
 {
     tipsState = kShowTipsNone;
     [self setNeedsDisplay: YES];
 }
 
-- (void) setPreviewer: (YLImagePreviewer *) thePreviewer
+- (void) setPreviewer: (YLImagePreviewer *)thePreviewer
 {
     previewer = thePreviewer;
 }

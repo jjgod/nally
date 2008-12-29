@@ -20,7 +20,8 @@
 #ifdef __DUMPPACKET__
 char *_commandName[] = { "SE", "NOP", "DM", "BRK", "IP", "AO", "AYT", "EC", "EL", "GA", "SB", "WILL", "WONT", "DO", "DONT", "IAC" };
 
-void dump_packet(unsigned char *s, int length) {
+void dump_packet(unsigned char *s, int length)
+{
 	int i;
 	char tmp[1024 * 512]; tmp[0] = '\0';
 	for (i = 0; i < length; i++) {
@@ -35,25 +36,25 @@ void dump_packet(unsigned char *s, int length) {
 #endif
 
 @interface YLTelnet (Private)
-- (void) close ;
-- (void) reconnect ;
-- (void) connectWithDictionary: (NSDictionary *) d ;
-- (void) stream: (NSStream *) stream handleEvent: (NSStreamEvent) eventCode ;
+- (void) connectWithDictionary: (NSDictionary *)d;
+- (void) stream: (NSStream *)stream handleEvent: (NSStreamEvent)eventCode;
 - (NSString *) lastError;
-- (NSHost *)host;
-- (void)setHost:(NSHost *)value;
+- (NSHost *) host;
+- (void) setHost: (NSHost *)value;
 @end
 
 @implementation YLTelnet
 
-- (void) dealloc {
+- (void) dealloc 
+{
     [self close];
     [_host release];
     [_sbBuffer release];
     [super dealloc];
 }
 
-- (void) lookUpDomainName: (NSDictionary *) d {
+- (void) lookUpDomainName: (NSDictionary *)d
+{
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
     NSString *addr = [d valueForKey: @"addr"];
     int port = [[d valueForKey: @"port"] intValue];
@@ -68,7 +69,8 @@ void dump_packet(unsigned char *s, int length) {
     [pool release];
 }
 
-- (void) close {
+- (void) close
+{
     [self setIsProcessing: NO];
     [_inputStream close];
     [_inputStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
@@ -82,14 +84,16 @@ void dump_packet(unsigned char *s, int length) {
     [[self terminal] closeConnection];
 }
 
-- (void) reconnect {
+- (void) reconnect
+{
     if (_host) {
         [self close];
         [self connectWithDictionary: [NSDictionary dictionaryWithObjectsAndKeys: _host, @"host", [NSNumber numberWithInt: _port], @"port", nil]];
     }
 }
 
-- (void) connectWithDictionary: (NSDictionary *) d {
+- (void) connectWithDictionary: (NSDictionary *)d
+{
     NSHost *host = [d valueForKey: @"host"];
     int port = [[d valueForKey: @"port"] intValue];
     
@@ -110,7 +114,8 @@ void dump_packet(unsigned char *s, int length) {
     [_outputStream open];
 }
 
-- (BOOL) connectToAddress: (NSString *) addr {
+- (BOOL) connectToAddress: (NSString *)addr
+{
     NSArray *a = [addr componentsSeparatedByCharactersInSet: [NSCharacterSet characterSetWithCharactersInString: @": "]];
     if ([a count] == 2) {
         int p = [[a objectAtIndex: 1] intValue];
@@ -125,7 +130,8 @@ void dump_packet(unsigned char *s, int length) {
     return NO;
 }
 
-- (BOOL) connectToAddress: (NSString *) addr port: (unsigned int) port {
+- (BOOL) connectToAddress: (NSString *)addr port: (unsigned int)port
+{
     if (!addr) return NO;
     [self setIsProcessing: YES];
     if (port == 23)
@@ -139,7 +145,8 @@ void dump_packet(unsigned char *s, int length) {
     return YES;
 }
 
-- (void) stream: (NSStream *) stream handleEvent: (NSStreamEvent) eventCode {
+- (void) stream: (NSStream *)stream handleEvent: (NSStreamEvent)eventCode
+{
     switch(eventCode) {
         case NSStreamEventOpenCompleted: {
             [self setConnected: YES];
@@ -181,16 +188,18 @@ void dump_packet(unsigned char *s, int length) {
 }
 
 /* Send telnet command */
-- (void) sendCommand: (unsigned char) _command option: (unsigned char) _opt {
+- (void) sendCommand: (unsigned char)_command option: (unsigned char)_opt
+{
 	unsigned char b[3];
 	b[0] = IAC;
 	b[1] = _command;
 	b[2] = _opt;
     NSData *d = [NSData dataWithBytes: b length: 3];
-    [self performSelector: @selector(sendMessage:) withObject: d afterDelay: 0.001];
+    [self performSelector: @selector(sendData:) withObject: d afterDelay: 0.001];
 }
 
-- (void) receiveBytes: (unsigned char *) bytes length: (NSUInteger) length {
+- (void) receiveBytes: (unsigned char *)bytes length: (NSUInteger)length
+{
 
 	unsigned char *stream = (unsigned char *) bytes;
 	std::deque<unsigned char> terminalBuf;
@@ -267,7 +276,7 @@ void dump_packet(unsigned char *s, int length) {
 				else if (c == TELOPT_NAWS) {
 					unsigned char b[] = {IAC, SB, TELOPT_NAWS, 0, 80, 0, 24, IAC, SE};
 					[self sendCommand: WILL option: TELOPT_NAWS];
-                    [self performSelector: @selector(sendMessage:) withObject: [NSData dataWithBytes:b length:9] afterDelay: 0.001];
+                    [self performSelector: @selector(sendData:) withObject: [NSData dataWithBytes:b length:9] afterDelay: 0.001];
 //					[self sendBytes: b length: 9];
 				} else 
 					[self sendCommand: WONT option: c];
@@ -299,7 +308,7 @@ void dump_packet(unsigned char *s, int length) {
 					const unsigned char *buf = (const unsigned char *)[_sbBuffer bytes];
 					if (_sbOption == TELOPT_TTYPE && [_sbBuffer length] == 1 && buf[0] == TELQUAL_SEND) {
 						unsigned char b[] = {IAC, SB, TELOPT_TTYPE, TELQUAL_IS, 'v', 't', '1', '0', '0', IAC, SE};
-                        [self performSelector:@selector(sendMessage:) withObject: [NSData dataWithBytes: b length: 11] afterDelay: 0.001];
+                        [self performSelector:@selector(sendData:) withObject: [NSData dataWithBytes: b length: 11] afterDelay: 0.001];
 //						[self sendBytes: b length: 11];
 					}
 					_state = TOP_LEVEL;
@@ -324,7 +333,8 @@ void dump_packet(unsigned char *s, int length) {
 	}
 }
 
-- (void) sendBytes: (unsigned char *) msg length: (NSInteger) length {
+- (void) sendBytes: (unsigned char *)bytes length: (NSInteger)length
+{
     if (length <= 0) return;
     if (!_outputStream) return;
     
@@ -335,30 +345,34 @@ void dump_packet(unsigned char *s, int length) {
         status == NSStreamStatusError ||
         status == NSStreamStatusClosed ||
         status == NSStreamStatusAtEnd) return;
-    int result = [_outputStream write: msg maxLength: length];
+    int result = [_outputStream write: bytes maxLength: length];
     if (result == length) return;
     if (result <= 0) {
-        [self performSelector: @selector(sendMessage:) withObject: [NSData dataWithBytes: msg length: length] afterDelay: 0.001];
+        [self performSelector: @selector(sendData:) withObject: [NSData dataWithBytes: bytes length: length] afterDelay: 0.001];
     } else {
-        [self performSelector: @selector(sendMessage:) withObject: [NSData dataWithBytes: msg + result length: length - result] afterDelay: 0.001];        
+        [self performSelector: @selector(sendData:) withObject: [NSData dataWithBytes: bytes + result length: length - result] afterDelay: 0.001];        
     }
 }
 
-- (void) sendMessage: (NSData *) msg {
+- (void) sendData: (NSData *)data
+{
     if (!_outputStream) return;
-    [self sendBytes: (unsigned char *)[msg bytes] length: [msg length]];
+    [self sendBytes: (unsigned char *)[data bytes] length: [data length]];
 }
 
 
-- (NSString *) lastError {
+- (NSString *) lastError
+{
 	return @"I don't know what error.";
 }
 
-- (NSHost *)host {
+- (NSHost *) host
+{
     return _host;
 }
 
-- (void)setHost:(NSHost *)value {
+- (void) setHost: (NSHost *)value
+{
     if (_host != value) {
         [_host release];
         _host = [value retain];

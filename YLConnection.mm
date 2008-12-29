@@ -11,17 +11,19 @@
 
 @implementation YLConnection
 
-+ (YLConnection *) connectionWithAddress: (NSString *) addr {
++ (YLConnection *) connectionWithAddress: (NSString *)addr
+{
     Class c; 
     if ([addr hasPrefix: @"ssh://"])
         c = NSClassFromString(@"YLSSH");
     else
         c = NSClassFromString(@"YLTelnet");
 //    NSLog(@"CONNECTION wih addr: %@ %@", addr, c);
-    return (YLConnection *)[[[c alloc] init] autorelease];
+    return (YLConnection *)[[c new] autorelease];
 }
 
-- (void) dealloc {
+- (void) dealloc
+{
     [_lastTouchDate release];
     [_icon release];
     [_connectionName release];
@@ -30,11 +32,13 @@
     [super dealloc];
 }
 
-- (YLTerminal *) terminal {
+- (YLTerminal *) terminal
+{
 	return _terminal;
 }
 
-- (void) setTerminal: (YLTerminal *) term {
+- (void) setTerminal: (YLTerminal *) term
+{
 	if (term != _terminal) {
 		[_terminal release];
 		_terminal = [term retain];
@@ -42,11 +46,13 @@
 	}
 }
 
-- (BOOL)connected {
+- (BOOL) connected
+{
     return _connected;
 }
 
-- (void)setConnected:(BOOL)value {
+- (void) setConnected: (BOOL)value
+{
     _connected = value;
     if (_connected) 
         [self setIcon: [NSImage imageNamed: @"connect.pdf"]];
@@ -56,76 +62,48 @@
     }
 }
 
-- (NSString *)connectionName {
-    return _connectionName;
-}
+@synthesize connectionName = _connectionName;
+@synthesize connectionAddress = _connectionAddress;
+@synthesize icon = _icon;
+@synthesize isProcessing = _processing;
+@synthesize site = _site;
 
-- (void)setConnectionName:(NSString *)value {
-    if (_connectionName != value) {
-        [_connectionName release];
-        _connectionName = [value retain];
-    }
-}
-
-- (NSImage *)icon {
-    return _icon;
-}
-
-- (void)setIcon:(NSImage *)value {
-    if (_icon != value) {
-        [_icon release];
-        _icon = [value retain];
-    }
-}
-
-- (NSString *)connectionAddress {
-    return _connectionAddress;
-}
-
-- (void)setConnectionAddress:(NSString *)value {
-    if (_connectionAddress != value) {
-        [_connectionAddress release];
-        _connectionAddress = [value retain];
-    }
-}
-
-- (BOOL)isProcessing {
-    return _processing;
-}
-
-- (void)setIsProcessing:(BOOL)value {
-    _processing = value;
-}
-
-- (NSDate *) lastTouchDate {
+- (NSDate *) lastTouchDate
+{
     return _lastTouchDate;
 }
 
-- (YLSite *) site {
-    return _site;
+#pragma mark -
+#pragma mark Dummy Behavior
+- (void) close
+{
+}
+- (void) reconnect
+{
+}
+- (BOOL) connectToSite: (YLSite *)site
+{
+    [self setSite: site];
+    return [self connectToAddress: [site address]];
 }
 
-- (void)setSite:(YLSite *)value {
-    if (_site != value) {
-        [_site release];
-        _site = [value retain];
-    }
+- (BOOL) connectToAddress: (NSString *)addr
+{
+    return YES;
+}
+- (BOOL) connectToAddress: (NSString *)addr port: (unsigned int)port
+{
+    return YES;
 }
 
-/* Empty */
-- (void) close {}
-- (void) reconnect {}
-
-- (BOOL) connectToSite: (YLSite *) s { 
-    [self setSite: s];
-    return [self connectToAddress: [s address]];
+- (void) receiveBytes: (unsigned char *)bytes length: (NSUInteger)length
+{
 }
-
-- (BOOL) connectToAddress: (NSString *) addr { return YES; }
-- (BOOL) connectToAddress: (NSString *) addr port: (unsigned int) port { return YES;}
-
-- (void) receiveBytes: (unsigned char *) bytes length: (NSUInteger) length { }
-- (void) sendBytes: (unsigned char *) msg length: (NSInteger) length { }
-- (void) sendMessage: (NSData *) msg { }
+- (void) sendBytes: (unsigned char *)msg length: (NSInteger)length
+{
+}
+- (void) sendData: (NSData *)msg
+{
+}
 
 @end

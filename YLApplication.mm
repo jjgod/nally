@@ -13,7 +13,8 @@ static NSString *gLeftString, *gRightString;
 
 @implementation YLApplication
 
-+ (void) initialize {
++ (void) initialize 
+{
     unichar r = NSRightArrowFunctionKey;
     unichar l = NSLeftArrowFunctionKey;
     gLeftString = [[NSString stringWithCharacters: &l length: 1] retain];
@@ -22,7 +23,8 @@ static NSString *gLeftString, *gRightString;
     [NSColor setIgnoresAlpha: NO];
 }
 
-- (void) sendEvent: (NSEvent *) event {
+- (void) sendEvent: (NSEvent *)event
+{
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
     if ([event type] == NSKeyDown) {
         if ((([event modifierFlags] & NSCommandKeyMask) == NSCommandKeyMask) && 

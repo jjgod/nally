@@ -18,8 +18,8 @@ enum showTips { kShowTipsNone, kShowTipsWhite, kShowTipsGray };
     YLImagePreviewer *previewer;
 }
 
-- (id) initWithFrame: (NSRect) frame previewer: (YLImagePreviewer *) thePreviewer;
-- (void) setPreviewer: (YLImagePreviewer *) thePreviewer;
-- (YLImagePreviewer *) previewer;
+- (id) initWithFrame: (NSRect)frame previewer: (YLImagePreviewer *)thePreviewer;
+- (void) setPreviewer: (YLImagePreviewer *)thePreviewer;
+- (YLImagePreviewer *)previewer;
 
 @end

@@ -13,8 +13,8 @@
     NSMutableArray *bundleInstanceList;
 }
 
-- (void) startSearch: (id) idObject;
-- (Class) loadBundleAtPath: (NSString *) path;
-- (void) feedData: (NSData *) data;
+- (void) startSearch: (id)idObject;
+- (Class) loadBundleAtPath: (NSString *)path;
+- (void) feedData: (NSData *)data;
 
 @end

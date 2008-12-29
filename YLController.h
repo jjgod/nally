@@ -38,50 +38,50 @@
     YLPluginLoader *_pluginLoader;
 }
 
-- (void) updateSitesMenu ;
-- (void) loadSites ;
-- (void) loadEmoticons ;
+- (void) updateSitesMenu;
+- (void) loadSites;
+- (void) loadEmoticons;
 - (void) loadLastConnections;
 
-- (IBAction) setEncoding: (id) sender ;
-- (IBAction) setDetectDoubleByteAction: (id) sender ;
+- (IBAction) setEncoding: (id)sender;
+- (IBAction) setDetectDoubleByteAction: (id)sender;
 
-- (IBAction) newTab: (id) sender ;
-- (IBAction) connect: (id) sender;
-- (IBAction) openLocation: (id) sender;
-- (IBAction) selectNextTab: (id) sender;
-- (IBAction) selectPrevTab: (id) sender;
-- (void) selectTabNumber: (int) index ;
-- (IBAction) closeTab: (id) sender;
-- (IBAction) reconnect: (id) sender;
-- (IBAction) openSites: (id) sender;
-- (IBAction) editSites: (id) sender;
-- (IBAction) closeSites: (id) sender;
-- (IBAction) addSites: (id) sender;
-- (IBAction) showHiddenText: (id) sender;
-- (IBAction) openPreferencesWindow: (id) sender ;
-- (void) newConnectionWithSite: (YLSite *) s ;
+- (IBAction) newTab: (id)sender;
+- (IBAction) connect: (id)sender;
+- (IBAction) openLocation: (id)sender;
+- (IBAction) selectNextTab: (id)sender;
+- (IBAction) selectPrevTab: (id)sender;
+- (void) selectTabNumber: (int)index;
+- (IBAction) closeTab: (id)sender;
+- (IBAction) reconnect: (id)sender;
+- (IBAction) openSites: (id)sender;
+- (IBAction) editSites: (id)sender;
+- (IBAction) closeSites: (id)sender;
+- (IBAction) addSites: (id)sender;
+- (IBAction) showHiddenText: (id)sender;
+- (IBAction) openPreferencesWindow: (id)sender;
+- (void) newConnectionWithSite: (YLSite *)site;
 
-- (IBAction) closeEmoticons: (id) sender;
-- (IBAction) inputEmoticons: (id) sender;
-- (IBAction) openEmoticonsWindow: (id) sender;
+- (IBAction) closeEmoticons: (id)sender;
+- (IBAction) inputEmoticons: (id)sender;
+- (IBAction) openEmoticonsWindow: (id)sender;
 
-- (NSArray *)sites;
-- (unsigned)countOfSites;
-- (id)objectInSitesAtIndex:(unsigned)theIndex;
-- (void)getSites:(id *)objsPtr range:(NSRange)range;
-- (void)insertObject:(id)obj inSitesAtIndex:(unsigned)theIndex;
-- (void)removeObjectFromSitesAtIndex:(unsigned)theIndex;
-- (void)replaceObjectInSitesAtIndex:(unsigned)theIndex withObject:(id)obj;
+- (NSArray *) sites;
+- (unsigned) countOfSites;
+- (id) objectInSitesAtIndex: (unsigned)theIndex;
+- (void) getSites: (id *)objsPtr range: (NSRange)range;
+- (void) insertObject: (id)obj inSitesAtIndex: (unsigned)theIndex;
+- (void) removeObjectFromSitesAtIndex: (unsigned)theIndex;
+- (void) replaceObjectInSitesAtIndex: (unsigned)theIndex withObject: (id)obj;
 
-- (void) refreshTabLabelNumber: (NSTabView *) tabView ;
+- (void) refreshTabLabelNumber: (NSTabView *)tabView;
 
-- (NSArray *)emoticons;
-- (unsigned)countOfEmoticons;
-- (id)objectInEmoticonsAtIndex:(unsigned)theIndex;
-- (void)getEmoticons:(id *)objsPtr range:(NSRange)range;
-- (void)insertObject:(id)obj inEmoticonsAtIndex:(unsigned)theIndex;
-- (void)removeObjectFromEmoticonsAtIndex:(unsigned)theIndex;
-- (void)replaceObjectInEmoticonsAtIndex:(unsigned)theIndex withObject:(id)obj;
+- (NSArray *) emoticons;
+- (unsigned) countOfEmoticons;
+- (id) objectInEmoticonsAtIndex: (unsigned)theIndex;
+- (void) getEmoticons: (id *)objsPtr range: (NSRange)range;
+- (void) insertObject: (id)obj inEmoticonsAtIndex: (unsigned)theIndex;
+- (void) removeObjectFromEmoticonsAtIndex: (unsigned)theIndex;
+- (void) replaceObjectInEmoticonsAtIndex: (unsigned)theIndex withObject: (id)obj;
 
 @end

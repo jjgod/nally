@@ -43,11 +43,13 @@ static NSBezierPath *gSymbolTrianglePath[4];
 static NSBezierPath *gSymbolTrianglePath1[4];
 static NSBezierPath *gSymbolTrianglePath2[4];
 
-BOOL isEnglishNumberAlphabet(unsigned char c) {
+BOOL isEnglishNumberAlphabet(unsigned char c)
+{
     return ('0' <= c && c <= '9') || ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z') || (c == '-') || (c == '_') || (c == '.');
 }
 
-BOOL isSpecialSymbol(unichar ch) {
+BOOL isSpecialSymbol(unichar ch)
+{
 	if (ch == 0x25FC)  // ◼ BLACK SQUARE
 		return YES;
 	if (ch >= 0x2581 && ch <= 0x2588) // BLOCK ▁▂▃▄▅▆▇█
@@ -61,7 +63,8 @@ BOOL isSpecialSymbol(unichar ch) {
 
 @implementation YLView
 
-+ (void) initialize {
++ (void) initialize
+{
     NSImage *cursorImage = [[NSImage alloc] initWithSize: NSMakeSize(11.0, 20.0)];
     [cursorImage lockFocus];
     [[NSColor clearColor] set];
@@ -93,7 +96,8 @@ BOOL isSpecialSymbol(unichar ch) {
     [cursorImage release];
 }
 
-- (void) createSymbolPath {
+- (void) createSymbolPath
+{
 	int i = 0;
 	gSymbolBlackSquareRect = NSMakeRect(1.0, 1.0, _fontWidth * 2 - 2, _fontHeight - 2);
 	gSymbolBlackSquareRect1 = NSMakeRect(1.0, 1.0, _fontWidth - 1, _fontHeight - 2); 
@@ -152,7 +156,8 @@ BOOL isSpecialSymbol(unichar ch) {
     }
 }
 
-- (void) configure {
+- (void) configure
+{
     if (!gConfig) gConfig = [YLLGlobalConfig sharedInstance];
 	gColumn = [gConfig column];
 	gRow = [gConfig row];
@@ -190,18 +195,18 @@ BOOL isSpecialSymbol(unichar ch) {
     [_textField setHidden: YES];
 }
 
-- (id)initWithFrame:(NSRect)frame {
-    self = [super initWithFrame: frame];
-    if (self) {
+- (id) initWithFrame: (NSRect)frame
+{
+    if ([super initWithFrame: frame]) {
         [self configure];
         _selectionLength = 0;
         _selectionLocation = 0;
-//        [self setTabViewType: NSNoTabsNoBorder];
     }
     return self;
 }
 
-- (void) dealloc {
+- (void) dealloc
+{
 	[_backedImage release];
 	[super dealloc];
 }
@@ -209,7 +214,8 @@ BOOL isSpecialSymbol(unichar ch) {
 #pragma mark -
 #pragma mark Actions
 
-- (void) copy: (id) sender {
+- (IBAction) copy: (id)sender
+{
     if (![self connected]) return;
     if (_selectionLength == 0) return;
 
@@ -271,7 +277,8 @@ BOOL isSpecialSymbol(unichar ch) {
     free(buffer);
 }
 
-- (void) pasteColor: (id) sender {
+- (IBAction) pasteColor: (id)sender
+{
     if (![self connected]) return;
     NSPasteboard *pb = [NSPasteboard generalPasteboard];
 	NSArray *types = [pb types];
@@ -374,7 +381,8 @@ BOOL isSpecialSymbol(unichar ch) {
     }
 }
 
-- (void) paste: (id) sender {
+- (IBAction) paste: (id)sender
+{
     if (![self connected]) return;
     NSPasteboard *pb = [NSPasteboard generalPasteboard];
     NSArray *types = [pb types];
@@ -384,7 +392,8 @@ BOOL isSpecialSymbol(unichar ch) {
     }
 }
 
-- (void) pasteWrap: (id) sender {
+- (void) pasteWrap: (id)sender
+{
     if (![self connected]) return;
     NSPasteboard *pb = [NSPasteboard generalPasteboard];
     NSArray *types = [pb types];
@@ -484,14 +493,16 @@ BOOL isSpecialSymbol(unichar ch) {
     [self insertText: mStr withDelay: 100];
 }
 
-- (void) selectAll: (id) sender {
+- (IBAction) selectAll: (id)sender
+{
     if (![self connected]) return;
     _selectionLocation = 0;
     _selectionLength = gRow * gColumn;
     [self setNeedsDisplay: YES];
 }
 
-- (BOOL) validateMenuItem: (NSMenuItem *) item {
+- (BOOL) validateMenuItem: (NSMenuItem *)item
+{
     SEL action = [item action];
     if (action == @selector(copy:) && (![self connected] || _selectionLength == 0)) {
         return NO;
@@ -505,7 +516,8 @@ BOOL isSpecialSymbol(unichar ch) {
     return YES;
 }
 
-- (void) refreshHiddenRegion {
+- (void) refreshHiddenRegion
+{
     if (![self connected]) return;
     int i, j;
     for (i = 0; i < gRow; i++) {
@@ -519,7 +531,8 @@ BOOL isSpecialSymbol(unichar ch) {
 #pragma mark -
 #pragma mark Conversion
 
-- (int) convertIndexFromPoint: (NSPoint) p {
+- (int) convertIndexFromPoint: (NSPoint)p
+{
     if (p.x >= gColumn * _fontWidth) p.x = gColumn * _fontWidth - 0.001;
     if (p.y >= gRow * _fontHeight) p.y = gRow * _fontHeight - 0.001;
     if (p.x < 0) p.x = 0;
@@ -533,7 +546,8 @@ BOOL isSpecialSymbol(unichar ch) {
 
 #pragma mark -
 #pragma mark Event Handling
-- (void) mouseDown: (NSEvent *) e {
+- (void) mouseDown: (NSEvent *)e
+{
     [[self frontMostTerminal] setHasMessage: NO];
     [[self window] makeFirstResponder: self];
     if (![self connected]) return;
@@ -638,7 +652,8 @@ BOOL isSpecialSymbol(unichar ch) {
 //    [super mouseDown: e];
 }
 
-- (void) mouseDragged: (NSEvent *) e {
+- (void) mouseDragged: (NSEvent *)e
+{
     if (![self connected]) return;
     NSPoint p = [e locationInWindow];
     p = [self convertPoint: p toView: nil];
@@ -651,7 +666,8 @@ BOOL isSpecialSymbol(unichar ch) {
     // TODO: Calculate the precise region to redraw
 }
 
-- (void) mouseUp: (NSEvent *) e {
+- (void) mouseUp: (NSEvent *)e
+{
     if (![self connected]) return;
     if (_selectionLength == 0) {
         NSPoint p = [e locationInWindow];
@@ -674,7 +690,8 @@ BOOL isSpecialSymbol(unichar ch) {
     }
 }
 
-- (void) keyDown: (NSEvent *) e {
+- (void) keyDown: (NSEvent *)e
+{
     [self clearSelection];
 	unichar c = [[e characters] characterAtIndex: 0];
 	unsigned char arrow[6] = {0x1B, 0x4F, 0x00, 0x1B, 0x4F, 0x00};
@@ -725,7 +742,8 @@ BOOL isSpecialSymbol(unichar ch) {
 	[self interpretKeyEvents: [NSArray arrayWithObject: e]];
 }
 
-- (void) flagsChanged: (NSEvent *) event {
+- (void) flagsChanged: (NSEvent *)event
+{
 	unsigned int currentFlags = [event modifierFlags];
 	NSCursor *viewCursor = nil;
 	if (currentFlags & NSCommandKeyMask) {
@@ -737,7 +755,8 @@ BOOL isSpecialSymbol(unichar ch) {
 	[super flagsChanged: event];
 }
 
-- (void) clearSelection {
+- (void) clearSelection
+{
     if (_selectionLength != 0) {
         _selectionLength = 0;
         [self setNeedsDisplay: YES];
@@ -747,11 +766,13 @@ BOOL isSpecialSymbol(unichar ch) {
 #pragma mark -
 #pragma mark Drawing
 
-- (void) displayCellAtRow: (int) r column: (int) c {
+- (void) displayCellAtRow: (int)r column: (int)c
+{
     [self setNeedsDisplayInRect: NSMakeRect(c * _fontWidth, (gRow - 1 - r) * _fontHeight, _fontWidth, _fontHeight)];
 }
 
-- (void) tick: (NSArray *) a {
+- (void) tick
+{
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
 	[self updateBackedImage];
     YLTerminal *ds = [self frontMostTerminal];
@@ -765,7 +786,8 @@ BOOL isSpecialSymbol(unichar ch) {
     [pool release];
 }
 
-- (NSRect) cellRectForRect: (NSRect) r {
+- (NSRect) cellRectForRect: (NSRect)r
+{
 	int originx = r.origin.x / _fontWidth;
 	int originy = r.origin.y / _fontHeight;
 	int width = ((r.size.width + r.origin.x) / _fontWidth) - originx + 1;
@@ -773,7 +795,8 @@ BOOL isSpecialSymbol(unichar ch) {
 	return NSMakeRect(originx, originy, width, height);
 }
 
-- (void)drawRect:(NSRect)rect {
+- (void) drawRect: (NSRect)rect
+{
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
     YLTerminal *ds = [self frontMostTerminal];
         
@@ -821,25 +844,13 @@ BOOL isSpecialSymbol(unichar ch) {
         
         NSRect r = [self bounds];
 		NSRectFill(r);
-//        NSImage *img = [NSImage imageNamed: @"Xmas.icns"];
-//        NSSize sz = NSMakeSize(512, 512);
-//        if (r.size.width < 512 || r.size.height < 512) {
-//            CGFloat small = r.size.height > r.size.width ? r.size.width : r.size.height;
-//            sz = NSMakeSize(small, small);
-//        }
-//        
-//        NSPoint p = NSZeroPoint;
-//        
-//        p.x = (r.size.width - sz.width) / 2;
-//        p.y = (r.size.height - sz.height) / 2;
-//        [img setSize: sz];
-//        [img compositeToPoint: p operation: NSCompositeSourceOver];
 	}
 	
     [pool release];
 }
 
-- (void) drawBlink {
+- (void) drawBlink
+{
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
 
     int c, r;
@@ -861,7 +872,8 @@ BOOL isSpecialSymbol(unichar ch) {
     [pool release];
 }
 
-- (void) drawSelection {
+- (void) drawSelection
+{
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
     int location, length;
     if (_selectionLength >= 0) {
@@ -898,7 +910,8 @@ BOOL isSpecialSymbol(unichar ch) {
 		DDDDDDDDDDD			...........
  
  */
-- (void) extendBottomFrom: (int) start to: (int) end {
+- (void) extendBottomFrom: (int)start to: (int)end
+{
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
 	[_backedImage lockFocus];
 	[_backedImage compositeToPoint: NSMakePoint(0, (gRow - end) * _fontHeight) 
@@ -919,7 +932,8 @@ BOOL isSpecialSymbol(unichar ch) {
 		CCCCCCCCCCC   ->	BBBBBBBBBBB
 		DDDDDDDDDDD			CCCCCCCCCCC
  */
-- (void) extendTopFrom: (int) start to: (int) end {
+- (void) extendTopFrom: (int)start to: (int)end
+{
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
     [_backedImage lockFocus];
 	[_backedImage compositeToPoint: NSMakePoint(0, (gRow - end - 1) * _fontHeight) 
@@ -932,7 +946,8 @@ BOOL isSpecialSymbol(unichar ch) {
     [pool release];
 }
 
-- (void) updateBackedImage {
+- (void) updateBackedImage
+{
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
 	int x, y;
     YLTerminal *ds = [self frontMostTerminal];
@@ -974,7 +989,8 @@ BOOL isSpecialSymbol(unichar ch) {
     [pool release];
 }
 
-- (void) drawStringForRow: (int) r context: (CGContextRef) myCGContext {
+- (void) drawStringForRow: (int)r context: (CGContextRef)myCGContext
+{
 	int i, c, x;
 	int start, end;
 	unichar textBuf[gColumn];
@@ -1201,7 +1217,8 @@ BOOL isSpecialSymbol(unichar ch) {
     }
 }
 
-- (void) updateBackgroundForRow: (int) r from: (int) start to: (int) end {
+- (void) updateBackgroundForRow: (int)r from: (int)start to: (int)end
+{
 	int c;
 	cell *currRow = [[self frontMostTerminal] cellsOfRow: r];
 	NSRect rowRect = NSMakeRect(start * _fontWidth, (gRow - 1 - r) * _fontHeight, (end - start) * _fontWidth, _fontHeight);
@@ -1264,7 +1281,8 @@ BOOL isSpecialSymbol(unichar ch) {
 	[self setNeedsDisplayInRect: rowRect];
 }
 
-- (void) drawSpecialSymbol: (unichar) ch forRow: (int) r column: (int) c leftAttribute: (attribute) attr1 rightAttribute: (attribute) attr2 {
+- (void) drawSpecialSymbol: (unichar)ch forRow: (int)r column: (int)c leftAttribute: (attribute)attr1 rightAttribute: (attribute)attr2
+{
 	int colorIndex1 = fgColorIndexOfAttribute(attr1);
 	int colorIndex2 = fgColorIndexOfAttribute(attr2);
 	NSPoint origin = NSMakePoint(c * _fontWidth, (gRow - 1 - r) * _fontHeight);
@@ -1324,23 +1342,28 @@ BOOL isSpecialSymbol(unichar ch) {
 #pragma mark -
 #pragma mark Override
 
-- (BOOL) isFlipped {
+- (BOOL) isFlipped
+{
 	return NO;
 }
 
-- (BOOL) isOpaque {
+- (BOOL) isOpaque
+{
 	return YES;
 }
 
-- (BOOL) acceptsFirstResponder {
+- (BOOL) acceptsFirstResponder
+{
 	return YES;
 }
 
-- (BOOL)canBecomeKeyView {
+- (BOOL) canBecomeKeyView
+{
     return YES;
 }
 
-- (void)removeTabViewItem:(NSTabViewItem *)tabViewItem {
+- (void) removeTabViewItem: (NSTabViewItem *)tabViewItem
+{
     [[tabViewItem identifier] close];
     [super removeTabViewItem: tabViewItem];
 }
@@ -1349,7 +1372,8 @@ BOOL isSpecialSymbol(unichar ch) {
     return [[[NSMenu alloc] init] autorelease];
 }
 
-- (NSMenu *) menuForEvent: (NSEvent *) theEvent {
+- (NSMenu *) menuForEvent: (NSEvent *)theEvent
+{
     NSMenu *menu = [[self class] defaultMenu];
     if (![self connected]) return menu;
     
@@ -1361,44 +1385,34 @@ BOOL isSpecialSymbol(unichar ch) {
     return menu;
 }
 
-/* Otherwise, it will return the subview. */
-- (NSView *) hitTest: (NSPoint) p {
-    return self;
+- (NSView *) hitTest: (NSPoint) p 
+{
+    return self; /* Otherwise, it will return the subview. */
 }
 
 #pragma mark -
 #pragma mark Accessor
+@synthesize x = _x;
+@synthesize y = _y;
 
-- (int)x {
-    return _x;
-}
-
-- (void)setX:(int)value {
-    _x = value;
-}
-
-- (int) y {
-    return _y;
-}
-
-- (void) setY: (int) value {
-    _y = value;
-}
-
-- (BOOL) connected {
+- (BOOL) connected
+{
 	return [[self frontMostConnection] connected];
 }
 
-- (YLTerminal *) frontMostTerminal {
+- (YLTerminal *) frontMostTerminal
+{
     return (YLTerminal *)[[self frontMostConnection] terminal];
 }
 
-- (YLConnection *) frontMostConnection {
+- (YLConnection *) frontMostConnection
+{
     id identifier = [[self selectedTabViewItem] identifier];
     return (YLConnection *) identifier;
 }
 
-- (NSString *) selectedPlainString {
+- (NSString *) selectedPlainString
+{
     if (_selectionLength == 0) return nil;
     int location, length;
     if (_selectionLength >= 0) {
@@ -1411,7 +1425,8 @@ BOOL isSpecialSymbol(unichar ch) {
     return [[self frontMostTerminal] stringFromIndex: location length: length];
 }
 
-- (BOOL) hasBlinkCell {
+- (BOOL) hasBlinkCell
+{
     int c, r;
     id ds = [self frontMostTerminal];
     if (!ds) return NO;
@@ -1429,11 +1444,13 @@ BOOL isSpecialSymbol(unichar ch) {
 #pragma mark NSTextInput Protocol
 /* NSTextInput protocol */
 // instead of keyDown: aString can be NSString or NSAttributedString
-- (void) insertText: (id) aString {
+- (void) insertText: (id)aString
+{
     [self insertText: aString withDelay: 0];
 }
 
-- (void) insertText: (id) aString withDelay: (int) microsecond {
+- (void) insertText: (id)aString withDelay: (int)microsecond
+{
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
     
 	[_textField setHidden: YES];
@@ -1463,7 +1480,7 @@ BOOL isSpecialSymbol(unichar ch) {
 		}
 	}
     if (microsecond == 0) {
-        [[self frontMostConnection] sendMessage: data];
+        [[self frontMostConnection] sendData: data];
     } else {
         int i;
         unsigned char *buf = (unsigned char *) [data bytes];
@@ -1475,7 +1492,8 @@ BOOL isSpecialSymbol(unichar ch) {
     [pool release];
 }
 
-- (void) doCommandBySelector:(SEL)aSelector {
+- (void) doCommandBySelector: (SEL)aSelector
+{
 	unsigned char ch[10];
     
 //    NSLog(@"%s", aSelector);
@@ -1518,7 +1536,8 @@ BOOL isSpecialSymbol(unichar ch) {
 }
 
 // setMarkedText: cannot take a nil first argument. aString can be NSString or NSAttributedString
-- (void) setMarkedText:(id)aString selectedRange:(NSRange)selRange {
+- (void) setMarkedText: (id)aString selectedRange: (NSRange)selRange
+{
     YLTerminal *ds = [self frontMostTerminal];
 	if (![aString respondsToSelector: @selector(isEqualToAttributedString:)] && [aString isMemberOfClass: [NSString class]])
 		aString = [[[NSAttributedString alloc] initWithString: aString] autorelease];
@@ -1556,23 +1575,27 @@ BOOL isSpecialSymbol(unichar ch) {
 	[_textField setHidden: NO];
 }
 
-- (void) unmarkText {
+- (void) unmarkText
+{
 	[_markedText release];
 	_markedText = nil;
 	[_textField setHidden: YES];
 }
 
-- (BOOL) hasMarkedText {
+- (BOOL) hasMarkedText
+{
 	return (_markedText != nil);
 }
 
-- (NSInteger) conversationIdentifier {
+- (NSInteger) conversationIdentifier
+{
 	return (NSInteger) self;
 }
 
 /* Returns attributed string at the range.  This allows input mangers to query any range in backing-store.  May return nil.
  */
-- (NSAttributedString *) attributedSubstringFromRange:(NSRange)theRange {
+- (NSAttributedString *) attributedSubstringFromRange: (NSRange)theRange
+{
 	if (theRange.location < 0 || theRange.location >= [_markedText length]) return nil;
 	if (theRange.location + theRange.length > [_markedText length]) 
 		theRange.length = [_markedText length] - theRange.location;
@@ -1581,19 +1604,22 @@ BOOL isSpecialSymbol(unichar ch) {
 
 /* This method returns the range for marked region.  If hasMarkedText == false, it'll return NSNotFound location & 0 length range.
  */
-- (NSRange) markedRange {
+- (NSRange) markedRange
+{
 	return _markedRange;
 }
 
 /* This method returns the range for selected region.  Just like markedRange method, its location field contains char index from the text beginning.
  */
-- (NSRange) selectedRange {
+- (NSRange) selectedRange
+{
 	return _selectedRange;
 }
 
 /* This method returns the first frame of rects for theRange in screen coordindate system.
  */
-- (NSRect) firstRectForCharacterRange:(NSRange)theRange {
+- (NSRect) firstRectForCharacterRange: (NSRange)theRange
+{
 	NSPoint pointInWindowCoordinates;
 	NSRect rectInScreenCoordinates;
 	
@@ -1607,13 +1633,15 @@ BOOL isSpecialSymbol(unichar ch) {
 
 /* This method returns the index for character that is nearest to thePoint.  thPoint is in screen coordinate system.
  */
-- (NSUInteger)characterIndexForPoint:(NSPoint)thePoint {
+- (NSUInteger) characterIndexForPoint: (NSPoint)thePoint
+{
 	return 0;
 }
 
 /* This method is the key to attribute extension.  We could add new attributes through this method. NSInputServer examines the return value of this method & constructs appropriate attributed string.
  */
-- (NSArray*) validAttributesForMarkedText {
+- (NSArray*) validAttributesForMarkedText
+{
 	return [NSArray array];
 }
 

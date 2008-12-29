@@ -18,22 +18,13 @@
 }
 
 + (YLSite *) site;
-+ (YLSite *) siteWithDictionary: (NSDictionary *) d ;
-- (NSDictionary *) dictionaryOfSite ;
++ (YLSite *) siteWithDictionary: (NSDictionary *)d;
+- (NSDictionary *) dictionaryOfSite;
 
-- (NSString *)name;
-- (void)setName:(NSString *)value;
-
-- (NSString *)address;
-- (void)setAddress:(NSString *)value;
-
-- (YLEncoding)encoding;
-- (void)setEncoding:(YLEncoding)encoding;
-
-- (YLANSIColorKey)ansiColorKey;
-- (void)setAnsiColorKey:(YLANSIColorKey)value;
-
-- (BOOL)detectDoubleByte;
-- (void)setDetectDoubleByte:(BOOL)value;
+@property (copy) NSString *name;
+@property (copy) NSString *address;
+@property YLEncoding encoding;
+@property YLANSIColorKey ansiColorKey;
+@property BOOL detectDoubleByte;
 
 @end

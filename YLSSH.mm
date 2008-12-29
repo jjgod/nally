@@ -21,8 +21,9 @@
 
 @implementation YLSSH
 
-- (id) init {
-    if (self = [super init]) {
+- (YLSSH *) init
+{
+    if ([super init]) {
         _pid = 0;
         _fileDescriptor = -1;
         _loginAsBBS = NO;
@@ -30,7 +31,8 @@
     return self;
 }
 
-- (void) dealloc {
+- (void) dealloc
+{
     if (_pid > 0)
         kill(_pid, SIGKILL);
     
@@ -40,7 +42,8 @@
     [super dealloc];
 }
 
-- (void) close {
+- (void) close
+{
     if (_pid > 0)
         kill(_pid, SIGKILL);
     if (_fileDescriptor >= 0)
@@ -50,12 +53,14 @@
     [self setConnected: NO];
 }
 
-- (void) reconnect {
+- (void) reconnect
+{
     [self close];
     [self performSelector: @selector(connectToAddress:) withObject: [self connectionAddress] afterDelay: 0.01];
 }
 
-- (BOOL) connectToAddress: (NSString *) addr {
+- (BOOL) connectToAddress: (NSString *)addr
+{
     if (NO) {
     } else if ([addr hasPrefix: @"ssh://bbs"]) {
         addr = [addr substringFromIndex: 6];
@@ -78,7 +83,8 @@
     return NO;
 }
 
-- (BOOL) connectToAddress: (NSString *) addr port: (unsigned int) port {
+- (BOOL) connectToAddress: (NSString *)addr port: (unsigned int)port
+{
     [_terminal clearAll];
     
     char slaveName[PATH_MAX];
@@ -147,15 +153,18 @@
     return YES;
 }
 
-- (void) receiveData: (NSData *) d {
-    [self receiveBytes: (unsigned char *)[d bytes] length: [d length]];
+- (void) receiveData: (NSData *)data
+{
+    [self receiveBytes: (unsigned char *)[data bytes] length: [data length]];
 }
 
-- (void) receiveBytes: (unsigned char *) bytes length: (NSUInteger) length {
+- (void) receiveBytes: (unsigned char *)bytes length: (NSUInteger)length
+{
     [_terminal feedBytes: bytes length: length connection: self];
 }
 
-- (void) sendBytes: (unsigned char *) msg length: (NSInteger) length {
+- (void) sendBytes: (unsigned char *)bytes length: (NSInteger)length
+{
     fd_set writeFileDescriptorSet, errorFileDescriptorSet;
     struct timeval timeout;
     int chunkSize;
@@ -187,21 +196,23 @@
         if (length > 4096) chunkSize = 4096;
         else chunkSize = length;
         
-        int size = write(_fileDescriptor, msg, chunkSize);
+        int size = write(_fileDescriptor, bytes, chunkSize);
         
-        msg += size;
+        bytes += size;
         length -= size;
     }
 }
 
-- (void) sendMessage: (NSData *) msg {
-    [self sendBytes: (unsigned char *)[msg bytes] length: [msg length]];
+- (void) sendData: (NSData *)data
+{
+    [self sendBytes: (unsigned char *)[data bytes] length: [data length]];
 }
 
 #pragma mark -
 #pragma mark 
 
-+ (void) readLoop: (YLSSH *) boss {
++ (void) readLoop: (YLSSH *)boss
+{
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
     fd_set readFileDescriptorSet, errorFileDescriptorSet;
     BOOL exit = NO;

@@ -44,8 +44,9 @@ static unsigned short gEmptyAttr;
 
 @implementation YLTerminal
 
-- (id) init {
-    if (self = [super init]) {
+- (YLTerminal *) init
+{
+    if ([super init]) {
         _savedCursorX = _savedCursorY = -1;
         _row = [[YLLGlobalConfig sharedInstance] row];
         _column = [[YLLGlobalConfig sharedInstance] column];
@@ -64,7 +65,10 @@ static unsigned short gEmptyAttr;
     return self;
 }
 
-- (void) dealloc {
+- (void) dealloc
+{
+    [_connection release];
+    [_pluginLoader release];
     delete _csBuf;
     delete _csArg;
     int i;
@@ -76,7 +80,8 @@ static unsigned short gEmptyAttr;
 
 # pragma mark -
 # pragma mark Input Interface
-- (void) feedData: (NSData *) data connection: (id) connection{
+- (void) feedData: (NSData *)data connection: (id)connection
+{
     [self feedBytes: (const unsigned char *)[data bytes] length: [data length] connection: connection];
     [_pluginLoader feedData: data];
 }
@@ -120,7 +125,8 @@ if (_cursorX <= _column - 1) { \
     _cursorX++; \
 }
 
-- (void) feedBytes: (const unsigned char *) bytes length: (int) len connection: (id) connection {
+- (void) feedBytes: (const unsigned char *)bytes length: (int)len connection: (id)connection
+{
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
 
     int i, x, y;
@@ -809,7 +815,7 @@ if (_cursorX <= _column - 1) { \
         [self updateDoubleByteStateForRow: i];
         [self updateURLStateForRow: i];
     }
-    [_delegate performSelector: @selector(tick:)
+    [_delegate performSelector: @selector(tick)
                     withObject: nil
                     afterDelay: 0.07];
     
@@ -819,20 +825,23 @@ if (_cursorX <= _column - 1) { \
 # pragma mark -
 # pragma mark Start / Stop
 
-- (void) startConnection {
+- (void) startConnection
+{
     [self clearAll];
     [_delegate updateBackedImage];
     [_delegate setNeedsDisplay: YES];
 }
 
-- (void) closeConnection {
+- (void) closeConnection
+{
     [_delegate setNeedsDisplay: YES];
 }
 
 # pragma mark -
 # pragma mark Clear
 
-- (void) clearAll {
+- (void) clearAll
+{
     _cursorX = _cursorY = 0;
     attribute t;
     t.f.fgColor = [YLLGlobalConfig sharedInstance]->_fgColorIndex;
@@ -866,11 +875,13 @@ if (_cursorX <= _column - 1) { \
     _reverse = NO;
 }
 
-- (void) clearRow: (int) r {
+- (void) clearRow: (int)r
+{
     [self clearRow: r fromStart: 0 toEnd: _column - 1];
 }
 
-- (void) clearRow: (int) r fromStart: (int) s toEnd: (int) e {
+- (void) clearRow: (int)r fromStart: (int)s toEnd: (int)e
+{
     int i;
     for (i = s; i <= e; i++) {
         _grid[r][i].byte = '\0';
@@ -883,34 +894,40 @@ if (_cursorX <= _column - 1) { \
 # pragma mark -
 # pragma mark Dirty
 
-- (void) setAllDirty {
+- (void) setAllDirty
+{
     int i, end = _column * _row;
     for (i = 0; i < end; i++)
         _dirty[i] = YES;
 }
 
-- (void) setDirtyForRow: (int) r {
+- (void) setDirtyForRow: (int)r
+{
     int i, end = _column * _row;
     for (i = r * _column; i < end; i++)
         _dirty[i] = YES;
 }
 
-- (BOOL) isDirtyAtRow: (int) r column:(int) c {
+- (BOOL) isDirtyAtRow: (int)r column: (int)c
+{
     return _dirty[(r) * _column + (c)];
 }
 
-- (void) setDirty: (BOOL) d atRow: (int) r column: (int) c {
+- (void) setDirty: (BOOL)d atRow: (int)r column: (int)c
+{
     _dirty[(r) * _column + (c)] = d;
 }
 
 # pragma mark -
 # pragma mark Access Data
 
-- (attribute) attrAtRow: (int) r column: (int) c {
+- (attribute) attrAtRow: (int)r column: (int)c
+{
     return _grid[r][c].attr;
 }
 
-- (NSString *) stringFromIndex: (int) begin length: (int) length {
+- (NSString *) stringFromIndex: (int)begin length: (int)length
+{
     int i, j;
     unichar textBuf[_row * (_column + 1) + 1];
     unichar firstByte = 0;
@@ -949,14 +966,16 @@ if (_cursorX <= _column - 1) { \
     return [[[NSString alloc] initWithCharacters: textBuf length: bufLength] autorelease];
 }
 
-- (cell *) cellsOfRow: (int) r {
+- (cell *) cellsOfRow: (int)r
+{
     return _grid[r];
 }
 
 # pragma mark -
 # pragma mark Update State
 
-- (void) updateDoubleByteStateForRow: (int) r {
+- (void) updateDoubleByteStateForRow: (int)r
+{
     cell *currRow = _grid[r];
     int i, db = 0;
     for (i = 0; i < _column; i++) {
@@ -970,7 +989,8 @@ if (_cursorX <= _column - 1) { \
     }
 }
 
-- (void) updateURLStateForRow: (int) r {
+- (void) updateURLStateForRow: (int)r
+{
     cell *currRow = _grid[r];
     /* TODO: use DFA to reduce the computation  */
     char *protocols[] = {"http://", "https://", "ftp://", "telnet://", "bbs://", "ssh://", "mailto:"};
@@ -1014,7 +1034,8 @@ if (_cursorX <= _column - 1) { \
     }
 }
 
-- (NSString *) urlStringAtRow: (int) r column: (int) c {
+- (NSString *) urlStringAtRow: (int)r column: (int)c
+{
     if (!_grid[r][c].attr.f.url) return nil;
 
     while (_grid[r][c].attr.f.url) {
@@ -1050,35 +1071,27 @@ if (_cursorX <= _column - 1) { \
 # pragma mark -
 # pragma mark Accessor
 
-- (void) setDelegate: (id) d {
-    _delegate = d; // Yes, this is delegation. We shouldn't own the delegation object.
-}
+@synthesize delegate = _delegate;
+@synthesize cursorRow = _cursorY;
+@synthesize cursorColumn = _cursorX;
 
-- (id) delegate {
-    return _delegate;
-}
-
-- (int) cursorRow {
-    return _cursorY;
-}
-
-- (int) cursorColumn {
-    return _cursorX;
-}
-
-- (YLEncoding)encoding {
+- (YLEncoding) encoding
+{
     return [[[self connection] site] encoding];
 }
 
-- (void)setEncoding:(YLEncoding)encoding {
+- (void) setEncoding: (YLEncoding)encoding
+{
     [[[self connection] site] setEncoding: encoding];
 }
 
-- (BOOL)hasMessage {
+- (BOOL) hasMessage
+{
     return _hasMessage;
 }
 
-- (void)setHasMessage:(BOOL)value {
+- (void) setHasMessage: (BOOL)value
+{
     if (_hasMessage != value) {
         _hasMessage = value;
         YLLGlobalConfig *config = [YLLGlobalConfig sharedInstance];
@@ -1100,22 +1113,7 @@ if (_cursorX <= _column - 1) { \
     }
 }
 
-- (YLConnection *)connection {
-    return _connection;
-}
-
-- (void)setConnection:(YLConnection *)value {
-    _connection = value;
-}
-
-- (YLPluginLoader *)pluginLoader
-{
-    return _pluginLoader;
-}
-
-- (void)setPluginLoader:(YLPluginLoader *)value
-{
-    _pluginLoader = value;
-}
+@synthesize connection = _connection;
+@synthesize pluginLoader = _pluginLoader;
 
 @end

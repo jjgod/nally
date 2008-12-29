@@ -11,15 +11,16 @@
 
 @implementation YLMarkedTextView
 
-- (id)initWithFrame:(NSRect)frame {
-    self = [super initWithFrame:frame];
-    if (self) {
+- (id) initWithFrame: (NSRect)frame
+{
+    if ([super initWithFrame: frame]) {
 		[self setDefaultFont: [NSFont fontWithName: @"Lucida Grande" size: 20]];
     }
     return self;
 }
 
-- (void)drawRect:(NSRect)rect {
+- (void) drawRect: (NSRect)rect
+{
 	CGContextRef context = (CGContextRef) [[NSGraphicsContext currentContext] graphicsPort];
 	CGContextSaveGState(context);
 	
@@ -107,11 +108,13 @@
 
 
 
-- (NSAttributedString *)string {
+- (NSAttributedString *) string
+{
     return [[_string retain] autorelease];
 }
 
-- (void)setString:(NSAttributedString *)value {
+- (void) setString: (NSAttributedString *)value
+{
 	NSMutableAttributedString *as = [[NSMutableAttributedString alloc] initWithAttributedString: value];
 	[as addAttribute: NSFontAttributeName 
 			   value: _defaultFont
@@ -132,29 +135,35 @@
 	CFRelease(line);
 }
 
-- (NSRange)markedRange {
+- (NSRange) markedRange
+{
     return _markedRange;
 }
 
-- (void)setMarkedRange:(NSRange)value {
+- (void) setMarkedRange: (NSRange)value
+{
 	_markedRange = value;
 	[self setNeedsDisplay: YES];
 }
 
-- (NSRange)selectedRange {
+- (NSRange) selectedRange
+{
     return _selectedRange;
 }
 
-- (void)setSelectedRange:(NSRange)value {
+- (void) setSelectedRange: (NSRange)value
+{
 	_selectedRange = value;
 	[self setNeedsDisplay: YES];
 }
 
-- (NSFont *)defaultFont {
+- (NSFont *) defaultFont
+{
     return [[_defaultFont retain] autorelease];
 }
 
-- (void)setDefaultFont:(NSFont *)value {
+- (void) setDefaultFont: (NSFont *)value
+{
     if (_defaultFont != value) {
         [_defaultFont release];
         _defaultFont = [value copy];
@@ -163,16 +172,19 @@
 	[self setNeedsDisplay: YES];
 }
 
-- (NSPoint)destination {
+- (NSPoint) destination
+{
     return _destination;
 }
 
-- (void)setDestination:(NSPoint)value {
+- (void) setDestination: (NSPoint)value
+{
         _destination = value;
 }
 
 
-- (BOOL) isOpaque {
+- (BOOL) isOpaque
+{
 	return NO;
 }
 

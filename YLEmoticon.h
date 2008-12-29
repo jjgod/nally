@@ -14,13 +14,10 @@
     NSString *_content;
 }
 
-- (NSString *)content;
-- (void)setContent:(NSString *)value;
-- (NSString *)name;
-- (void)setName:(NSString *)value;
++ (YLEmoticon *) emoticonWithDictionary: (NSDictionary *)dict;
+- (NSDictionary *) dictionaryOfEmoticon;
 
-
-+ (YLEmoticon *) emoticonWithDictionary: (NSDictionary *) d ;
-- (NSDictionary *) dictionaryOfEmoticon ;
+@property (copy) NSString *name;
+@property (copy) NSString *content;
 
 @end

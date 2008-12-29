@@ -178,22 +178,21 @@ enum {
     NUM_OPTS
 };
 
-@interface YLTelnet : YLConnection <YLConnectionProtocol> {
-    NSHost          * _host;
-    int               _port;
-    NSInputStream   * _inputStream;
-    NSOutputStream  * _outputStream;
+@interface YLTelnet : YLConnection {
+    NSHost *_host;
+    int _port;
+    NSInputStream *_inputStream;
+    NSOutputStream *_outputStream;
     
-	unsigned int	  _optStates[NUM_OPTS];
 	BOOL _echoing;
 	BOOL _editing;
 	BOOL _activated;
 	BOOL _synch;
 
-	unsigned char	  _typeOfOperation;
+	unsigned char _typeOfOperation;
 	
-	unsigned char	  _sbOption;
-	NSMutableData	* _sbBuffer;
+	unsigned char _sbOption;
+	NSMutableData *_sbBuffer;
 	
 	enum {
 		TOP_LEVEL, 

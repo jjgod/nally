@@ -8210,7 +8210,8 @@ unsigned short B2U[32768] = {
 unsigned short U2B[65536];
 unsigned short U2G[65536];
 
-void init_table() {
+void init_table() 
+{
 	unsigned short i;
 	for (i = 0; i < 32768; i++) 
 		U2B[B2U[i]] = i + 0x8000;
