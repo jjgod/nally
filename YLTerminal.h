@@ -132,6 +132,7 @@
     
     int _scrollBeginRow;
     int _scrollEndRow;
+	int _modeErasure;
     
     BOOL _hasMessage;
     YLConnection *_connection;

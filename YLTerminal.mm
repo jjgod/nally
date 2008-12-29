@@ -50,6 +50,7 @@ static unsigned short gEmptyAttr;
         _row = [[YLLGlobalConfig sharedInstance] row];
         _column = [[YLLGlobalConfig sharedInstance] column];
         _scrollBeginRow = 0; _scrollEndRow = _row - 1;
+		_modeErasure=0;
         _grid = (cell **) malloc(sizeof(cell *) * _row);
         int i;
         for (i = 0; i < _row; i++)
@@ -151,8 +152,10 @@ if (_cursorX <= _column - 1) { \
 				}
                 // not yet implement reverse-wrap
             } else if (c == C0S_HT ) { // HT  (Horizontal TABulation)
-                _cursorX=(int(_cursorX/8) + 1) * 8;
-                //mjhsieh: this implement is not yet tested
+                if(_modeErasure == 0)
+					_cursorX=(int(_cursorX/8) + 1) * 8;
+				else
+					_cursorX=_column - 1;
             } else if (c == 0x0A || c == 0x0B || c == 0x0C) {
                 // Linefeed(LF) or Vertical tab(VT) or Form feed (FF)
                 if (_cursorY == _scrollEndRow) {
@@ -626,17 +629,6 @@ if (_cursorX <= _column - 1) { \
                         int p = _csArg->front();
                         if (p == 0) {
                             //NSLog(@"ignore re/setting mode 0");
-                        } else if (p == 1) {
-                            //When set, the cursor keys send an ESC O prefix, rather than ESC [
-                        } else if (p == 2) {
-						    //NSLog(@"ignore re/setting Keyboard Action Mode (AM)");
-                        } else if (p == 4) {
-                            //NSLog(@"ignore re/setting Replace Mode (IRM)");
-                        } else if (p == 7) { // Text wraps to next line if longer than the length of the display area.
-                        } else if (p == 12) {
-                            //NSLog(@"ignore re/setting Send/receive (SRM)");
-                        } else if (p == 20) {
-                            //NSLog(@"ignore re/setting Normal Linefeed (LNM)");
 						} else if (p == -1) {
 							_csArg->pop_front();
 							if (_csArg->size()==1) {
@@ -644,6 +636,8 @@ if (_cursorX <= _column - 1) { \
 								if (p == 3) {
 									NSLog(@"132-column mode (re)setting are not supported.");
 									mode_cls=1;
+								} else if (p == 6) {
+								    _modeErasure=1;
 								} else {
 								    //NSLog(@"unsupported mode (re)setting <ESC>[?3 ....");
 								}
@@ -652,6 +646,17 @@ if (_cursorX <= _column - 1) { \
 							} else {
 								//NSLog(@"unsupported mode (re)setting <ESC>[? ....");
 							}
+                        } else if (p == 1) {
+                            //When set, the cursor keys send an ESC O prefix, rather than ESC [
+                        } else if (p == 2) {
+						    //NSLog(@"ignore re/setting Keyboard Action Mode (AM)");
+                        } else if (p == 4) {
+                            //NSLog(@"ignore re/setting Replace Mode (IRM)");
+                        } else if (p == 7) { // Autowrap mode (currently always on), not yet implemented
+                        } else if (p == 12) {
+                            //NSLog(@"ignore re/setting Send/receive (SRM)");
+                        } else if (p == 20) {
+                            //NSLog(@"ignore re/setting Normal Linefeed (LNM)");
                         } else {
                             //NSLog(@"unsupported mode setting %d",p);
 						}
@@ -687,8 +692,6 @@ if (_cursorX <= _column - 1) { \
                         int p = _csArg->front();
 					    if (p == 0) {
 							//NSLog(@"ignore re/setting mode 0");
-						} else if (p == 7) {
-							//Disables line wrapping.
 						} else if (p == -1) {
 							_csArg->pop_front();
 							if (_csArg->size()==1) {
@@ -696,12 +699,16 @@ if (_cursorX <= _column - 1) { \
 								if (p == 3) {
 									NSLog(@"132-column mode (re)setting are not supported.");
 									mode_cls=1;
+								} else if (p == 6) {
+								    _modeErasure=0;
 								} else {
 									//NSLog(@"unsupported mode resetting <ESC>[?3 ....");
 								}
 							} else {
-                              //NSLog(@"unsupported mode resetting <ESC>[? ....");
+								//NSLog(@"unsupported mode resetting <ESC>[? ....");
 							}
+						} else if (p == 7) {
+							//Disables line wrapping.
 						} else {
                             //NSLog(@"unsupported mode resetting %d",p);
 						}
