@@ -552,8 +552,8 @@ if (_cursorX <= _column - 1) { \
                                 _grid[_cursorY][i].byte = '\0';
                                 _grid[_cursorY][i].attr.v = gEmptyAttr;
                                 _grid[_cursorY][i].attr.f.bgColor = _bgColor;
-                                _dirty[_cursorY * _column + i] = YES;
                             }
+							_dirty[_cursorY * _column + i] = YES;
                         }
                     } else
                         NSLog(@"unprocess number of delete: %d",p);
@@ -784,7 +784,7 @@ if (_cursorX <= _column - 1) { \
                         if (s > e) s = (*_csArg)[1], e = (*_csArg)[0];
                         _scrollBeginRow = s - 1;
                         _scrollEndRow = e - 1;
-						NSLog(@"Assigning Scrolling Region between line %d and line %d",s,e);
+						//NSLog(@"Assigning Scrolling Region between line %d and line %d",s,e);
                     }
                 } else if (c == CSI_SCP) {
                     _savedCursorX = _cursorX;
