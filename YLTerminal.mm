@@ -51,7 +51,7 @@ static unsigned short gEmptyAttr;
         _row = [[YLLGlobalConfig sharedInstance] row];
         _column = [[YLLGlobalConfig sharedInstance] column];
         _scrollBeginRow = 0; _scrollEndRow = _row - 1;
-		_modeErasure=0;
+		_modeErasure = 0;
         _grid = (cell **) malloc(sizeof(cell *) * _row);
         int i;
         for (i = 0; i < _row; i++)
@@ -141,35 +141,35 @@ if (_cursorX <= _column - 1) { \
         {
         case TP_NORMAL:
             if (NO) { // code alignment
-            } else if (c == C0S_NUL) { // do nothing (eat the code)
-            } else if (c == C0S_ETX) { // FLOW CONTROL?
-            } else if (c == C0S_EQT) { // FLOW CONTROL?
-            } else if (c == C0S_ENQ) { // FLOW CONTROL?
-            } else if (c == C0S_ACK) { // FLOW CONTROL?
-            } else if (c == C0S_BEL) {
+            } else if (c == C0S_NUL) { // do nothing
+            } else if (c == C0S_ETX) { // FLOW CONTROL? do nothing
+            } else if (c == C0S_EQT) { // FLOW CONTROL? do nothing
+            } else if (c == C0S_ENQ) { // FLOW CONTROL? do nothing
+            } else if (c == C0S_ACK) { // FLOW CONTROL? do nothing
+            } else if (c == C0S_BEL) { // BEEP
                 [[NSSound soundNamed: @"Whit.aiff"] play];
                 [self setHasMessage: YES];
-            } else if (c == C0S_BS ) {
-				// When on the right edge, back twice
+            } else if (c == C0S_BS ) { // ^H, backspace
 				if (_cursorX == _column) {
+                    // walk back two chars from the edge
 					_cursorX -= 2;
 				} else if (_cursorX > 0) {
+                    // mostly just walking back one char
                     _cursorX--;
 				}
-                // not yet implement reverse-wrap
-            } else if (c == C0S_HT ) { // HT  (Horizontal TABulation)
+                // reverse-wrap is not implemented yet
+            } else if (c == C0S_HT ) { // Horizontal TABulation
                 if(_modeErasure == 0)
+                    // Normally the tabulation stops for every 8 chars
 					_cursorX=(int(_cursorX/8) + 1) * 8;
 				else
+                   // in erasure mode, all stops are clear
 					_cursorX=_column - 1;
-            } else if (c == 0x0A || c == 0x0B || c == 0x0C) {
-                // Linefeed(LF) or Vertical tab(VT) or Form feed (FF)
+                // erasure mode is not fully tested yet
+            } else if (c == C0S_LF ||
+                       c == C0S_VT ||
+                       c == C0S_FF ) { // Linefeed or Vertical tab or Form feed
                 if (_cursorY == _scrollEndRow) {
-//                  if ((i != len - 1 && bytes[i + 1] != 0x0A) || 
-//                      (i != 0 && bytes[i - 1] != 0x0A)) {
-//                      [_delegate updateBackedImage];
-//                      [_delegate extendBottomFrom: _scrollBeginRow to: _scrollEndRow];
-//                  }
                     cell *emptyLine = _grid[_scrollBeginRow];
                     [self clearRow: _scrollBeginRow];
                     
@@ -183,7 +183,7 @@ if (_cursorX <= _column - 1) { \
                 }
             } else if (c == C0S_CR ) { // Go to the begin of this line
                 _cursorX = 0;
-            } else if (c == C0S_LS1) { //
+            } else if (c == C0S_LS1) { // do nothing for now
                 //LS1 (Locked Shift-One in Unicode) Selects G1 characteri
                 //set designated by a select character set sequence.
                 //However we drop it for now
@@ -240,7 +240,7 @@ if (_cursorX <= _column - 1) { \
         case TP_ESCAPE:
             if (c == C0S_ESC) { // ESCESC according to zterm this happens
                 _state = TP_ESCAPE;
-            } else if (c == 0x5B) { // 0x5B == '['
+            } else if (c == '[') { // 0x5B, CSI
                 _csBuf->clear();
                 _csArg->clear();
                 _csTemp = 0;
@@ -285,8 +285,8 @@ if (_cursorX <= _column - 1) { \
                 _cursorX = _savedCursorX;
                 _cursorY = _savedCursorY;
                 _state = TP_NORMAL;
-            } else if (c == 0x23) { // #
-                if (i<len-1 && bytes[i+1] == 0x38){ // 8  --> fill with E
+            } else if (c == '#') { // 0x23
+                if (i < len-1 && bytes[i+1] == '8'){ // 0x38  --> fill with E
                     i++;
 					for (y = 0; y <= _row-1; y++) {
 					    for (x = 0; x <= _column-1; x++) {
@@ -298,17 +298,17 @@ if (_cursorX <= _column - 1) { \
                 } else
                     NSLog(@"Unhandled <ESC># case");
                 _state = TP_NORMAL;
-            } else if (c == 0x28 ) { // '(' Font Set G0
+            } else if (c == '(') { // 0x28 Font Set G0
                 _state = TP_SCS;
-            } else if (c == 0x29 ) { // ')' Font Set G1
+            } else if (c == ')') { // 0x29 Font Set G1
                 _state = TP_SCS;
-            } else if (c == 0x3D ) { // '=' Application keypad mode (vt52)
+            } else if (c == '=') { // 0x3D Application keypad mode (vt52)
 //              NSLog(@"unprocessed request of application keypad mode");
                 _state = TP_NORMAL;
-            } else if (c == 0x3E ) { // '>' Numeric keypad mode (vt52)
+            } else if (c == '>') { // 0x3E Numeric keypad mode (vt52)
 //              NSLog(@"unprocessed request of numeric keypad mode");
                 _state = TP_NORMAL;
-            } else if (c == 0x45 ) { // 'E' NEL Next Line (CR+Index)
+            } else if (c == 'E') { // 0x45 NEL Next Line (CR+Index)
                 _cursorX = 0;
                 if (_cursorY == _scrollEndRow) {
                     [_delegate updateBackedImage];
@@ -325,10 +325,10 @@ if (_cursorX <= _column - 1) { \
                     if (_cursorY >= _row) _cursorY = _row - 1;
                 }
                 _state = TP_NORMAL;
-//          } else if (c == 0x48 ) { // Set a tab at the current column
+//          } else if (c == 'H') { // 0x48 Set a tab at the current column
 //              Won't implement
 //              _state = TP_NORMAL;
-            } else if (c == 0x63 ) { // 'c' RIS reset
+            } else if (c == 'c') { // 0x63 RIS reset
                 [self clearAll];
                 _cursorX = 0, _cursorY = 0;
                 _state = TP_NORMAL;
@@ -340,13 +340,14 @@ if (_cursorX <= _column - 1) { \
             break;
 
         case TP_SCS:
-            if (c == '0') { //Special characters and line drawing set
+            if (NO) {
+            } else if (c == '0') { //Special characters and line drawing set
                 //NSLog(@"SCS argument: %c(0x%X)", c, c);
                 _state = TP_NORMAL;
             } else if (c == '1') { //Alternate character ROM
                 //NSLog(@"SCS argument: %c(0x%X)", c, c);
                 _state = TP_NORMAL;
-            } else if (c == '2') { //Alternate character ROM - special characters
+            } else if (c == '2') { //Alt character ROM - special characters
                 //NSLog(@"SCS argument: %c(0x%X)", c, c);
                 _state = TP_NORMAL;
             } else if (c == 'A') { //United Kingdom (UK)
@@ -366,7 +367,7 @@ if (_cursorX <= _column - 1) { \
                 _csBuf->push_back(c);
                 if (c >= '0' && c <= '9') {
                     _csTemp = _csTemp * 10 + (c - '0');
-				} else if (c == 0x3F) {
+				} else if (c == '?') {
 					_csArg->push_back(-1);
 					_csTemp = 0;
 					_csBuf->clear();
@@ -409,7 +410,6 @@ if (_cursorX <= _column - 1) { \
 						_cursorY -= p;
                     } else
                         _cursorY--;
-                    
                     if (_cursorY < 0) _cursorY = 0;
                 } else if (c == CSI_CUD) {
                     if (_csArg->size() > 0) {
@@ -418,7 +418,6 @@ if (_cursorX <= _column - 1) { \
                         _cursorY += p;
                     } else
                         _cursorY++;
-                    
                     if (_cursorY >= _row) _cursorY = _row - 1;
                 } else if (c == CSI_CUF) {
                     if (_csArg->size() > 0) {
@@ -427,7 +426,6 @@ if (_cursorX <= _column - 1) { \
                         _cursorX += p;
                     } else
                         _cursorX++;
-                    
                     if (_cursorX >= _column) _cursorX = _column - 1;
                 } else if (c == CSI_CUB) {
                     if (_csArg->size() > 0) {
@@ -436,7 +434,6 @@ if (_cursorX <= _column - 1) { \
                         _cursorX -= p;
                     } else
                         _cursorX--;
-                    
                     if (_cursorX < 0) _cursorX = 0;
                 } else if (c == CSI_CNL) {
                     _cursorX=0;
