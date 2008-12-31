@@ -450,13 +450,12 @@ if (_cursorX <= _column - 1) { \
                         _cursorY--;
                     if (_cursorY < 0) _cursorY = 0;
                 } else if (c == CSI_CHA) { // move to Pn position of current line
-                    if (_csArg->size() == 0) {
-                       _cursorX = 0;
-                    } else if (_csArg->size() > 0) {
-                       if ((*_csArg)[0] < 1) (*_csArg)[0] = 1;
-                       CURSOR_MOVETO((*_csArg)[1] - 1,_cursorY);
+                    if (_csArg->size() > 0) {
+                       int p = (*_csArg)[0];
+                       if (p < 1) p = 1;
+                       CURSOR_MOVETO(p - 1, _cursorY);
                     } else {
-                       CURSOR_MOVETO((*_csArg)[1] - 1,_cursorY);
+                       CURSOR_MOVETO(0, _cursorY);
                     }
                 } else if (c == CSI_HVP || c == CSI_CUP) { // Cursor Position
                     /*  ^[H			: go to row 1, column 1
@@ -465,16 +464,17 @@ if (_cursorX <= _column - 1) { \
                     if (_csArg->size() == 0) {
                         _cursorX = 0, _cursorY = 0;
                     } else if (_csArg->size() == 1) {
-                        if ((*_csArg)[0] < 1) (*_csArg)[0] = 1;
-						if (_scrollBeginRow > 0) (*_csArg)[0]+=_scrollBeginRow;
-                        CURSOR_MOVETO(0, (*_csArg)[0] - 1);
-                    } else {
-                        if ((*_csArg)[0] < 1) (*_csArg)[0] = 1;
-                        if ((*_csArg)[1] < 1) (*_csArg)[1] = 1;
-                        //NSLog(@"jump %c, %d x=%d, %d %d", c, _column, _cursorX, (*_csArg)[0], (*_csArg)[1]);
-						if (_scrollBeginRow > 0) (*_csArg)[0]+=_scrollBeginRow;
-                        CURSOR_MOVETO((*_csArg)[1] - 1, (*_csArg)[0] - 1);
-                        //[self setDirty: YES atRow: _cursorY column: _cursorX];
+                        int p = (*_csArg)[0];
+                        if (p < 1) p = 1;
+						if (_scrollBeginRow > 0) p += _scrollBeginRow;
+                        CURSOR_MOVETO(0, p - 1);
+                    } else if (_csArg->size() > 1) {
+                        int p = (*_csArg)[0];
+                        int q = (*_csArg)[1];
+                        if (p < 1) p = 1;
+                        if (q < 1) q = 1;
+						if (_scrollBeginRow > 0) p += _scrollBeginRow;
+                        CURSOR_MOVETO(q - 1, p - 1);
                     }
                 } else if (c == CSI_ED ) { // Erase Page (cursor does not move)
                     /*  ^[J, ^[0J	: clear from cursor position to end
@@ -482,14 +482,16 @@ if (_cursorX <= _column - 1) { \
                         ^[2J		: clear all */
                     int j;
                     if (_csArg->size() == 0 || _csArg->front() == 0) {
+                        // mjhsieh is not comfortable with putting _csArg lookup with
+                        // _csArg->size()==0
                         [self clearRow: _cursorY fromStart: _cursorX toEnd: _column - 1];
                         for (j = _cursorY + 1; j < _row; j++)
                             [self clearRow: j];
-                    } else if (_csArg->size() == 1 && _csArg->front() == 1) {
+                    } else if (_csArg->size() > 0 && _csArg->front() == 1) {
                         [self clearRow: _cursorY fromStart: 0 toEnd: _cursorX];
                         for (j = 0; j < _cursorY; j++)
                             [self clearRow: j];
-                    } else if (_csArg->size() == 1 && _csArg->front() == 2) {
+                    } else if (_csArg->size() > 0 && _csArg->front() == 2) {
                         [self clearAll];
                     }
                 } else if (c == CSI_EL ) { // Erase Line (cursor does not move)
@@ -498,9 +500,9 @@ if (_cursorX <= _column - 1) { \
                         ^[2K		: clear whole line */
                     if (_csArg->size() == 0 || _csArg->front() == 0) {
                         [self clearRow: _cursorY fromStart: _cursorX toEnd: _column - 1];
-                    } else if (_csArg->size() == 1 && _csArg->front() == 1) {
+                    } else if (_csArg->size() > 0 && _csArg->front() == 1) {
                         [self clearRow: _cursorY fromStart: 0 toEnd: _cursorX];
-                    } else if (_csArg->size() == 1 && _csArg->front() == 2) {
+                    } else if (_csArg->size() > 0 && _csArg->front() == 2) {
                         [self clearRow: _cursorY];
                     }
                 } else if (c == CSI_IL ) { // Insert Line
@@ -509,6 +511,7 @@ if (_cursorX <= _column - 1) { \
                         lineNumber = 1;
                     else if (_csArg->size() > 0)
                         lineNumber = _csArg->front();
+                    if (lineNumber < 1) lineNumber = 1; //mjhsieh is paranoid
 
                     int i;
                     for (i = 0; i < lineNumber; i++) {
@@ -527,6 +530,7 @@ if (_cursorX <= _column - 1) { \
                         lineNumber = 1;
                     else if (_csArg->size() > 0)
                         lineNumber = _csArg->front();
+                    if (lineNumber < 1) lineNumber = 1; //mjhsieh is paranoid
                     
                     int i;
                     for (i = 0; i < lineNumber; i++) {
@@ -560,24 +564,18 @@ if (_cursorX <= _column - 1) { \
                         }
                     } else
                         NSLog(@"unprocess number of delete: %d",p);
-				} else if (c == CSI_HPA) {
+				} else if (c == CSI_HPA) { // goto to absolute character position
 					int p = 0;
                     if (_csArg->size() > 0) {
-						if ((*_csArg)[0] < 1) {
-							p = 0;
-						} else {
-							p = (*_csArg)[0]-1;
-						}
+                        p = (*_csArg)[0]-1;
+						if (p < 0) p = 0;
                     }
 					CURSOR_MOVETO(p,_cursorY);
-				} else if (c == CSI_HPR) {
+				} else if (c == CSI_HPR) { // goto to the next position of the line
 					int p = 1;
                     if (_csArg->size() > 0) {
-						if ((*_csArg)[0] < 1) {
-							p = 1;
-						} else {
-							p = (*_csArg)[0];
-						}
+                        p = (*_csArg)[0];
+						if (p < 1) p = 1;
                     }
 					CURSOR_MOVETO(_cursorX+p,_cursorY);					
 //				} else if (c == CSI_REP) { // REPEAT, not going to implement unless ESC#8 gets it
@@ -592,29 +590,23 @@ if (_cursorX <= _column - 1) { \
 					cmd[cmdLength++] = 0x36;
 					cmd[cmdLength++] = 0x63;
 					// if VT100 is specified, use ESC[?1;0c
-                    if ( _csArg->empty() ) {
+                    if (_csArg->empty()) {
 						[[self connection] sendBytes:cmd length:cmdLength];
-					} else if ( _csArg->size() == 1 && (*_csArg)[0] == 0 ){
+					} else if (_csArg->size() == 1 && (*_csArg)[0] == 0){
                         [[self connection] sendBytes:cmd length:cmdLength];
                     }
                 } else if (c == CSI_VPA) { // move to Pn line, col remaind the same
 					int p = 0;
                     if (_csArg->size() > 0) {
-						if ((*_csArg)[0] < 1) {
-							p = 0;
-						} else {
-							p = (*_csArg)[0]-1;
-						}
+						p = (*_csArg)[0]-1;
+						if (p < 0) p = 0;
                     }
 					CURSOR_MOVETO(_cursorX,p);
                 } else if (c == CSI_VPR) { // move to Pn Line in forward direction
 					int p = 1;
                     if (_csArg->size() > 0) {
-						if ((*_csArg)[0] < 1) {
-							p = 1;
-						} else {
-							p = (*_csArg)[0];
-						}
+						p = (*_csArg)[0];
+						if (p < 1) p = 1;
                     }
 					CURSOR_MOVETO(_cursorX,_cursorY+p);
                 } else if (c == CSI_TBC) { // Clear a tab at the current column
