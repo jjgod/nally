@@ -13,41 +13,83 @@
 #import "YLConnection.h"
 #import "YLPluginLoader.h"
 
-// Elements of the C0 set
-#define C0S_NUL     0x00 // NULL
-#define C0S_SOH     0x01 // START OF HEADING
-#define C0S_STX     0x02 // START OF TEXT
-#define C0S_ETX     0x03 // END OF TEXT
-#define C0S_EQT     0x04 // END OF TRANSMISSION
-#define C0S_ENQ     0x05 // ENQUIRE
-#define C0S_ACK     0x06 // ACKNOWLEDGE
-#define C0S_BEL     0x07 // BELL (BEEP)
-#define C0S_BS      0x08 // BACKSPACE
-#define C0S_HT      0x09 // HORIZONTAL TABULATION
-#define C0S_LF      0x0A // LINE FEED
-#define C0S_VT      0x0B // Virtical Tabulation
-#define C0S_FF      0x0C // Form Feed
-#define C0S_CR      0x0D // Carriage Return
-#define C0S_LS1     0x0E // Shift Out
-#define C0S_LS0     0x0F // Shift In
-#define C0S_DLE     0x10 // Data Link Escape, normally MODEM
-#define C0S_DC1     0x11 // Device Control One, XON
-#define C0S_DC2     0x12 // Device Control Two
-#define C0S_DC3     0x13 // Device Control Three, XOFF
-#define C0S_DC4     0x14 // Device Control Four
-#define C0S_NAK     0x15 // Negative Acknowledge
-#define C0S_SYN     0x16 // Synchronous Idle
-#define C0S_ETB     0x17 // End of Transmission Block
-#define C0S_CAN     0x18 // Cancel
-#define C0S_EM      0x19 // End of Medium
-#define C0S_SUB     0x1A // Substitute
-#define C0S_ESC     0x1B // Escape
-#define C0S_FS      0x1C // File Separator
-#define C0S_GS      0x1D // Group Separator
-#define C0S_RS      0x1E // Record Separator
-#define C0S_US      0x1F // Unit Separator
-//#define ASC_DEL     0x7F // Delete, Ignored on input; not stored in buffer.
-#define CSI_ICH     0x40 // INSERT CHARACTER requires DCSM implementation
+// single character control command
+#define ASC_NUL     0x00 // NULL
+#define ASC_SOH     0x01 // START OF HEADING
+#define ASC_STX     0x02 // START OF TEXT
+#define ASC_ETX     0x03 // END OF TEXT
+#define ASC_EQT     0x04 // END OF TRANSMISSION
+#define ASC_ENQ     0x05 // ENQUIRE
+#define ASC_ACK     0x06 // ACKNOWLEDGE
+#define ASC_BEL     0x07 // BELL (BEEP)
+#define ASC_BS      0x08 // BACKSPACE
+#define ASC_HT      0x09 // HORIZONTAL TABULATION
+#define ASC_LF      0x0A // LINE FEED
+#define ASC_VT      0x0B // Virtical Tabulation
+#define ASC_FF      0x0C // Form Feed
+#define ASC_CR      0x0D // Carriage Return
+#define ASC_LS1     0x0E // Shift Out
+#define ASC_LS0     0x0F // Shift In
+#define ASC_DLE     0x10 // Data Link Escape, normally MODEM
+#define ASC_DC1     0x11 // Device Control One, XON
+#define ASC_DC2     0x12 // Device Control Two
+#define ASC_DC3     0x13 // Device Control Three, XOFF
+#define ASC_DC4     0x14 // Device Control Four
+#define ASC_NAK     0x15 // Negative Acknowledge
+#define ASC_SYN     0x16 // Synchronous Idle
+#define ASC_ETB     0x17 // End of Transmission Block
+#define ASC_CAN     0x18 // Cancel
+#define ASC_EM      0x19 // End of Medium
+#define ASC_SUB     0x1A // Substitute
+#define ASC_ESC     0x1B // Escape
+#define ASC_FS      0x1C // File Separator
+#define ASC_GS      0x1D // Group Separator
+#define ASC_RS      0x1E // Record Separator
+#define ASC_US      0x1F // Unit Separator
+#define ASC_DEL     0x7F // Delete, Ignored on input; not stored in buffer.
+
+// Escape Sequence
+#define ESC_HASH    0x23 // #, Several DEC modes..
+#define ESC_sG0     0x28 // (, Font Set G0
+#define ESC_sG1     0x29 // ), Font Set G1
+#define ESC_APPK    0x3D // =, Appl. keypad
+#define ESC_NUMK    0x3E // >, Numeric keypad
+#define ESC_DECSC   0x37 // 7,
+#define ESC_DECRC   0x38 // 8,
+#define ESC_BPH     0x42 // B,
+#define ESC_NBH     0x43 // C,
+#define ESC_IND     0x44 // D, Index
+#define ESC_NEL     0x45 // E, Next Line
+#define ESC_SSA     0x46 // F,
+#define ESC_ESA     0x47 // G,
+#define ESC_HTS     0x48 // H,
+#define ESC_HTJ     0x49 // I,
+#define ESC_VTS     0x4A // J,
+#define ESC_PLD     0x4B // K,
+#define ESC_PLU     0x4C // L,
+#define ESC_RI      0x4D // M, Reverse Index
+#define ESC_SS2     0x4E // N,
+#define ESC_SS3     0x4F // O,
+#define ESC_DCS     0x50 // P,
+#define ESC_PU1     0x51 // Q,
+#define ESC_PU2     0x52 // R,
+#define ESC_STS     0x53 // S,
+#define ESC_CCH     0x54 // T,
+#define ESC_MW      0x55 // U,
+#define ESC_SPA     0x56 // V,
+#define ESC_EPA     0x57 // W,
+#define ESC_SOS     0x58 // X,
+//#define ESC_      0x59 // Y,
+#define ESC_SCI     0x5A // Z,
+#define ESC_CSI     0x5B // [,
+#define ESC_ST      0x5C // \,
+#define ESC_OSC     0x5D // ],
+#define ESC_PM      0x5E // ^,
+#define ESC_APC     0x5F // _,
+#define ESC_RIS     0x63 // c, RIS reset
+
+// Control sequences
+#define CSI_ICH     0x40 // INSERT CHARACTER, requires DCSM implementation
 #define CSI_CUU     0x41 // A, CURSOR UP
 #define CSI_CUD     0x42 // B, CURSOR DOWN
 #define CSI_CUF     0x43 // C, CURSOR FORWARD
