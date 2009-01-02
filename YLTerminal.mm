@@ -546,36 +546,32 @@ if (_cursorX <= _column - 1) { \
                         [self setDirtyForRow: i];
                 } else if (c == CSI_DCH) { // Delete characters at the current cursor position.
                     int i;
-                    int p;
+                    int p = 1;
                     if (_csArg->size() == 1) {
                         p = _csArg->front();
-                    } else {
-                        p = 1;
                     }
-                    if (p > 0) {
-                        for (i = _cursorX; i <= _column - 1; i++){
-                            if ( i <= _column - 1 - p ) {
-                                _grid[_cursorY][i] = _grid[_cursorY][i+p];
-                            } else {
-                                _grid[_cursorY][i].byte = '\0';
-                                _grid[_cursorY][i].attr.v = gEmptyAttr;
-                                _grid[_cursorY][i].attr.f.bgColor = _bgColor;
-                            }
-							_dirty[_cursorY * _column + i] = YES;
+                    if (p < 1) p = 1;
+                    for (i = _cursorX; i <= _column - 1; i++){
+                        if ( i <= _column - 1 - p ) {
+                            _grid[_cursorY][i] = _grid[_cursorY][i+p];
+                        } else {
+                            _grid[_cursorY][i].byte = '\0';
+                            _grid[_cursorY][i].attr.v = gEmptyAttr;
+                            _grid[_cursorY][i].attr.f.bgColor = _bgColor;
                         }
-                    } else
-                        NSLog(@"unprocess number of delete: %d",p);
+						_dirty[_cursorY * _column + i] = YES;
+                    }
 				} else if (c == CSI_HPA) { // goto to absolute character position
 					int p = 0;
                     if (_csArg->size() > 0) {
-                        p = (*_csArg)[0]-1;
+                        p = _csArg->front()-1;
 						if (p < 0) p = 0;
                     }
 					CURSOR_MOVETO(p,_cursorY);
 				} else if (c == CSI_HPR) { // goto to the next position of the line
 					int p = 1;
                     if (_csArg->size() > 0) {
-                        p = (*_csArg)[0];
+                        p = _csArg->front();
 						if (p < 1) p = 1;
                     }
 					CURSOR_MOVETO(_cursorX+p,_cursorY);					
@@ -599,14 +595,14 @@ if (_cursorX <= _column - 1) { \
                 } else if (c == CSI_VPA) { // move to Pn line, col remaind the same
 					int p = 0;
                     if (_csArg->size() > 0) {
-						p = (*_csArg)[0]-1;
+						p = _csArg->front()-1;
 						if (p < 0) p = 0;
                     }
 					CURSOR_MOVETO(_cursorX,p);
                 } else if (c == CSI_VPR) { // move to Pn Line in forward direction
 					int p = 1;
                     if (_csArg->size() > 0) {
-						p = (*_csArg)[0];
+						p = _csArg->front();
 						if (p < 1) p = 1;
                     }
 					CURSOR_MOVETO(_cursorX,_cursorY+p);
@@ -665,21 +661,15 @@ if (_cursorX <= _column - 1) { \
                 } else if (c == CSI_HPB) { // move to Pn Location in backward direction, same raw
 					int p = 1;
                     if (_csArg->size() > 0) {
-						if ((*_csArg)[0] < 1) {
-							p = 1;
-						} else {
-							p = (*_csArg)[0];
-						}
+						p = _csArg->front();
+						if (p < 1) p = 1;
                     }
-					CURSOR_MOVETO(_cursorX+p,_cursorY);										
+					CURSOR_MOVETO(_cursorX-p,_cursorY);										
                 } else if (c == CSI_VPB) { // move to Pn Line in backward direction
 					int p = 1;
                     if (_csArg->size() > 0) {
-						if ((*_csArg)[0] < 1) {
-							p = 1;
-						} else {
-							p = (*_csArg)[0];
-						}
+						p = _csArg->front();
+						if (p < 1) p = 1;
                     }
 					CURSOR_MOVETO(_cursorX,_cursorY-p);
                 } else if (c == CSI_RM ) { // reset mode
@@ -690,7 +680,7 @@ if (_cursorX <= _column - 1) { \
 							//NSLog(@"ignore re/setting mode 0");
 						} else if (p == -1) {
 							_csArg->pop_front();
-							if (_csArg->size()==1) {
+							if (_csArg->size() == 1) {
 								p = _csArg->front();
 								if (p == 3) {
 									NSLog(@"132-column mode (re)setting are not supported.");
@@ -765,9 +755,9 @@ if (_cursorX <= _column - 1) { \
 						// Report Device OK	<ESC>[y;xR
 						cmd[cmdLength++] = 0x1B;
 						cmd[cmdLength++] = 0x5B;
-						cmd[cmdLength++] = _cursorY+1;
+						cmd[cmdLength++] = _cursorY + 1;
 						cmd[cmdLength++] = 0x3B;
-						cmd[cmdLength++] = _cursorX+1;
+						cmd[cmdLength++] = _cursorX + 1;
 						cmd[cmdLength++] = CSI_CPR;
 					}
                 } else if (c == CSI_DECSTBM) { // Assigning Scrolling Region
