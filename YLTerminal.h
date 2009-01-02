@@ -174,9 +174,10 @@
     
     int _scrollBeginRow;
     int _scrollEndRow;
-	int _modeErasure;
     
     BOOL _hasMessage;
+    BOOL _doErasure;
+    BOOL _doWraptext;
     YLConnection *_connection;
     YLPluginLoader *_pluginLoader;
 }

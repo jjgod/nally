@@ -51,7 +51,8 @@ static unsigned short gEmptyAttr;
         _row = [[YLLGlobalConfig sharedInstance] row];
         _column = [[YLLGlobalConfig sharedInstance] column];
         _scrollBeginRow = 0; _scrollEndRow = _row - 1;
-		_modeErasure = 0;
+		_doErasure = NO;
+        _doWraptext = YES;
         _grid = (cell **) malloc(sizeof(cell *) * _row);
         int i;
         for (i = 0; i < _row; i++)
@@ -98,7 +99,7 @@ if (_cursorX <= _column - 1) { \
     _grid[_cursorY][_cursorX].attr.f.url = NO; \
     [self setDirty: YES atRow: _cursorY column: _cursorX]; \
     _cursorX++; \
-} else if (_cursorX == _column) { \
+} else if (_cursorX == _column && _doWraptext == YES) { \
     _cursorX = 0; \
     if (_cursorY == _scrollEndRow) { \
     	[_delegate updateBackedImage]; \
@@ -159,7 +160,7 @@ if (_cursorX <= _column - 1) { \
 				}
                 // reverse-wrap is not implemented yet
             } else if (c == ASC_HT ) { // Horizontal TABulation
-                if(_modeErasure == 0)
+                if(_doErasure == NO)
                     // Normally the tabulation stops for every 8 chars
 					_cursorX=(int(_cursorX/8) + 1) * 8;
 				else
@@ -629,7 +630,9 @@ if (_cursorX <= _column - 1) { \
 									NSLog(@"132-column mode (re)setting are not supported.");
 									mode_cls=1;
 								} else if (p == 6) {
-								    _modeErasure=1;
+								    _doErasure = YES;
+                                } else if (p == 7) {
+                                    _doWraptext = YES;
 								} else {
 								    //NSLog(@"unsupported mode (re)setting <ESC>[?3 ....");
 								}
@@ -644,7 +647,6 @@ if (_cursorX <= _column - 1) { \
 						    //NSLog(@"ignore re/setting Keyboard Action Mode (AM)");
                         } else if (p == 4) {
                             //NSLog(@"ignore re/setting Replace Mode (IRM)");
-                        } else if (p == 7) { // Autowrap mode (currently always on), not yet implemented
                         } else if (p == 12) {
                             //NSLog(@"ignore re/setting Send/receive (SRM)");
                         } else if (p == 20) {
@@ -686,15 +688,15 @@ if (_cursorX <= _column - 1) { \
 									NSLog(@"132-column mode (re)setting are not supported.");
 									mode_cls=1;
 								} else if (p == 6) {
-								    _modeErasure=0;
+								    _doErasure = NO;
+						        } else if (p == 7) { //Disables line wrapping.
+                                    _doWraptext = NO;
 								} else {
 									//NSLog(@"unsupported mode resetting <ESC>[?3 ....");
 								}
 							} else {
 								//NSLog(@"unsupported mode resetting <ESC>[? ....");
 							}
-						} else if (p == 7) {
-							//Disables line wrapping.
 						} else {
                             //NSLog(@"unsupported mode resetting %d",p);
 						}
