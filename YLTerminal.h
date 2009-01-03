@@ -176,10 +176,12 @@
     int _scrollEndRow;
     
     BOOL _hasMessage;
-  //BOOL _modeErasure;
-    BOOL _modeWraptext;
-    BOOL _modeScreenReverse;
-    BOOL _modeLNM; // line feed (true), new line (false)
+	
+    BOOL _modeScreenReverse;  // reverse (true), not reverse (false)
+	BOOL _modeOriginRelative; // relative origin (true), absolute origin (false)
+    BOOL _modeWraptext;       // autowrap (true), wrap disabled (false)
+    BOOL _modeLNM;            // line feed (true), new line (false)
+
     YLConnection *_connection;
     YLPluginLoader *_pluginLoader;
 }

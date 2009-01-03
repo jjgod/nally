@@ -54,10 +54,10 @@ static unsigned short gEmptyAttr;
         _row = [[YLLGlobalConfig sharedInstance] row];
         _column = [[YLLGlobalConfig sharedInstance] column];
         _scrollBeginRow = 0; _scrollEndRow = _row - 1;
-		//_modeErasure = NO;
-        _modeWraptext = YES;
         _modeScreenReverse = NO;
-		_modeLNM = YES; // default: use Line Feed Mode
+		_modeOriginRelative = NO;
+        _modeWraptext = YES;
+		_modeLNM = YES;
         _grid = (cell **) malloc(sizeof(cell *) * _row);
         int i;
         for (i = 0; i < _row; i++)
@@ -165,13 +165,8 @@ if (_cursorX <= _column - 1) { \
 				}
                 // reverse-wrap is not implemented yet
             } else if (c == ASC_HT ) { // Horizontal TABulation
-                //if(_modeErasure == NO)
-                    // Normally the tabulation stops for every 8 chars
-					_cursorX=(int(_cursorX/8) + 1) * 8;
-				//else
-                    // in erasure mode, all stops are clear
-					//_cursorX=_column - 1;
-                // erasure mode is not fully tested yet
+                // Normally the tabulation stops for every 8 chars
+				_cursorX=(int(_cursorX/8) + 1) * 8;
             } else if (c == ASC_LF ||
                        c == ASC_VT ||
                        c == ASC_FF ) { // Linefeed or Vertical tab or Form feed
@@ -334,7 +329,7 @@ if (_cursorX <= _column - 1) { \
                 }
                 _state = TP_NORMAL;
 //          } else if (c == ESC_HTS) { // 0x48 Set a tab at the current column
-//              Might implement
+//              Please implement
 //              _state = TP_NORMAL;
             } else if (c == ESC_RIS) { // 0x63 RIS reset
                 [self clearAll];
@@ -348,26 +343,23 @@ if (_cursorX <= _column - 1) { \
             break;
 
         case TP_SCS:
-            if (NO) {
+/*
+			if (NO) {
             } else if (c == '0') { //Special characters and line drawing set
-                //NSLog(@"SCS argument: %c(0x%X)", c, c);
                 _state = TP_NORMAL;
             } else if (c == '1') { //Alternate character ROM
-                //NSLog(@"SCS argument: %c(0x%X)", c, c);
                 _state = TP_NORMAL;
             } else if (c == '2') { //Alt character ROM - special characters
-                //NSLog(@"SCS argument: %c(0x%X)", c, c);
                 _state = TP_NORMAL;
             } else if (c == 'A') { //United Kingdom (UK)
-                //NSLog(@"SCS argument: %c(0x%X)", c, c);
                 _state = TP_NORMAL;
             } else if (c == 'B') { //United States (US)
-                //NSLog(@"SCS argument: %c(0x%X)", c, c);
                 _state = TP_NORMAL;
             } else {
-                NSLog(@"SCS argument exception: %c(0x%X)", c, c);
                 _state = TP_NORMAL;
             }
+ */
+            _state = TP_NORMAL;
             break;
 
         case TP_CONTROL:
@@ -419,7 +411,11 @@ if (_cursorX <= _column - 1) { \
 						_cursorY -= p;
                     } else
                         _cursorY--;
-                    if (_cursorY < 0) _cursorY = 0;
+					if (_modeOriginRelative && _cursorY < _scrollBeginRow) {
+						_cursorY = _scrollBeginRow;
+					} else if (_cursorY < 0) {
+						_cursorY = 0;
+					}
                 } else if (c == CSI_CUD) {
                     if (_csArg->size() > 0) {
                         int p = _csArg->front();
@@ -427,7 +423,11 @@ if (_cursorX <= _column - 1) { \
                         _cursorY += p;
                     } else
                         _cursorY++;
-                    if (_cursorY >= _row) _cursorY = _row - 1;
+					if (_modeOriginRelative && _cursorY > _scrollEndRow) {
+						_cursorY = _scrollEndRow;
+					} else if (_cursorY >= _row) {
+						_cursorY = _row - 1;
+					}
                 } else if (c == CSI_CUF) {
                     if (_csArg->size() > 0) {
                         int p = _csArg->front();
@@ -475,14 +475,20 @@ if (_cursorX <= _column - 1) { \
                     } else if (_csArg->size() == 1) {
                         int p = _csArg->front();
                         if (p < 1) p = 1;
-						if (_scrollBeginRow > 0) p += _scrollBeginRow;
+						if (_modeOriginRelative && _scrollBeginRow > 0) {
+							p += _scrollBeginRow;
+							if (p > _scrollEndRow) p = _scrollEndRow + 1;
+						}
                         CURSOR_MOVETO(0, p - 1);
                     } else if (_csArg->size() > 1) {
                         int p = _csArg->front(); _csArg->pop_front();
                         int q = _csArg->front();
                         if (p < 1) p = 1;
                         if (q < 1) q = 1;
-						if (_scrollBeginRow > 0) p += _scrollBeginRow;
+						if (_modeOriginRelative && _scrollBeginRow > 0) {
+							p += _scrollBeginRow;
+							if (p > _scrollEndRow) p = _scrollEndRow + 1;
+						}
                         CURSOR_MOVETO(q - 1, p - 1);
                     }
                 } else if (c == CSI_ED ) { // Erase Page (cursor does not move)
@@ -522,8 +528,8 @@ if (_cursorX <= _column - 1) { \
                         lineNumber = _csArg->front();
                     if (lineNumber < 1) lineNumber = 1; //mjhsieh is paranoid
 
-                    int i;
-                    for (i = 0; i < lineNumber; i++) {
+                    int j;
+                    for (j = 0; j < lineNumber; j++) {
                         [self clearRow: _row - 1];
                         cell *emptyRow = [self cellsOfRow: _row - 1];
                         int r;
@@ -531,8 +537,8 @@ if (_cursorX <= _column - 1) { \
                             _grid[r] = _grid[r - 1];
                         _grid[_cursorY] = emptyRow;
                     }
-                    for (i = _cursorY; i < _row; i++)
-                        [self setDirtyForRow: i];
+                    for (j = _cursorY; j < _row; j++)
+                        [self setDirtyForRow: j];
                 } else if (c == CSI_DL ) { // Delete Line
                     int lineNumber = 0;
                     if (_csArg->size() == 0) 
@@ -541,8 +547,8 @@ if (_cursorX <= _column - 1) { \
                         lineNumber = _csArg->front();
                     if (lineNumber < 1) lineNumber = 1; //mjhsieh is paranoid
                     
-                    int i;
-                    for (i = 0; i < lineNumber; i++) {
+                    int j;
+                    for (j = 0; j < lineNumber; j++) {
                         [self clearRow: _cursorY];
                         cell *emptyRow = [self cellsOfRow: _cursorY];
                         int r;
@@ -550,24 +556,24 @@ if (_cursorX <= _column - 1) { \
                             _grid[r] = _grid[r + 1];
                         _grid[_row - 1] = emptyRow;
                     }
-                    for (i = _cursorY; i < _row; i++)
+                    for (j = _cursorY; j < _row; j++)
                         [self setDirtyForRow: i];
                 } else if (c == CSI_DCH) { // Delete characters at the current cursor position.
-                    int i;
                     int p = 1;
                     if (_csArg->size() == 1) {
                         p = _csArg->front();
                     }
                     if (p < 1) p = 1;
-                    for (i = _cursorX; i <= _column - 1; i++){
-                        if ( i <= _column - 1 - p ) {
-                            _grid[_cursorY][i] = _grid[_cursorY][i+p];
+                    int j;
+                    for (j = _cursorX; j <= _column - 1; j++){
+                        if ( j <= _column - 1 - p ) {
+                            _grid[_cursorY][j] = _grid[_cursorY][j+p];
                         } else {
-                            _grid[_cursorY][i].byte = '\0';
-                            _grid[_cursorY][i].attr.v = gEmptyAttr;
-                            _grid[_cursorY][i].attr.f.bgColor = _bgColor;
+                            _grid[_cursorY][j].byte = '\0';
+                            _grid[_cursorY][j].attr.v = gEmptyAttr;
+                            _grid[_cursorY][j].attr.f.bgColor = _bgColor;
                         }
-						_dirty[_cursorY * _column + i] = YES;
+						_dirty[_cursorY * _column + j] = YES;
                     }
 				} else if (c == CSI_HPA) { // goto to absolute character position
 					int p = 0;
@@ -624,42 +630,53 @@ if (_cursorX <= _column - 1) { \
                     } else
                         NSLog(@"Ignoring request to clear one horizontal tab stop.");
                 } else if (c == CSI_SM ) {  // set mode
-					int mode_cls=0;
+					int doClear = 0;
                     while (!_csArg->empty()) {
                         int p = _csArg->front();
 						if (p == -1) {
 							_csArg->pop_front();
-							if (_csArg->size()==1) {
+							if (_csArg->size() == 1) {
 								p = _csArg->front();
-								if (p == 3) {
-									NSLog(@"132-column mode (re)setting are not supported.");
-									mode_cls=1;
-                                } else if (p == 5 && _modeScreenReverse == NO) {
+								if (p == 3) { // Set number of columns to 132
+									NSLog(@"132-column mode is not supported.");
+									doClear = 1;
+									_modeOriginRelative = NO;
+									_scrollBeginRow = 0;
+									_scrollEndRow = _row - 1;
+                                } else if (p == 5 && _modeScreenReverse == NO) { //Set reverse video on screen
                                     _modeScreenReverse = YES;
                                     _reverse = !_reverse;
                                     [self reverseAll];
-								} else if (p == 6) {
-								    //_modeErasure = YES;
-                                } else if (p == 7) {
+								} else if (p == 6) { // Set origin to relative
+									_modeOriginRelative = YES;
+									_cursorX = 0;
+									_cursorY = _scrollBeginRow;
+                                } else if (p == 7) { // Set auto-wrap mode
                                     _modeWraptext = YES;
+//								} else if (p == 1) { // Set cursor key to application
+//								} else if (p == 4) { // Set smooth scrolling
+//								} else if (p == 8) { // Set auto-repeat mode
+//								} else if (p == 9) { // Set interlacing mode
 								}
 							}
-                        } else if (p == 1) {
-                            //When set, the cursor keys send an ESC O prefix, rather than ESC [
-                        } else if (p == 2) {
-						    //NSLog(@"ignore setting Keyboard Action Mode (AM)");
-                        } else if (p == 4) {
-                            //NSLog(@"ignore setting Replace Mode (IRM)");
-                        } else if (p == 12) {
-                            //NSLog(@"ignore re/setting Send/receive (SRM)");
-                        } else if (p == 20 && _modeLNM) { // set new line mode
+                        } else if (p == 20 && _modeLNM) { // Set new line mode
                             _modeLNM = NO;
+//                      } else if (p == 1) { //When set, the cursor keys send an ESC O prefix, rather than ESC [
+//                      } else if (p == 2) { //NSLog(@"ignore setting Keyboard Action Mode (AM)");
+//                      } else if (p == 4) { //NSLog(@"ignore setting Replace Mode (IRM)");
+//						} else if (p == 6) { //_modeErasure = YES;
+//                      } else if (p == 12) { //NSLog(@"ignore re/setting Send/receive (SRM)");
 						}
                         _csArg->pop_front();
                     }
-					if (mode_cls == 1) {
-						[self clearAll];
-					    _cursorX = 0, _cursorY = 0;
+					if (doClear == 1) {
+						if (_modeOriginRelative) {
+							
+						} else {
+						    [self clearAll];
+					        _cursorX = 0;
+							_cursorY = 0;
+						}
 					}
                 } else if (c == CSI_HPB) { // move to Pn Location in backward direction, same raw
 					int p = 1;
@@ -676,32 +693,40 @@ if (_cursorX <= _column - 1) { \
                     }
 					CURSOR_MOVETO(_cursorX,_cursorY-p);
                 } else if (c == CSI_RM ) { // reset mode
-					int mode_cls=0;
+					int doClear = 0;
                     while (!_csArg->empty()) {
                         int p = _csArg->front();
 						if (p == -1) {
 							_csArg->pop_front();
 							if (_csArg->size() == 1) {
 								p = _csArg->front();
-								if (p == 3) {
-									NSLog(@"132-column mode (re)setting are not supported.");
-									mode_cls=1;
-                                } else if (p == 5 && _modeScreenReverse) {
+								if (p == 3) { // Set number of columns to 80
+									//NSLog(@"132-column mode (re)setting are not supported.");
+									doClear = 1;
+									_modeOriginRelative = NO;
+									_scrollBeginRow = 0;
+									_scrollEndRow = _row - 1;
+                                } else if (p == 5 && _modeScreenReverse) { // Set non-reverse video on screen
                                     _modeScreenReverse = NO;
                                     _reverse = !_reverse;
                                     [self reverseAll];
-								} else if (p == 6) {
-								    //_modeErasure = NO;
-						        } else if (p == 7) { //Disables line wrapping.
+								} else if (p == 6) { // Set origin to absolute
+									_modeOriginRelative = NO;
+						        } else if (p == 7) { // Reset auto-wrap mode (disable)
                                     _modeWraptext = NO;
+//							    } else if (p == 1) { // Set cursor key to cursor
+//								} else if (p == 4) { // Set jump scrolling
+//								} else if (p == 8) { // Reset auto-repeat mode
+//								} else if (p == 9) { // Reset interlacing mode
 								}
 							}
 						} else if (p == 20 && _modeLNM == NO) { // set line feed mode
 							_modeLNM == YES;
+//						} else if (p == 6) { //_modeErasure = NO;
 						}
                         _csArg->pop_front();
                     }
-					if (mode_cls == 1) {
+					if (doClear == 1) {
 						[self clearAll];
 					    _cursorX = 0, _cursorY = 0;
 					}
@@ -856,20 +881,6 @@ if (_cursorX <= _column - 1) { \
     _reverse = NO ^ _modeScreenReverse;
 }
 
-- (void) reverseAll
-{
-    int j;
-    for (j = 0; j < _row; j++) {
-        int i;
-        for (i = 0; i <= _column - 1; i++) {
-            int tmpColorIndex = _grid[j][i].attr.f.bgColor;
-            _grid[j][i].attr.f.bgColor = _grid[j][i].attr.f.fgColor;
-            _grid[j][i].attr.f.fgColor = tmpColorIndex;
-            _dirty[j*_column + i] = YES;
-        }
-    }
-}
-
 - (void) clearRow: (int)r
 {
     [self clearRow: r fromStart: 0 toEnd: _column - 1];
@@ -884,6 +895,20 @@ if (_cursorX <= _column - 1) { \
         _grid[r][i].attr.f.bgColor = _bgColor;
         _grid[r][i].attr.f.reverse = _reverse;
         _dirty[r * _column + i] = YES;
+    }
+}
+
+- (void) reverseAll
+{
+    int j;
+    for (j = 0; j < _row; j++) {
+        int i;
+        for (i = 0; i <= _column - 1; i++) {
+            int tmpColorIndex = _grid[j][i].attr.f.bgColor;
+            _grid[j][i].attr.f.bgColor = _grid[j][i].attr.f.fgColor;
+            _grid[j][i].attr.f.fgColor = tmpColorIndex;
+            _dirty[j*_column + i] = YES;
+        }
     }
 }
 
