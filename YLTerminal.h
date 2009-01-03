@@ -178,6 +178,8 @@
     BOOL _hasMessage;
     BOOL _doErasure;
     BOOL _doWraptext;
+    BOOL _doScreenReverse;
+    //BOOL _doneScreenReverse;
     YLConnection *_connection;
     YLPluginLoader *_pluginLoader;
 }
@@ -193,7 +195,7 @@
 /* Clear */
 - (void) clearRow: (int)r;
 - (void) clearRow: (int)r fromStart: (int)s toEnd: (int)e;
-- (void) clearAll ;
+- (void) clearAll;
 
 /* Dirty */
 - (BOOL) isDirtyAtRow: (int)r column:(int)c;
@@ -207,6 +209,7 @@
 - (cell *) cellsOfRow: (int)r;
 
 /* Update State */
+- (void) reverseAll;
 - (void) updateURLStateForRow: (int)r;
 - (void) updateDoubleByteStateForRow: (int)r;
 - (NSString *) urlStringAtRow: (int)r column: (int)c;

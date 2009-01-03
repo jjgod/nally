@@ -10,11 +10,14 @@
 #import "YLLGlobalConfig.h"
 #import "encoding.h"
 
-#define CURSOR_MOVETO(x, y)     do {\
-                                    _cursorX = (x); _cursorY = (y); \
-                                    if (_cursorX < 0) _cursorX = 0; if (_cursorX >= _column) _cursorX = _column - 1;\
-                                    if (_cursorY < 0) _cursorY = 0; if (_cursorY >= _row) _cursorY = _row - 1;\
-                                } while(0);
+#define CURSOR_MOVETO(x, y) \
+do {\
+    _cursorX = (x); _cursorY = (y); \
+    if (_cursorX < 0) _cursorX = 0; \
+    if (_cursorX >= _column) _cursorX = _column - 1;\
+    if (_cursorY < 0) _cursorY = 0; \
+    if (_cursorY >= _row) _cursorY = _row - 1;\
+} while(0);
 
 //BOOL isC0Control(unsigned char c) { return (c <= 0x1F); }
 //BOOL isSPACE(unsigned char c) { return (c == 0x20 || c == 0xA0); }
@@ -53,6 +56,7 @@ static unsigned short gEmptyAttr;
         _scrollBeginRow = 0; _scrollEndRow = _row - 1;
 		_doErasure = NO;
         _doWraptext = YES;
+        _doScreenReverse = NO;
         _grid = (cell **) malloc(sizeof(cell *) * _row);
         int i;
         for (i = 0; i < _row; i++)
@@ -620,26 +624,22 @@ if (_cursorX <= _column - 1) { \
 					int mode_cls=0;
                     while (!_csArg->empty()) {
                         int p = _csArg->front();
-                        if (p == 0) {
-                            //NSLog(@"ignore re/setting mode 0");
-						} else if (p == -1) {
+						if (p == -1) {
 							_csArg->pop_front();
 							if (_csArg->size()==1) {
 								p = _csArg->front();
 								if (p == 3) {
 									NSLog(@"132-column mode (re)setting are not supported.");
 									mode_cls=1;
+                                } else if (p == 5 && _doScreenReverse == NO) {
+                                    _doScreenReverse = YES;
+                                    _reverse = !_reverse;
+                                    [self reverseAll];
 								} else if (p == 6) {
 								    _doErasure = YES;
                                 } else if (p == 7) {
                                     _doWraptext = YES;
-								} else {
-								    //NSLog(@"unsupported mode (re)setting <ESC>[?3 ....");
 								}
-								//[self clearAll];
-								//_cursorX = 0, _cursorY = 0;
-							} else {
-								//NSLog(@"unsupported mode (re)setting <ESC>[? ....");
 							}
                         } else if (p == 1) {
                             //When set, the cursor keys send an ESC O prefix, rather than ESC [
@@ -651,8 +651,6 @@ if (_cursorX <= _column - 1) { \
                             //NSLog(@"ignore re/setting Send/receive (SRM)");
                         } else if (p == 20) {
                             //NSLog(@"ignore re/setting Normal Linefeed (LNM)");
-                        } else {
-                            //NSLog(@"unsupported mode setting %d",p);
 						}
                         _csArg->pop_front();
                     }
@@ -678,27 +676,23 @@ if (_cursorX <= _column - 1) { \
 					int mode_cls=0;
                     while (!_csArg->empty()) {
                         int p = _csArg->front();
-					    if (p == 0) {
-							//NSLog(@"ignore re/setting mode 0");
-						} else if (p == -1) {
+						if (p == -1) {
 							_csArg->pop_front();
 							if (_csArg->size() == 1) {
 								p = _csArg->front();
 								if (p == 3) {
 									NSLog(@"132-column mode (re)setting are not supported.");
 									mode_cls=1;
+                                } else if (p == 5 && _doScreenReverse) {
+                                    _doScreenReverse = NO;
+                                    _reverse = !_reverse;
+                                    [self reverseAll];
 								} else if (p == 6) {
 								    _doErasure = NO;
 						        } else if (p == 7) { //Disables line wrapping.
                                     _doWraptext = NO;
-								} else {
-									//NSLog(@"unsupported mode resetting <ESC>[?3 ....");
 								}
-							} else {
-								//NSLog(@"unsupported mode resetting <ESC>[? ....");
 							}
-						} else {
-                            //NSLog(@"unsupported mode resetting %d",p);
 						}
                         _csArg->pop_front();
                     }
@@ -713,7 +707,7 @@ if (_cursorX <= _column - 1) { \
                         _bold = NO;
                         _underline = NO;
                         _blink = NO;
-                        _reverse = NO;
+                        _reverse = NO ^ _doScreenReverse;
                     } else {
                         while (!_csArg->empty()) {
                             int p = _csArg->front();
@@ -724,7 +718,7 @@ if (_cursorX <= _column - 1) { \
                                 _bold = NO;
                                 _underline = NO;
                                 _blink = NO;
-                                _reverse = NO;
+                                _reverse = NO ^ _doScreenReverse;
                             } else if (30 <= p && p <= 39) {
                                 _fgColor = p - 30;
                             } else if (40 <= p && p <= 49) {
@@ -736,7 +730,7 @@ if (_cursorX <= _column - 1) { \
                             } else if (p == 5) {
                                 _blink = YES;
                             } else if (p == 7) {
-                                _reverse = YES;
+                                _reverse = YES ^ _doScreenReverse;
                             }
                         }
                     }
@@ -854,7 +848,21 @@ if (_cursorX <= _column - 1) { \
     _bold = NO;
     _underline = NO;
     _blink = NO;
-    _reverse = NO;
+    _reverse = NO ^ _doScreenReverse;
+}
+
+- (void) reverseAll
+{
+    int j;
+    for (j = 0; j < _row; j++) {
+        int i;
+        for (i = 0; i <= _column - 1; i++) {
+            int tmpColorIndex = _grid[j][i].attr.f.bgColor;
+            _grid[j][i].attr.f.bgColor = _grid[j][i].attr.f.fgColor;
+            _grid[j][i].attr.f.fgColor = tmpColorIndex;
+            _dirty[j*_column + i] = YES;
+        }
+    }
 }
 
 - (void) clearRow: (int)r
@@ -869,6 +877,7 @@ if (_cursorX <= _column - 1) { \
         _grid[r][i].byte = '\0';
         _grid[r][i].attr.v = gEmptyAttr;
         _grid[r][i].attr.f.bgColor = _bgColor;
+        _grid[r][i].attr.f.reverse = _reverse;
         _dirty[r * _column + i] = YES;
     }
 }
