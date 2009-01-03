@@ -26,7 +26,7 @@ Perfect score = 100 points.  Extra credit at end.
 [*]  12. Soft scroll up / down
 [*]  13. Jump scroll down
 [*]  14. Jump scroll up / down
-[ ]  15. Origin mode test (2 parts)
+[*]  15. Origin mode test (2 parts)
 
      Graphic Rendition test pattern, dark background
 
