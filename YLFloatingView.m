@@ -59,7 +59,7 @@
 
 @implementation YLFloatingView
 
-- (void) drawRect: (NSRect) rect
+- (void) drawRect: (NSRect)rect
 {
     NSColor *color = [NSColor colorWithCalibratedRed: 0 
                                                green: 0 
@@ -81,13 +81,13 @@
     [img release];
 }
 
-- (void) mouseDown: (NSEvent *) event
+- (void) mouseDown: (NSEvent *)event
 {
     mouseDown = YES;
     [self setNeedsDisplay: YES];
 }
 
-- (void) mouseUp: (NSEvent *) event
+- (void) mouseUp: (NSEvent *)event
 {
     NSSavePanel *panel = [NSSavePanel savePanel];
     YLImagePreviewer *previewer = [(YLImageView *)[self superview] previewer];
