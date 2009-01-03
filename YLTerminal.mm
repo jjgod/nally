@@ -649,8 +649,6 @@ if (_cursorX <= _column - 1) { \
                                     [self reverseAll];
 								} else if (p == 6) { // Set origin to relative
 									_modeOriginRelative = YES;
-									_cursorX = 0;
-									_cursorY = _scrollBeginRow;
                                 } else if (p == 7) { // Set auto-wrap mode
                                     _modeWraptext = YES;
 //								} else if (p == 1) { // Set cursor key to application
@@ -798,6 +796,8 @@ if (_cursorX <= _column - 1) { \
                         _scrollEndRow = e - 1;
 						//NSLog(@"Assigning Scrolling Region between line %d and line %d",s,e);
                     }
+					_cursorX = 0;
+					_cursorY = _scrollBeginRow;
                 } else if (c == CSI_SCP) {
                     _savedCursorX = _cursorX;
                     _savedCursorY = _cursorY;
