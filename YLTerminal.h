@@ -176,7 +176,7 @@
     int _scrollEndRow;
     
     BOOL _hasMessage;
-    BOOL _doErasure;
+    //BOOL _doErasure;
     BOOL _doWraptext;
     BOOL _doScreenReverse;
     //BOOL _doneScreenReverse;

@@ -54,7 +54,7 @@ static unsigned short gEmptyAttr;
         _row = [[YLLGlobalConfig sharedInstance] row];
         _column = [[YLLGlobalConfig sharedInstance] column];
         _scrollBeginRow = 0; _scrollEndRow = _row - 1;
-		_doErasure = NO;
+		//_doErasure = NO;
         _doWraptext = YES;
         _doScreenReverse = NO;
         _grid = (cell **) malloc(sizeof(cell *) * _row);
@@ -164,12 +164,12 @@ if (_cursorX <= _column - 1) { \
 				}
                 // reverse-wrap is not implemented yet
             } else if (c == ASC_HT ) { // Horizontal TABulation
-                if(_doErasure == NO)
+                //if(_doErasure == NO)
                     // Normally the tabulation stops for every 8 chars
 					_cursorX=(int(_cursorX/8) + 1) * 8;
-				else
-                   // in erasure mode, all stops are clear
-					_cursorX=_column - 1;
+				//else
+                    // in erasure mode, all stops are clear
+					//_cursorX=_column - 1;
                 // erasure mode is not fully tested yet
             } else if (c == ASC_LF ||
                        c == ASC_VT ||
@@ -636,7 +636,7 @@ if (_cursorX <= _column - 1) { \
                                     _reverse = !_reverse;
                                     [self reverseAll];
 								} else if (p == 6) {
-								    _doErasure = YES;
+								    //_doErasure = YES;
                                 } else if (p == 7) {
                                     _doWraptext = YES;
 								}
@@ -688,7 +688,7 @@ if (_cursorX <= _column - 1) { \
                                     _reverse = !_reverse;
                                     [self reverseAll];
 								} else if (p == 6) {
-								    _doErasure = NO;
+								    //_doErasure = NO;
 						        } else if (p == 7) { //Disables line wrapping.
                                     _doWraptext = NO;
 								}
