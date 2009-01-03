@@ -54,9 +54,10 @@ static unsigned short gEmptyAttr;
         _row = [[YLLGlobalConfig sharedInstance] row];
         _column = [[YLLGlobalConfig sharedInstance] column];
         _scrollBeginRow = 0; _scrollEndRow = _row - 1;
-		//_doErasure = NO;
-        _doWraptext = YES;
-        _doScreenReverse = NO;
+		//_modeErasure = NO;
+        _modeWraptext = YES;
+        _modeScreenReverse = NO;
+		_modeLNM = YES; // default: use Line Feed Mode
         _grid = (cell **) malloc(sizeof(cell *) * _row);
         int i;
         for (i = 0; i < _row; i++)
@@ -103,7 +104,7 @@ if (_cursorX <= _column - 1) { \
     _grid[_cursorY][_cursorX].attr.f.url = NO; \
     [self setDirty: YES atRow: _cursorY column: _cursorX]; \
     _cursorX++; \
-} else if (_cursorX == _column && _doWraptext == YES) { \
+} else if (_cursorX == _column && _modeWraptext == YES) { \
     _cursorX = 0; \
     if (_cursorY == _scrollEndRow) { \
     	[_delegate updateBackedImage]; \
@@ -164,7 +165,7 @@ if (_cursorX <= _column - 1) { \
 				}
                 // reverse-wrap is not implemented yet
             } else if (c == ASC_HT ) { // Horizontal TABulation
-                //if(_doErasure == NO)
+                //if(_modeErasure == NO)
                     // Normally the tabulation stops for every 8 chars
 					_cursorX=(int(_cursorX/8) + 1) * 8;
 				//else
@@ -174,6 +175,7 @@ if (_cursorX <= _column - 1) { \
             } else if (c == ASC_LF ||
                        c == ASC_VT ||
                        c == ASC_FF ) { // Linefeed or Vertical tab or Form feed
+				if (_modeLNM == NO) _cursorX = 0;
                 if (_cursorY == _scrollEndRow) {
                     cell *emptyLine = _grid[_scrollBeginRow];
                     [self clearRow: _scrollBeginRow];
@@ -181,7 +183,7 @@ if (_cursorX <= _column - 1) { \
                     for (x = _scrollBeginRow; x < _scrollEndRow; x++) 
                         _grid[x] = _grid[x + 1];
                     _grid[_scrollEndRow] = emptyLine;
-                    [self setAllDirty];
+                    [self setAllDirty]; // not necessary be all-dirty
                 } else {
                     _cursorY++;
                     if (_cursorY >= _row) _cursorY = _row - 1;
@@ -382,11 +384,12 @@ if (_cursorX <= _column - 1) { \
                     _csTemp = 0;
                     _csBuf->clear();
                 }
-            } else if (c == 0x08) { // BS  (Backspace)
+            } else if (c == ASC_BS) { // Backspace eats previous parameter.
 				if (!_csBuf->empty()) {
 					_csArg->pop_front();
 				}
-			} else if (c == 0x0B) { // VT
+			} else if (c == ASC_VT) { // Virtical Tabulation
+				if (_modeLNM == NO) _cursorX = 0;
                 if (_cursorY == _scrollEndRow) {
                     cell *emptyLine = _grid[_scrollBeginRow];
                     [self clearRow: _scrollBeginRow];
@@ -394,12 +397,12 @@ if (_cursorX <= _column - 1) { \
                     for (x = _scrollBeginRow; x < _scrollEndRow; x++) 
                         _grid[x] = _grid[x + 1];
                     _grid[_scrollEndRow] = emptyLine;
-                    [self setAllDirty];
+                    [self setAllDirty]; // We might not need to set everything dirty.
                 } else {
                     _cursorY++;
                     if (_cursorY >= _row) _cursorY = _row - 1;
                 }
-            } else if (c == 0x0D) { // CR  (Carriage Return)
+            } else if (c == ASC_CR) { // CR (Carriage Return)
                 _cursorX = 0;
             } else {
                 if (!_csBuf->empty()) {
@@ -631,26 +634,26 @@ if (_cursorX <= _column - 1) { \
 								if (p == 3) {
 									NSLog(@"132-column mode (re)setting are not supported.");
 									mode_cls=1;
-                                } else if (p == 5 && _doScreenReverse == NO) {
-                                    _doScreenReverse = YES;
+                                } else if (p == 5 && _modeScreenReverse == NO) {
+                                    _modeScreenReverse = YES;
                                     _reverse = !_reverse;
                                     [self reverseAll];
 								} else if (p == 6) {
-								    //_doErasure = YES;
+								    //_modeErasure = YES;
                                 } else if (p == 7) {
-                                    _doWraptext = YES;
+                                    _modeWraptext = YES;
 								}
 							}
                         } else if (p == 1) {
                             //When set, the cursor keys send an ESC O prefix, rather than ESC [
                         } else if (p == 2) {
-						    //NSLog(@"ignore re/setting Keyboard Action Mode (AM)");
+						    //NSLog(@"ignore setting Keyboard Action Mode (AM)");
                         } else if (p == 4) {
-                            //NSLog(@"ignore re/setting Replace Mode (IRM)");
+                            //NSLog(@"ignore setting Replace Mode (IRM)");
                         } else if (p == 12) {
                             //NSLog(@"ignore re/setting Send/receive (SRM)");
-                        } else if (p == 20) {
-                            //NSLog(@"ignore re/setting Normal Linefeed (LNM)");
+                        } else if (p == 20 && _modeLNM) { // set new line mode
+                            _modeLNM = NO;
 						}
                         _csArg->pop_front();
                     }
@@ -683,16 +686,18 @@ if (_cursorX <= _column - 1) { \
 								if (p == 3) {
 									NSLog(@"132-column mode (re)setting are not supported.");
 									mode_cls=1;
-                                } else if (p == 5 && _doScreenReverse) {
-                                    _doScreenReverse = NO;
+                                } else if (p == 5 && _modeScreenReverse) {
+                                    _modeScreenReverse = NO;
                                     _reverse = !_reverse;
                                     [self reverseAll];
 								} else if (p == 6) {
-								    //_doErasure = NO;
+								    //_modeErasure = NO;
 						        } else if (p == 7) { //Disables line wrapping.
-                                    _doWraptext = NO;
+                                    _modeWraptext = NO;
 								}
 							}
+						} else if (p == 20 && _modeLNM == NO) { // set line feed mode
+							_modeLNM == YES;
 						}
                         _csArg->pop_front();
                     }
@@ -707,7 +712,7 @@ if (_cursorX <= _column - 1) { \
                         _bold = NO;
                         _underline = NO;
                         _blink = NO;
-                        _reverse = NO ^ _doScreenReverse;
+                        _reverse = NO ^ _modeScreenReverse;
                     } else {
                         while (!_csArg->empty()) {
                             int p = _csArg->front();
@@ -718,7 +723,7 @@ if (_cursorX <= _column - 1) { \
                                 _bold = NO;
                                 _underline = NO;
                                 _blink = NO;
-                                _reverse = NO ^ _doScreenReverse;
+                                _reverse = NO ^ _modeScreenReverse;
                             } else if (30 <= p && p <= 39) {
                                 _fgColor = p - 30;
                             } else if (40 <= p && p <= 49) {
@@ -730,7 +735,7 @@ if (_cursorX <= _column - 1) { \
                             } else if (p == 5) {
                                 _blink = YES;
                             } else if (p == 7) {
-                                _reverse = YES ^ _doScreenReverse;
+                                _reverse = YES ^ _modeScreenReverse;
                             }
                         }
                     }
@@ -848,7 +853,7 @@ if (_cursorX <= _column - 1) { \
     _bold = NO;
     _underline = NO;
     _blink = NO;
-    _reverse = NO ^ _doScreenReverse;
+    _reverse = NO ^ _modeScreenReverse;
 }
 
 - (void) reverseAll

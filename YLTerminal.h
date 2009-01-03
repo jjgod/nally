@@ -165,7 +165,7 @@
 	
 	enum { TP_NORMAL, TP_ESCAPE, TP_CONTROL, TP_SCS } _state;
     
-//    YLEncoding _encoding;
+// YLEncoding _encoding;
     
 	std::deque<unsigned char> *_csBuf;
 	std::deque<int> *_csArg;
@@ -176,10 +176,10 @@
     int _scrollEndRow;
     
     BOOL _hasMessage;
-    //BOOL _doErasure;
-    BOOL _doWraptext;
-    BOOL _doScreenReverse;
-    //BOOL _doneScreenReverse;
+  //BOOL _modeErasure;
+    BOOL _modeWraptext;
+    BOOL _modeScreenReverse;
+    BOOL _modeLNM; // line feed (true), new line (false)
     YLConnection *_connection;
     YLPluginLoader *_pluginLoader;
 }
