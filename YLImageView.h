@@ -8,6 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import "YLImagePreviewer.h"
+#import "YLFloatingView.h"
 
 enum showTips { kShowTipsNone, kShowTipsWhite, kShowTipsGray };
 
@@ -16,6 +17,7 @@ enum showTips { kShowTipsNone, kShowTipsWhite, kShowTipsGray };
     enum showTips tipsState;
     
     YLImagePreviewer *previewer;
+    YLFloatingView *indicator;
 }
 
 - (id) initWithFrame: (NSRect)frame previewer: (YLImagePreviewer *)thePreviewer;

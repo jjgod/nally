@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		070D50430D9BF40400EC2660 /* YLImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 070D50420D9BF40400EC2660 /* YLImageView.m */; };
+		079E9BB00F08B9480089C9E2 /* HUDSave.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 079E9BAE0F08B9480089C9E2 /* HUDSave.tiff */; };
+		079E9BB10F08B9480089C9E2 /* HUDSaveActive.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 079E9BAF0F08B9480089C9E2 /* HUDSaveActive.tiff */; };
+		079E9BCA0F08C4820089C9E2 /* YLFloatingView.m in Sources */ = {isa = PBXBuildFile; fileRef = 079E9BC90F08C4820089C9E2 /* YLFloatingView.m */; };
 		07B370690D6840600035E87D /* YLImagePreviewer.m in Sources */ = {isa = PBXBuildFile; fileRef = 07B370680D6840600035E87D /* YLImagePreviewer.m */; };
 		07B3707A0D6840B20035E87D /* HMBlkAppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07B370790D6840B20035E87D /* HMBlkAppKit.framework */; };
 		07B3708E0D6840BB0035E87D /* HMBlkAppKit.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 07B370790D6840B20035E87D /* HMBlkAppKit.framework */; };
@@ -69,6 +72,10 @@
 /* Begin PBXFileReference section */
 		070D50410D9BF40400EC2660 /* YLImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLImageView.h; sourceTree = "<group>"; };
 		070D50420D9BF40400EC2660 /* YLImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YLImageView.m; sourceTree = "<group>"; };
+		079E9BAE0F08B9480089C9E2 /* HUDSave.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = HUDSave.tiff; sourceTree = "<group>"; };
+		079E9BAF0F08B9480089C9E2 /* HUDSaveActive.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = HUDSaveActive.tiff; sourceTree = "<group>"; };
+		079E9BC80F08C4820089C9E2 /* YLFloatingView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLFloatingView.h; sourceTree = "<group>"; };
+		079E9BC90F08C4820089C9E2 /* YLFloatingView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YLFloatingView.m; sourceTree = "<group>"; };
 		07B370670D6840600035E87D /* YLImagePreviewer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLImagePreviewer.h; sourceTree = "<group>"; };
 		07B370680D6840600035E87D /* YLImagePreviewer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YLImagePreviewer.m; sourceTree = "<group>"; };
 		07B370790D6840B20035E87D /* HMBlkAppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = HMBlkAppKit.framework; sourceTree = "<group>"; };
@@ -240,6 +247,8 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				079E9BAE0F08B9480089C9E2 /* HUDSave.tiff */,
+				079E9BAF0F08B9480089C9E2 /* HUDSaveActive.tiff */,
 				85EA93210D0791180098C94B /* Preferences.nib */,
 				85137B320D02192800833909 /* Credits.rtf */,
 				85834C0F0CFEC3F30015E348 /* Whit.aiff */,
@@ -277,6 +286,8 @@
 				858A54E50CAE78C8000E1AA7 /* YLMarkedTextView.m */,
 				8570AD5D0A3923A900838442 /* YLView.h */,
 				8570AD5E0A3923A900838442 /* YLView.mm */,
+				079E9BC80F08C4820089C9E2 /* YLFloatingView.h */,
+				079E9BC90F08C4820089C9E2 /* YLFloatingView.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -384,6 +395,8 @@
 				85A0E73D0D06B72900ACA26F /* Localizable.strings in Resources */,
 				85EA93230D0791180098C94B /* Preferences.nib in Resources */,
 				85AD6FE70D227F1D00992A1C /* DragonBall.icns in Resources */,
+				079E9BB00F08B9480089C9E2 /* HUDSave.tiff in Resources */,
+				079E9BB10F08B9480089C9E2 /* HUDSaveActive.tiff in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -429,6 +442,7 @@
 				07B370690D6840600035E87D /* YLImagePreviewer.m in Sources */,
 				070D50430D9BF40400EC2660 /* YLImageView.m in Sources */,
 				07B73D900E5816FF00CC97D3 /* YLPluginLoader.m in Sources */,
+				079E9BCA0F08C4820089C9E2 /* YLFloatingView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
