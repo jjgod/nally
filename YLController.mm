@@ -12,6 +12,7 @@
 #import "YLLGlobalConfig.h"
 #import "DBPrefsWindowController.h"
 #import "YLEmoticon.h"
+#import <HMBlkAppKit/HMBlkAppKit.h>
 
 @interface NSWindow (YLAdditions)
 - (void) _setContentHasShadow: (BOOL)hasShadow;
@@ -615,6 +616,11 @@
         _emoticons = [[NSMutableArray alloc] init];
     }
     [_emoticons replaceObjectAtIndex: theIndex withObject: obj];
+}
+
+- (YLExifController *) exifController
+{
+    return _exifController;
 }
 
 #pragma mark -

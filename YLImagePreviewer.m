@@ -93,7 +93,9 @@
     [_indicator startAnimation: self];
 }
 
-- (void) showImage: (NSImage *) image withTitle: (NSString *) title
+- (void) showImage: (NSImage *) image 
+         withTitle: (NSString *) title 
+          tiffData: (NSDictionary *) tiffData
 {
     YLImageView *view;
     NSImageRep *rep = [[image representations] objectAtIndex: 0];
@@ -143,6 +145,7 @@
     [view release];
 
     [view setImage: image];
+    [view setTiffData: tiffData];
     [image release];
 
     [_window setFrame: NSMakeRect(origin.x, origin.y,
@@ -233,6 +236,13 @@ NSStringEncoding encodingFromYLEncoding(YLEncoding ylenc)
     // NSLog(@"Succeeded! Received %d bytes of data", [_receivedData length]);
     
     [_indicator setDoubleValue: (double) [_receivedData length]];
+    
+    CGImageSourceRef exifSource = CGImageSourceCreateWithData((CFDateRef) _receivedData, NULL);
+    NSDictionary *metaData = (NSDictionary*) CGImageSourceCopyPropertiesAtIndex(exifSource, 0, nil);
+    NSDictionary *tiffData = [metaData objectForKey: (NSString *) kCGImagePropertyTIFFDictionary];
+    NSLog(@"tiffData = %@", tiffData);
+    
+    CFRelease(exifSource);
 
     NSImage *image = [[NSImage alloc] initWithData: _receivedData];
     if (image == nil || [[image representations] count] == 0)
@@ -246,7 +256,9 @@ NSStringEncoding encodingFromYLEncoding(YLEncoding ylenc)
         [alert runModal];
     }
     else
-        [self showImage: image withTitle: _currentFileDownloading];
+        [self showImage: image 
+              withTitle: _currentFileDownloading 
+               tiffData: tiffData];
 
     // [self releaseConnection];
 }

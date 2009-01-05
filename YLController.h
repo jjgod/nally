@@ -11,6 +11,7 @@
 #import <PSMTabBarControl/PSMTabBarControl.h>
 #import "YLSite.h"
 #import "YLPluginLoader.h"
+#import "YLExifController.h"
 
 @class YLTerminal;
 
@@ -34,7 +35,8 @@
     IBOutlet NSTextField *_siteNameField;
     IBOutlet NSMenuItem *_showHiddenTextMenuItem;
     IBOutlet NSMenuItem *_encodingMenuItem;
-    
+    IBOutlet YLExifController *_exifController;
+
     YLPluginLoader *_pluginLoader;
 }
 
@@ -65,6 +67,8 @@
 - (IBAction) closeEmoticons: (id)sender;
 - (IBAction) inputEmoticons: (id)sender;
 - (IBAction) openEmoticonsWindow: (id)sender;
+
+- (YLExifController *) exifController;
 
 - (NSArray *) sites;
 - (unsigned) countOfSites;

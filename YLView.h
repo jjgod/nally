@@ -8,9 +8,13 @@
 
 #import <Cocoa/Cocoa.h>
 
+#ifdef __cplusplus
 extern "C" {
+#endif
     #import "CommonType.h"
+#ifdef __cplusplus
 }
+#endif
 
 @class YLTerminal;
 @class YLConnection;

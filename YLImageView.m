@@ -7,6 +7,7 @@
 //
 
 #import "YLImageView.h"
+#import "YLController.h"
 
 enum {
     kFloatRectWidth  = 100,
@@ -14,6 +15,8 @@ enum {
 };
 
 @implementation YLImageView
+
+@synthesize tiffData;
 
 - (id) initWithFrame: (NSRect)frame previewer: (YLImagePreviewer *)thePreviewer
 {
@@ -41,6 +44,26 @@ enum {
 {
     [indicator release];
     [super dealloc];
+}
+
+- (void) keyDown: (NSEvent *)event
+{
+    if ([[event characters] isEqual: @"i"])
+    {
+        NSBitmapImageRep *rep = [[[self image] representations] objectAtIndex: 0];
+        NSDictionary *exif = [rep valueForProperty: NSImageEXIFData];
+
+        // NSLog(@"exif = %@", exif);
+        
+        YLController *controller = [NSApp delegate];
+        YLExifController *exifController = [controller exifController];
+        NSString *modelName = [tiffData objectForKey: (NSString *) kCGImagePropertyTIFFModel];
+        // NSLog(@"tiff = %@, modelName = %@", tiff, modelName);
+
+        [exifController setExifData: exif];
+        [exifController setModelName: modelName];
+        [exifController showExifPanel];
+    }
 }
 
 - (void) mouseMoved: (NSEvent *)event

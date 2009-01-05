@@ -18,7 +18,11 @@ enum showTips { kShowTipsNone, kShowTipsWhite, kShowTipsGray };
     
     YLImagePreviewer *previewer;
     YLFloatingView *indicator;
+    
+    NSDictionary *tiffData;
 }
+
+@property (retain) NSDictionary *tiffData;
 
 - (id) initWithFrame: (NSRect)frame previewer: (YLImagePreviewer *)thePreviewer;
 - (void) setPreviewer: (YLImagePreviewer *)thePreviewer;
