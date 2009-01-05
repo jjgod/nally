@@ -57,11 +57,13 @@ enum {
         
         YLController *controller = [NSApp delegate];
         YLExifController *exifController = [controller exifController];
+        
+        NSString *makeName = [tiffData objectForKey:(NSString *)kCGImagePropertyTIFFMake];
         NSString *modelName = [tiffData objectForKey: (NSString *) kCGImagePropertyTIFFModel];
         // NSLog(@"tiff = %@, modelName = %@", tiff, modelName);
 
         [exifController setExifData: exif];
-        [exifController setModelName: modelName];
+        [exifController setModelName: [NSString stringWithFormat: @"%@ %@", makeName, modelName]];
         [exifController showExifPanel];
     }
 }
