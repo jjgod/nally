@@ -139,6 +139,7 @@
     
     [[_window contentView] addSubview: view];
     [_window makeFirstResponder: view];
+    [_window setAcceptsMouseMovedEvents: YES];
     [view release];
 
     [view setImage: image];

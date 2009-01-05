@@ -23,8 +23,7 @@ enum {
         tipsRect = NSMakeRect((frame.size.width - kFloatRectWidth) / 2, 10, kFloatRectWidth, kFloatRectHeight);
         
         previewer = thePreviewer;
-        [[self window] setAcceptsMouseMovedEvents: YES];
-        [self addTrackingRect: tipsRect 
+        [self addTrackingRect: frame
                         owner: self 
                      userData: nil
                  assumeInside: NO];
@@ -44,12 +43,18 @@ enum {
     [super dealloc];
 }
 
+- (void) mouseMoved: (NSEvent *)event
+{
+    [[indicator animator] setAlphaValue: 0.8];
+    [[self window] setAcceptsMouseMovedEvents: NO];
+}
+
 - (void) mouseEntered: (NSEvent *)event
 {
     [[indicator animator] setAlphaValue: 0.8];
 }
 
-- (void)mouseExited: (NSEvent *)event
+- (void) mouseExited: (NSEvent *)event
 {
     [[indicator animator] setAlphaValue: 0.0];
 }
