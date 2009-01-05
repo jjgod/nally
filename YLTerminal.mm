@@ -58,6 +58,8 @@ static unsigned short gEmptyAttr;
 		_modeOriginRelative = NO;
         _modeWraptext = YES;
 		_modeLNM = YES;
+        _modeIRM = NO;
+        _emustd = VT102;
         _grid = (cell **) malloc(sizeof(cell *) * _row);
         int i;
         for (i = 0; i < _row; i++)
@@ -94,6 +96,12 @@ static unsigned short gEmptyAttr;
 
 #define SET_GRID_BYTE(c) \
 if (_cursorX <= _column - 1) { \
+    if (_modeIRM) { \
+        for (x = _column - 1; x > _cursorX; x--) { \
+            _grid[_cursorY][x] = _grid[_cursorY][x-1]; \
+            [self setDirty: YES atRow: _cursorY column: x]; \
+        } \
+    } \
     _grid[_cursorY][_cursorX].byte = c; \
     _grid[_cursorY][_cursorX].attr.f.fgColor = _fgColor; \
     _grid[_cursorY][_cursorX].attr.f.bgColor = _bgColor; \
@@ -589,18 +597,20 @@ if (_cursorX <= _column - 1) { \
 						if (p < 1) p = 1;
                     }
 					CURSOR_MOVETO(_cursorX+p,_cursorY);					
-//				} else if (c == CSI_REP) { // REPEAT, not going to implement unless ESC#8 gets it
+//				} else if (c == CSI_REP) { // REPEAT, not going to implement for now.
                 } else if (c == CSI_DA ) { // Computer requests terminal identify itself.
 					unsigned char cmd[10]; // 10 should be enough for now
 					unsigned int cmdLength = 0;
-					// TODO: have a global variable for TERM
-					// Assuming I am a vt102, I respond ESC[?6c
-					cmd[cmdLength++] = 0x1B;
-					cmd[cmdLength++] = 0x5B;
-					cmd[cmdLength++] = 0x3F;
-					cmd[cmdLength++] = 0x36;
-					cmd[cmdLength++] = 0x63;
-					// if VT100 is specified, use ESC[?1;0c
+                    if (_emustd == VT100) { // VT100, respond ESC[?1;0c
+					   cmd[cmdLength++] = 0x1B; cmd[cmdLength++] = 0x5B;
+					   cmd[cmdLength++] = 0x3F; cmd[cmdLength++] = '1';
+                       cmd[cmdLength++] = 0x3B; cmd[cmdLength++] = '0';
+					   cmd[cmdLength++] = 'c';
+                    } else if (_emustd == VT102) { // VT102, respond ESC[?6c
+					   cmd[cmdLength++] = 0x1B; cmd[cmdLength++] = 0x5B;
+					   cmd[cmdLength++] = 0x3F; cmd[cmdLength++] = '6';
+					   cmd[cmdLength++] = 'c';
+                    }
                     if (_csArg->empty()) {
 						[[self connection] sendBytes:cmd length:cmdLength];
 					} else if (_csArg->size() == 1 && (*_csArg)[0] == 0){
@@ -657,11 +667,16 @@ if (_cursorX <= _column - 1) { \
 //								} else if (p == 9) { // Set interlacing mode
 								}
 							}
-                        } else if (p == 20 && _modeLNM) { // Set new line mode
+                        } else if (p == 20) { // Set new line mode
                             _modeLNM = NO;
+                        } else if (p == 4) {
+                            // selects insert mode and turns INSERT on. New
+                            // display characters move old display characters
+                            // to the right. Characters moved past the right
+							// margin are lost.
+                            _modeIRM = YES;
 //                      } else if (p == 1) { //When set, the cursor keys send an ESC O prefix, rather than ESC [
 //                      } else if (p == 2) { //NSLog(@"ignore setting Keyboard Action Mode (AM)");
-//                      } else if (p == 4) { //NSLog(@"ignore setting Replace Mode (IRM)");
 //						} else if (p == 6) { //_modeErasure = YES;
 //                      } else if (p == 12) { //NSLog(@"ignore re/setting Send/receive (SRM)");
 						}
@@ -718,8 +733,13 @@ if (_cursorX <= _column - 1) { \
 //								} else if (p == 9) { // Reset interlacing mode
 								}
 							}
-						} else if (p == 20 && _modeLNM == NO) { // set line feed mode
+						} else if (p == 20) { // set line feed mode
 							_modeLNM == YES;
+                        } else if (p == 4) {
+                            // selects replace mode and turns INSERT off. New
+                            // display characters replace old display characters
+                            // at cursor position. The old character is erased.
+                            _modeIRM = NO;
 //						} else if (p == 6) { //_modeErasure = NO;
 						}
                         _csArg->pop_front();

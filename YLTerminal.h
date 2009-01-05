@@ -164,6 +164,7 @@
 	char *_dirty;
 	
 	enum { TP_NORMAL, TP_ESCAPE, TP_CONTROL, TP_SCS } _state;
+    enum { VT100, VT102 } _emustd;
     
 // YLEncoding _encoding;
     
@@ -177,10 +178,11 @@
     
     BOOL _hasMessage;
 	
-    BOOL _modeScreenReverse;  // reverse (true), not reverse (false)
-	BOOL _modeOriginRelative; // relative origin (true), absolute origin (false)
-    BOOL _modeWraptext;       // autowrap (true), wrap disabled (false)
-    BOOL _modeLNM;            // line feed (true), new line (false)
+    BOOL _modeScreenReverse;  // reverse (true), not reverse (false, default)
+	BOOL _modeOriginRelative; // relative origin (true), absolute origin (false, default)
+    BOOL _modeWraptext;       // autowrap (true, default), wrap disabled (false)
+    BOOL _modeLNM;            // line feed (true, default), new line (false)
+    BOOL _modeIRM;            // insert (true), replace (false, default)
 
     YLConnection *_connection;
     YLPluginLoader *_pluginLoader;
