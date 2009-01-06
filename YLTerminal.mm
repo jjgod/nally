@@ -538,14 +538,14 @@ if (_cursorX <= _column - 1) { \
 
                     int j;
                     for (j = 0; j < lineNumber; j++) {
-                        [self clearRow: _row - 1];
-                        cell *emptyRow = [self cellsOfRow: _row - 1];
+                        [self clearRow: _scrollEndRow];
+                        cell *emptyRow = [self cellsOfRow: _scrollEndRow];
                         int r;
-                        for (r = _row - 1; r > _cursorY; r--)
+                        for (r = _scrollEndRow; r > _cursorY; r--)
                             _grid[r] = _grid[r - 1];
                         _grid[_cursorY] = emptyRow;
                     }
-                    for (j = _cursorY; j < _row; j++)
+                    for (j = _cursorY; j <= _scrollEndRow; j++)
                         [self setDirtyForRow: j];
                 } else if (c == CSI_DL ) { // Delete Line
                     int lineNumber = 0;
@@ -560,12 +560,12 @@ if (_cursorX <= _column - 1) { \
                         [self clearRow: _cursorY];
                         cell *emptyRow = [self cellsOfRow: _cursorY];
                         int r;
-                        for (r = _cursorY; r < _row - 1; r++)
+                        for (r = _cursorY; r < _scrollEndRow; r++)
                             _grid[r] = _grid[r + 1];
-                        _grid[_row - 1] = emptyRow;
+                        _grid[_scrollEndRow] = emptyRow;
                     }
-                    for (j = _cursorY; j < _row; j++)
-                        [self setDirtyForRow: i];
+                    for (j = _cursorY; j <= _scrollEndRow; j++)
+                        [self setDirtyForRow: j];
                 } else if (c == CSI_DCH) { // Delete characters at the current cursor position.
                     int p = 1;
                     if (_csArg->size() == 1) {
