@@ -139,7 +139,7 @@ Perfect score = 100 points.  Extra credit at end.
 
 8. VT102 Features
 
-[/]  89. Insert/delete line, 80 columns
+[*]  89. Insert/delete line, 80 columns
 [*]  90. Insert (character) mode, 80 columns
 [*]  91. Delete character, 80 columns
 [*]  92. Right column staggered by 1 (normal chars), 80 columns
