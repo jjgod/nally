@@ -412,6 +412,19 @@ if (_cursorX <= _column - 1) { \
                 }
 
                 if (NO) {                   // code alignment
+                } else if (c == CSI_ICH) {
+                    int p;
+                    if (_csArg->size() > 0) {
+                        p = _csArg->front();
+						if (p < 1) p = 1;
+                    } else {
+                        p = 1;
+                    }
+                    for (x = _column - 1; x > _cursorX + p - 1; x--) {
+                        _grid[_cursorY][x] = _grid[_cursorY][x-p];
+                        [self setDirty: YES atRow: _cursorY column: x];
+                    }
+                    [self clearRow: _cursorY fromStart: _cursorX toEnd: _cursorX+p-1];
                 } else if (c == CSI_CUU) {
                     if (_csArg->size() > 0) {
                         int p = _csArg->front();
