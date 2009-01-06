@@ -798,6 +798,7 @@ if (_cursorX <= _column - 1) { \
 				} else if (c == CSI_DSR) {
 					if (_csArg->size() != 1) {
 						//do nothing
+                        //NSLog(@"%s %s",(*_csArg)[0],(*_csArg)[1]);
 					} else if ((*_csArg)[0] == 5) {
 						unsigned char cmd[4];
 						unsigned int cmdLength = 0;
@@ -806,16 +807,29 @@ if (_cursorX <= _column - 1) { \
 						cmd[cmdLength++] = 0x5B;
 						cmd[cmdLength++] = 0x30;
 						cmd[cmdLength++] = CSI_DSR;
+						[[self connection] sendBytes:cmd length:cmdLength];
 					} else if ((*_csArg)[0] == 6) {
-						unsigned char cmd[6];
+						unsigned char cmd[8];
 						unsigned int cmdLength = 0;
+                        unsigned int mynum;
 						// Report Device OK	<ESC>[y;xR
 						cmd[cmdLength++] = 0x1B;
 						cmd[cmdLength++] = 0x5B;
-						cmd[cmdLength++] = _cursorY + 1;
+                        if ((_cursorY + 1)/10 >= 1) {
+						   mynum = int((_cursorY + 1)/10);
+                           cmd[cmdLength++] = 0x30+mynum;
+                        }
+                        mynum = (_cursorY + 1) % 10;
+                        cmd[cmdLength++] = 0x30+mynum;
 						cmd[cmdLength++] = 0x3B;
-						cmd[cmdLength++] = _cursorX + 1;
+                        if ((_cursorX + 1)/10 >= 1) {
+						   mynum = int((_cursorX + 1)/10);
+                           cmd[cmdLength++] = 0x30+mynum;
+                        }
+                        mynum = (_cursorX + 1) % 10;
+                        cmd[cmdLength++] = 0x30+mynum;
 						cmd[cmdLength++] = CSI_CPR;
+						[[self connection] sendBytes:cmd length:cmdLength];
 					}
                 } else if (c == CSI_DECSTBM) { // Assigning Scrolling Region
                     if (_csArg->size() == 0) {

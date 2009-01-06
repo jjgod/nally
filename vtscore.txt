@@ -124,9 +124,9 @@ Perfect score = 100 points.  Extra credit at end.
 [ ]  77. Respond to ENQ with answerback
 [ ]  78. Newline mode set
 [ ]  79. Newline mode reset
-[ ]  80. Device status report 5
-[ ]  81. Device status report 6
-[ ]  82. Device attributes report
+[*]  80. Device status report 5
+[*]  81. Device status report 6
+[*]  82. Device attributes report
 [ ]  83. Request terminal parameters 0
 [ ]  84. Request terminal parameters 1
 
