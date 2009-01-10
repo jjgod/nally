@@ -237,7 +237,7 @@ NSStringEncoding encodingFromYLEncoding(YLEncoding ylenc)
     
     [_indicator setDoubleValue: (double) [_receivedData length]];
     
-    CGImageSourceRef exifSource = CGImageSourceCreateWithData((CFDateRef) _receivedData, NULL);
+    CGImageSourceRef exifSource = CGImageSourceCreateWithData((CFDataRef) _receivedData, NULL);
     NSDictionary *metaData = (NSDictionary*) CGImageSourceCopyPropertiesAtIndex(exifSource, 0, nil);
     NSDictionary *tiffData = [metaData objectForKey: (NSString *) kCGImagePropertyTIFFDictionary];
     NSLog(@"tiffData = %@", tiffData);
