@@ -4,15 +4,75 @@
 <dict>
 	<key>com.apple.ibtool.document.localizable-strings</key>
 	<dict>
+		<key>1026</key>
+		<dict>
+			<key>title</key>
+			<string>Exposure:</string>
+		</dict>
+		<key>1028</key>
+		<dict>
+			<key>title</key>
+			<string>F Number:</string>
+		</dict>
 		<key>103</key>
 		<dict>
 			<key>title</key>
 			<string>帮助</string>
 		</dict>
+		<key>1030</key>
+		<dict>
+			<key>title</key>
+			<string>ISO:</string>
+		</dict>
+		<key>1032</key>
+		<dict>
+			<key>title</key>
+			<string>Focal Length:</string>
+		</dict>
+		<key>1034</key>
+		<dict>
+			<key>title</key>
+			<string></string>
+		</dict>
+		<key>1038</key>
+		<dict>
+			<key>title</key>
+			<string></string>
+		</dict>
+		<key>1042</key>
+		<dict>
+			<key>title</key>
+			<string></string>
+		</dict>
+		<key>1044</key>
+		<dict>
+			<key>title</key>
+			<string>Date:</string>
+		</dict>
+		<key>1046</key>
+		<dict>
+			<key>title</key>
+			<string></string>
+		</dict>
 		<key>106</key>
 		<dict>
 			<key>title</key>
 			<string>帮助</string>
+		</dict>
+		<key>1074</key>
+		<dict>
+			<key>title</key>
+			<string></string>
+		</dict>
+		<key>1089</key>
+		<dict>
+			<key>title</key>
+			<string></string>
+		</dict>
+		<key>1090</key>
+		<dict>
+			<key>title</key>
+			<string>Model:</string>
 		</dict>
 		<key>111</key>
 		<dict>
@@ -608,6 +668,11 @@
 		<dict>
 			<key>title</key>
 			<string>插件</string>
+		</dict>
+		<key>962</key>
+		<dict>
+			<key>title</key>
+			<string>EXIF Data</string>
 		</dict>
 	</dict>
 </dict>
