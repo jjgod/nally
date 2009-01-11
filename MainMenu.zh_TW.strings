@@ -187,7 +187,7 @@
 		<key>256</key>
 		<dict>
 			<key>placeholderString</key>
-			<string>Go to this address</string>
+			<string>請輸入站台位址</string>
 			<key>title</key>
 			<string></string>
 		</dict>
@@ -662,11 +662,11 @@
 		<key>959</key>
 		<dict>
 			<key>title</key>
-			<string>Plugins</string>
+			<string>外掛</string>
 		</dict>
 		<key>960</key>
 		<dict>
-			<key>title</key>
+			<key>外掛</key>
 			<string>Plugins</string>
 		</dict>
 		<key>962</key>
