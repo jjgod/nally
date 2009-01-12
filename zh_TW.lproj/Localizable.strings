@@ -12,6 +12,7 @@
 
 /* Menu */
 "Lookup in Dictionary" = "查詢字典";
+"Copy" = "拷貝";
 
 /* Default Button */
 "Quit" = "結束";

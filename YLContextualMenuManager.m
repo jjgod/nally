@@ -86,6 +86,11 @@ static YLContextualMenuManager *gSharedInstance;
         [item setTarget: self];
         [item setRepresentedObject: selectedString];
         [items addObject: item];
+
+        item = [[[NSMenuItem alloc] initWithTitle: NSLocalizedString(@"Copy", @"Menu") action: @selector(copy:) keyEquivalent: @""] autorelease];
+        [item setTarget: [[NSApp keyWindow] firstResponder]];
+        [item setRepresentedObject: selectedString];
+        [items addObject: item];
     }
     return items;
 }
