@@ -3,13 +3,305 @@
 <plist version="1.0">
 <dict>
 	<key>com.apple.ibtool.document.localizable-strings</key>
-	<dict/>
-	<key>com.apple.ibtool.errors</key>
-	<array>
+	<dict>
+		<key>12</key>
 		<dict>
-			<key>description</key>
-			<string>Unable to open file at 'file://localhost/Users/mjhsieh/source/proj.Nally/trunk/Preferences.nib' -- no longer present.</string>
+			<key>title</key>
+			<string>Hanzi Font</string>
 		</dict>
-	</array>
+		<key>13</key>
+		<dict>
+			<key>title</key>
+			<string>English Font</string>
+		</dict>
+		<key>2</key>
+		<dict>
+			<key>title</key>
+			<string>Software Update</string>
+		</dict>
+		<key>253</key>
+		<dict>
+			<key>title</key>
+			<string></string>
+		</dict>
+		<key>422</key>
+		<dict>
+			<key>designableDisplayPattern</key>
+			<string>%{value1}@ - %{value2}@</string>
+		</dict>
+		<key>431</key>
+		<dict>
+			<key>designableDisplayPattern</key>
+			<string>%{value1}@</string>
+		</dict>
+		<key>433</key>
+		<dict>
+			<key>designableDisplayPattern</key>
+			<string>%{value1}@ - %{value2}@</string>
+		</dict>
+		<key>580</key>
+		<dict>
+			<key>title</key>
+			<string>OtherViews</string>
+		</dict>
+		<key>581</key>
+		<dict>
+			<key>title</key>
+			<string>Big5</string>
+		</dict>
+		<key>582</key>
+		<dict>
+			<key>title</key>
+			<string>GBK</string>
+		</dict>
+		<key>596</key>
+		<dict>
+			<key>title</key>
+			<string>OtherViews</string>
+		</dict>
+		<key>597</key>
+		<dict>
+			<key>title</key>
+			<string>Esc + Esc</string>
+		</dict>
+		<key>598</key>
+		<dict>
+			<key>title</key>
+			<string>Ctrl-U</string>
+		</dict>
+		<key>662</key>
+		<dict>
+			<key>title</key>
+			<string>OtherViews</string>
+		</dict>
+		<key>663</key>
+		<dict>
+			<key>title</key>
+			<string>Select...</string>
+		</dict>
+		<key>720</key>
+		<dict>
+			<key>title</key>
+			<string>OtherViews</string>
+		</dict>
+		<key>721</key>
+		<dict>
+			<key>title</key>
+			<string>Select...</string>
+		</dict>
+		<key>839</key>
+		<dict>
+			<key>alternateTitle</key>
+			<string></string>
+			<key>title</key>
+			<string>Check for updates on startup</string>
+		</dict>
+		<key>840</key>
+		<dict>
+			<key>alternateTitle</key>
+			<string></string>
+			<key>title</key>
+			<string>⌘R for reconnect</string>
+		</dict>
+		<key>841</key>
+		<dict>
+			<key>alternateTitle</key>
+			<string></string>
+			<key>title</key>
+			<string>Confirm on close</string>
+		</dict>
+		<key>842</key>
+		<dict>
+			<key>alternateTitle</key>
+			<string></string>
+			<key>title</key>
+			<string>Restore connections on startup</string>
+		</dict>
+		<key>843</key>
+		<dict>
+			<key>title</key>
+			<string>Default Telnet Client:</string>
+		</dict>
+		<key>846</key>
+		<dict>
+			<key>title</key>
+			<string>Default SSH Client:</string>
+		</dict>
+		<key>848</key>
+		<dict>
+			<key>title</key>
+			<string>Bottom Margin:</string>
+		</dict>
+		<key>849</key>
+		<dict>
+			<key>title</key>
+			<string></string>
+		</dict>
+		<key>851</key>
+		<dict>
+			<key>title</key>
+			<string></string>
+		</dict>
+		<key>852</key>
+		<dict>
+			<key>title</key>
+			<string></string>
+		</dict>
+		<key>853</key>
+		<dict>
+			<key>alternateTitle</key>
+			<string></string>
+			<key>title</key>
+			<string>Choose...</string>
+		</dict>
+		<key>854</key>
+		<dict>
+			<key>title</key>
+			<string>Left Margin:</string>
+		</dict>
+		<key>855</key>
+		<dict>
+			<key>title</key>
+			<string>Left Margin:</string>
+		</dict>
+		<key>856</key>
+		<dict>
+			<key>alternateTitle</key>
+			<string></string>
+			<key>title</key>
+			<string>Choose...</string>
+		</dict>
+		<key>857</key>
+		<dict>
+			<key>title</key>
+			<string></string>
+		</dict>
+		<key>858</key>
+		<dict>
+			<key>title</key>
+			<string></string>
+		</dict>
+		<key>860</key>
+		<dict>
+			<key>title</key>
+			<string></string>
+		</dict>
+		<key>861</key>
+		<dict>
+			<key>title</key>
+			<string>Bottom Margin:</string>
+		</dict>
+		<key>863</key>
+		<dict>
+			<key>title</key>
+			<string></string>
+		</dict>
+		<key>865</key>
+		<dict>
+			<key>title</key>
+			<string>Cell Height:</string>
+		</dict>
+		<key>866</key>
+		<dict>
+			<key>title</key>
+			<string>Cell Width:</string>
+		</dict>
+		<key>868</key>
+		<dict>
+			<key>title</key>
+			<string></string>
+		</dict>
+		<key>869</key>
+		<dict>
+			<key>alternateTitle</key>
+			<string></string>
+			<key>title</key>
+			<string>Subpixel text rendering (smooth font)</string>
+		</dict>
+		<key>870</key>
+		<dict>
+			<key>title</key>
+			<string>Background</string>
+		</dict>
+		<key>871</key>
+		<dict>
+			<key>title</key>
+			<string>Black</string>
+		</dict>
+		<key>872</key>
+		<dict>
+			<key>title</key>
+			<string>Red</string>
+		</dict>
+		<key>873</key>
+		<dict>
+			<key>title</key>
+			<string>Green</string>
+		</dict>
+		<key>874</key>
+		<dict>
+			<key>title</key>
+			<string>Yellow</string>
+		</dict>
+		<key>875</key>
+		<dict>
+			<key>title</key>
+			<string>Blue</string>
+		</dict>
+		<key>876</key>
+		<dict>
+			<key>title</key>
+			<string>Magenta</string>
+		</dict>
+		<key>877</key>
+		<dict>
+			<key>title</key>
+			<string>Cyan</string>
+		</dict>
+		<key>878</key>
+		<dict>
+			<key>title</key>
+			<string>White</string>
+		</dict>
+		<key>879</key>
+		<dict>
+			<key>title</key>
+			<string>Normal</string>
+		</dict>
+		<key>880</key>
+		<dict>
+			<key>title</key>
+			<string>Bold</string>
+		</dict>
+		<key>881</key>
+		<dict>
+			<key>title</key>
+			<string>Default Encoding:</string>
+		</dict>
+		<key>882</key>
+		<dict>
+			<key>alternateTitle</key>
+			<string></string>
+			<key>title</key>
+			<string>Programatically Detect Double Byte</string>
+		</dict>
+		<key>885</key>
+		<dict>
+			<key>title</key>
+			<string>Default ANSI Color Key:</string>
+		</dict>
+		<key>886</key>
+		<dict>
+			<key>alternateTitle</key>
+			<string></string>
+			<key>title</key>
+			<string>Bounce icon in the Dock repeatedly when receiving bell</string>
+		</dict>
+		<key>887</key>
+		<dict>
+			<key>title</key>
+			<string>Connections which are not configured in Sites Panel will use these default settings.</string>
+		</dict>
+	</dict>
 </dict>
 </plist>
