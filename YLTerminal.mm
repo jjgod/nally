@@ -226,7 +226,7 @@ if (_cursorX <= _column - 1) { \
             } else if (c == ASC_RS ) { // ^^
             } else if (c == ASC_US ) { // ^_
 // 0x20 ~ 0x7E ascii readible bytes... (btw Big5 second byte 0x40 ~ 0x7E)
-//          } else if (c == ASC_DEL) { // DEL Ignored on input; not stored in buffer.
+            } else if (c == ASC_DEL) { // Ignored on input; not stored
 //          } else if (c == 0x80){
 /*
 // Following characters are used by Big5 or Big5-HKSCS
