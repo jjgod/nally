@@ -159,6 +159,10 @@ if (_cursorX <= _column - 1) { \
             } else if (c == ASC_ETX) { // FLOW CONTROL? do nothing
             } else if (c == ASC_EQT) { // FLOW CONTROL? do nothing
             } else if (c == ASC_ENQ) { // FLOW CONTROL? do nothing
+                unsigned char cmd[1];
+                unsigned int cmdLength = 1;
+                cmd[1] = ASC_NUL;
+                [[self connection] sendBytes:cmd length:cmdLength];
             } else if (c == ASC_ACK) { // FLOW CONTROL? do nothing
             } else if (c == ASC_BEL) { // BEEP
                 [[NSSound soundNamed: @"Whit.aiff"] play];
@@ -217,7 +221,7 @@ if (_cursorX <= _column - 1) { \
             } else if (c == ASC_EM ) { // ^Y
             } else if (c == ASC_ESC) { // ^[
                 _state = TP_ESCAPE;
-            } else if (c == ASC_FS ) { // ^backslash
+            } else if (c == ASC_FS ) { // ^\ 
             } else if (c == ASC_GS ) { // ^]
             } else if (c == ASC_RS ) { // ^^
             } else if (c == ASC_US ) { // ^_
@@ -297,7 +301,7 @@ if (_cursorX <= _column - 1) { \
                 _cursorY = _savedCursorY;
                 _state = TP_NORMAL;
             } else if (c == ESC_HASH) { // 0x23
-                if (i < len-1 && bytes[i+1] == '8'){ // 0x38  --> fill with E
+                if (i < len-1 && bytes[i+1] == '8'){ // DECALN (fill with E)
                     i++;
 					for (y = 0; y <= _row-1; y++) {
 					    for (x = 0; x <= _column-1; x++) {
@@ -306,6 +310,10 @@ if (_cursorX <= _column - 1) { \
 							_dirty[y * _column + x] = YES;
 						}
 					}
+//              } else if (i < len-1 && bytes[i+1] == '3'){ //DECDHL
+//              } else if (i < len-1 && bytes[i+1] == '4'){ //DECDHL
+//              } else if (i < len-1 && bytes[i+1] == '5'){ //DECSWL
+//              } else if (i < len-1 && bytes[i+1] == '6'){ //DECDWL
                 } else
                     NSLog(@"Unhandled <ESC># case");
                 _state = TP_NORMAL;

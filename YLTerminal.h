@@ -19,17 +19,17 @@
 #define ASC_STX     0x02 // START OF TEXT
 #define ASC_ETX     0x03 // END OF TEXT
 #define ASC_EQT     0x04 // END OF TRANSMISSION
-#define ASC_ENQ     0x05 // ENQUIRE
+#define ASC_ENQ     0x05 // ^E, ENQUIRE
 #define ASC_ACK     0x06 // ACKNOWLEDGE
-#define ASC_BEL     0x07 // BELL (BEEP)
-#define ASC_BS      0x08 // BACKSPACE
-#define ASC_HT      0x09 // HORIZONTAL TABULATION
-#define ASC_LF      0x0A // LINE FEED
-#define ASC_VT      0x0B // Virtical Tabulation
-#define ASC_FF      0x0C // Form Feed
-#define ASC_CR      0x0D // Carriage Return
+#define ASC_BEL     0x07 // ^G, BELL (BEEP)
+#define ASC_BS      0x08 // ^H, BACKSPACE
+#define ASC_HT      0x09 // ^I, HORIZONTAL TABULATION
+#define ASC_LF      0x0A // ^J, LINE FEED
+#define ASC_VT      0x0B // ^K, Virtical Tabulation
+#define ASC_FF      0x0C // ^L, Form Feed
+#define ASC_CR      0x0D // ^M, Carriage Return
 #define ASC_LS1     0x0E // Shift Out
-#define ASC_LS0     0x0F // Shift In
+#define ASC_LS0     0x0F // ^O, Shift In
 #define ASC_DLE     0x10 // Data Link Escape, normally MODEM
 #define ASC_DC1     0x11 // Device Control One, XON
 #define ASC_DC2     0x12 // Device Control Two
@@ -62,30 +62,30 @@
 #define ESC_NEL     0x45 // E, Next Line
 #define ESC_SSA     0x46 // F,
 #define ESC_ESA     0x47 // G,
-#define ESC_HTS     0x48 // H,
+#define ESC_HTS     0x48 // H, Tab Set
 #define ESC_HTJ     0x49 // I,
 #define ESC_VTS     0x4A // J,
 #define ESC_PLD     0x4B // K,
 #define ESC_PLU     0x4C // L,
 #define ESC_RI      0x4D // M, Reverse Index
-#define ESC_SS2     0x4E // N,
-#define ESC_SS3     0x4F // O,
-#define ESC_DCS     0x50 // P,
+#define ESC_SS2     0x4E // N, Single Shift Select of G2 Character Set
+#define ESC_SS3     0x4F // O, Single Shift Select of G3 Character Set
+#define ESC_DCS     0x50 // P, Device Control String
 #define ESC_PU1     0x51 // Q,
 #define ESC_PU2     0x52 // R,
 #define ESC_STS     0x53 // S,
 #define ESC_CCH     0x54 // T,
 #define ESC_MW      0x55 // U,
-#define ESC_SPA     0x56 // V,
-#define ESC_EPA     0x57 // W,
-#define ESC_SOS     0x58 // X,
+#define ESC_SPA     0x56 // V, Start of Guarded Area
+#define ESC_EPA     0x57 // W, End of Guarded Area
+#define ESC_SOS     0x58 // X, Start of String
 //#define ESC_      0x59 // Y,
-#define ESC_SCI     0x5A // Z,
-#define ESC_CSI     0x5B // [,
-#define ESC_ST      0x5C // \,
-#define ESC_OSC     0x5D // ],
-#define ESC_PM      0x5E // ^,
-#define ESC_APC     0x5F // _,
+#define ESC_SCI     0x5A // Z, Return Terminal ID
+#define ESC_CSI     0x5B // [, Control Sequence Introducer
+#define ESC_ST      0x5C // \, String Terminator
+#define ESC_OSC     0x5D // ], Operating System Command
+#define ESC_PM      0x5E // ^, Privacy Message
+#define ESC_APC     0x5F // _, Application Program Command
 #define ESC_RIS     0x63 // c, RIS reset
 
 // Control sequences
