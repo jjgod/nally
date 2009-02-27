@@ -278,6 +278,8 @@ void dump_packet(unsigned char *s, int length)
 					[self sendCommand: WILL option: TELOPT_NAWS];
                     [self performSelector: @selector(sendData:) withObject: [NSData dataWithBytes:b length:9] afterDelay: 0.001];
 //					[self sendBytes: b length: 9];
+                } else if (c == TELOPT_BINARY) {
+					[self sendCommand: WILL option: TELOPT_BINARY];
 				} else 
 					[self sendCommand: WONT option: c];
 				_state = TOP_LEVEL;
