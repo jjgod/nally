@@ -169,8 +169,9 @@ if (_cursorX <= _column - 1) { \
                 [self setHasMessage: YES];
             } else if (c == ASC_BS ) { // ^H, backspace
 				if (_cursorX == _column) {
-                    // walk back two chars from the edge
-					_cursorX -= 2;
+                    // (disabled because x beyand the right edge was reduced by
+                    // one) walk back two chars from the edge
+                    _cursorX--;
 				} else if (_cursorX > 0) {
                     // mostly just walking back one char
                     _cursorX--;
