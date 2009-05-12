@@ -60,6 +60,7 @@ static unsigned short gEmptyAttr;
 		_modeLNM = YES;
         _modeIRM = NO;
         _emustd = VT102;
+        _gotWrapped = NO;
         _grid = (cell **) malloc(sizeof(cell *) * _row);
         int i;
         for (i = 0; i < _row; i++)
@@ -114,6 +115,7 @@ if (_cursorX <= _column - 1) { \
     _cursorX++; \
 } else if (_cursorX == _column && _modeWraptext == YES) { \
     _cursorX = 0; \
+    _gotWrapped = YES; \
     if (_cursorY == _scrollEndRow) { \
     	[_delegate updateBackedImage]; \
 	    [_delegate extendBottomFrom: _scrollBeginRow to: _scrollEndRow]; \
@@ -168,15 +170,29 @@ if (_cursorX <= _column - 1) { \
                 [[NSSound soundNamed: @"Whit.aiff"] play];
                 [self setHasMessage: YES];
             } else if (c == ASC_BS ) { // ^H, backspace
-				if (_cursorX == _column) {
-                    // (disabled because x beyand the right edge was reduced by
-                    // one) walk back two chars from the edge
+                if (_cursorX > 0) {
+				    if (_cursorX == _column && _modeWraptext)
+                        _cursorX--; // vt console bug/feature
                     _cursorX--;
-				} else if (_cursorX > 0) {
-                    // mostly just walking back one char
-                    _cursorX--;
-				}
-                // reverse-wrap is not implemented yet
+                } else if (_cursorX == 0 && _gotWrapped ) { // reverse-wrap
+                    _cursorX = _column - 1;
+                    if (_cursorY == _scrollBeginRow) {
+                       [_delegate updateBackedImage];
+                       [_delegate extendTopFrom: _scrollBeginRow to: _scrollEndRow];
+                       cell *emptyLine = _grid[_scrollEndRow];
+                       [self clearRow: _scrollEndRow];
+                    
+                       for (x = _scrollEndRow; x > _scrollBeginRow; x--) 
+                          _grid[x] = _grid[x - 1];
+                       _grid[_scrollBeginRow] = emptyLine;
+                       [self setAllDirty];
+                    } else {
+                       _cursorY--;
+                       if (_cursorY < 0) _cursorY = 0;
+                    }
+                    _gotWrapped = NO;
+                    //NSLog(@"%d %d",_cursorX,_cursorY);
+                }
             } else if (c == ASC_HT ) { // Horizontal TABulation
                 // Normally the tabulation stops for every 8 chars
 				_cursorX=(int(_cursorX/8) + 1) * 8;

@@ -177,6 +177,7 @@
     int _scrollEndRow;
     
     BOOL _hasMessage;
+    BOOL _gotWrapped;
 	
     BOOL _modeScreenReverse;  // reverse (true), not reverse (false, default)
 	BOOL _modeOriginRelative; // relative origin (true), absolute origin (false, default)
