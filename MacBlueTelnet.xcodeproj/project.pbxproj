@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		070D50430D9BF40400EC2660 /* YLImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 070D50420D9BF40400EC2660 /* YLImageView.m */; };
 		071AE8710F12012100FDD307 /* YLExifController.m in Sources */ = {isa = PBXBuildFile; fileRef = 071AE8700F12012100FDD307 /* YLExifController.m */; };
+		072CFCCD1047D33700E70060 /* nally.public.pem in Resources */ = {isa = PBXBuildFile; fileRef = 072CFCCC1047D33700E70060 /* nally.public.pem */; };
 		079E9BB00F08B9480089C9E2 /* HUDSave.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 079E9BAE0F08B9480089C9E2 /* HUDSave.tiff */; };
 		079E9BB10F08B9480089C9E2 /* HUDSaveActive.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 079E9BAF0F08B9480089C9E2 /* HUDSaveActive.tiff */; };
 		079E9BCA0F08C4820089C9E2 /* YLFloatingView.m in Sources */ = {isa = PBXBuildFile; fileRef = 079E9BC90F08C4820089C9E2 /* YLFloatingView.m */; };
@@ -75,6 +76,7 @@
 		070D50420D9BF40400EC2660 /* YLImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YLImageView.m; sourceTree = "<group>"; };
 		071AE86F0F12012100FDD307 /* YLExifController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLExifController.h; sourceTree = "<group>"; };
 		071AE8700F12012100FDD307 /* YLExifController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YLExifController.m; sourceTree = "<group>"; };
+		072CFCCC1047D33700E70060 /* nally.public.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = nally.public.pem; sourceTree = "<group>"; };
 		079E9BAE0F08B9480089C9E2 /* HUDSave.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = HUDSave.tiff; sourceTree = "<group>"; };
 		079E9BAF0F08B9480089C9E2 /* HUDSaveActive.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = HUDSaveActive.tiff; sourceTree = "<group>"; };
 		079E9BC80F08C4820089C9E2 /* YLFloatingView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLFloatingView.h; sourceTree = "<group>"; };
@@ -248,6 +250,7 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				072CFCCC1047D33700E70060 /* nally.public.pem */,
 				079E9BAE0F08B9480089C9E2 /* HUDSave.tiff */,
 				079E9BAF0F08B9480089C9E2 /* HUDSaveActive.tiff */,
 				85EA93210D0791180098C94B /* Preferences.nib */,
@@ -341,7 +344,6 @@
 				8D1107290486CEB800E47090 /* Resources */,
 				8D11072C0486CEB800E47090 /* Sources */,
 				8D11072E0486CEB800E47090 /* Frameworks */,
-				07730E610EE9603B00B465E7 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -398,26 +400,11 @@
 				85AD6FE70D227F1D00992A1C /* DragonBall.icns in Resources */,
 				079E9BB00F08B9480089C9E2 /* HUDSave.tiff in Resources */,
 				079E9BB10F08B9480089C9E2 /* HUDSaveActive.tiff in Resources */,
+				072CFCCD1047D33700E70060 /* nally.public.pem in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		07730E610EE9603B00B465E7 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "find \"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH\" -name Headers \\( -type d -or -type l \\) | xargs rm -rf\nibtool --strings-file MainMenu.zh_TW.strings --write $TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/zh_TW.lproj/MainMenu.nib $TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/English.lproj/MainMenu.nib\nibtool --strings-file MainMenu.zh_CN.strings --write $TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/zh_CN.lproj/MainMenu.nib $TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/English.lproj/MainMenu.nib";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		8D11072C0486CEB800E47090 /* Sources */ = {
@@ -515,10 +502,8 @@
 		C01FCF4C08A954540054247B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
-					ppc,
-					i386,
-				);
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1)";
+				ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1 = "x86_64 i386 ppc";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
@@ -536,9 +521,12 @@
 		C01FCF4F08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(NATIVE_ARCH)";
+				ARCHS = "$(NATIVE_ARCH_ACTUAL)";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_PREFIX_HEADER = "";
+				INFOPLIST_PREPROCESS = NO;
+				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				PREBINDING = NO;
 				PRODUCT_NAME = Nally;
 				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.5.sdk";
@@ -548,8 +536,13 @@
 		C01FCF5008A954540054247B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1)";
+				ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1 = "x86_64 i386 ppc";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_PREFIX_HEADER = "";
+				INFOPLIST_PREPROCESS = NO;
+				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				PREBINDING = NO;
 				PRODUCT_NAME = Nally;
 				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.5.sdk";

@@ -1,4 +1,5 @@
 *.pbxuser
 *.perspectivev3
+*.swp
 build/
 

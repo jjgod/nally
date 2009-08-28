@@ -16,6 +16,7 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <termios.h>
+#include <stdarg.h>
 
 #define CTRLKEY(c)   ((c)-'A'+1)
 
@@ -125,22 +126,17 @@
     _pid = forkpty(&_fileDescriptor, slaveName, &term, &size);
     if (_pid == 0) { /* child */
         if (_loginAsBBS) {
-            char *argv[8] = { "/usr/bin/ssh", "-e", "none", // do not use EscapeChar
-                              "-x", "-p" };
-
-            argv[5] = (char *)[[NSString stringWithFormat: @"%d", port] UTF8String];
-            argv[6] = (char *)[addr UTF8String];
-            argv[7] = NULL;
-            execvp(argv[0], argv);
+            execlp("/usr/bin/ssh", "-e",
+                   "none", // do not use EscapeChar
+                   "-x", "-p",
+                   [[NSString stringWithFormat: @"%d", port] UTF8String],
+                   [addr UTF8String], NULL);
             fprintf(stderr, "fork error");
         } else {
-            char *argv[9] = { "/usr/bin/env", "TERM=vt102", // should be customizable in the future
-                              "/usr/bin/ssh", "-e", "none", // do not use EscapeChar
-                              "-p" };
-            argv[6] = (char *)[[NSString stringWithFormat: @"%d", port] UTF8String];
-            argv[7] = (char *)[addr UTF8String];
-            argv[8] = NULL;
-            execvp(argv[0], argv);
+            execlp("/usr/bin/env", "TERM=vt102", // should be customizable in the future
+                   "/usr/bin/ssh", "-e", "none", // do not use EscapeChar
+                   "-p", [[NSString stringWithFormat: @"%d", port] UTF8String],
+                   [addr UTF8String], NULL);
             fprintf(stderr, "fork error");
         }
     } else { /* parent */

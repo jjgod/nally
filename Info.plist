@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleGetInfoString</key>
-	<string>1.4.2</string>
+	<string>1.4.3</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
@@ -41,7 +41,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>1.4.2</string>
+	<string>1.4.3</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.5.0</string>
 	<key>NSMainNibFile</key>
@@ -50,5 +50,7 @@
 	<string>YLApplication</string>
 	<key>SUFeedURL</key>
 	<string>http://nally.googlecode.com/svn/trunk/Nally.xml</string>
+	<key>SUPublicDSAKeyFile</key>
+	<string>nally.public.pem</string>
 </dict>
 </plist>

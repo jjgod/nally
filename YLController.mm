@@ -121,7 +121,7 @@
 {
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
     
-	id terminal = [YLTerminal new];
+	YLTerminal *terminal = [YLTerminal new];
     YLConnection *connection = [YLConnection connectionWithAddress: [site address]];
     
     BOOL emptyTab = [_telnetView frontMostConnection] && ([_telnetView frontMostTerminal] == nil);
