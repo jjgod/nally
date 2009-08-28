@@ -1048,10 +1048,21 @@ if (_cursorX <= _column - 1) { \
         } else if (db == 1) {
             firstByte = _grid[y][x].byte;
         } else if (db == 2 && firstByte) {
-            int index = (firstByte << 8) + _grid[y][x].byte - 0x8000;
+            int index = (firstByte << 8) + _grid[y][x].byte;
+            YLEncoding encoding = [[[self connection] site] encoding];
+
             for (j = 0; j < spacebuf; j++)
                 textBuf[bufLength++] = ' ';
-            textBuf[bufLength++] = ([[[self connection] site] encoding] == YLBig5Encoding) ? B2U[index] : G2U[index];
+
+            if (index >= 0x8000)
+            {
+                index -= 0x8000;
+                textBuf[bufLength++] = (encoding == YLBig5Encoding) ? B2U[index] : G2U[index];
+            }
+            // Special case for Euro sign in GB2312
+            else if (index == 0x0080 && encoding == YLGBKEncoding)
+                textBuf[bufLength++] = 0x20AC;
+
             spacebuf = 0;
         }
     }
@@ -1086,7 +1097,7 @@ if (_cursorX <= _column - 1) { \
 {
     cell *currRow = _grid[r];
     /* TODO: use DFA to reduce the computation  */
-    char *protocols[] = {"http://", "https://", "ftp://", "telnet://", "bbs://", "ssh://", "mailto:"};
+    const char *protocols[] = {"http://", "https://", "ftp://", "telnet://", "bbs://", "ssh://", "mailto:"};
     int protocolNum = 7;
     
     BOOL urlState = NO;
