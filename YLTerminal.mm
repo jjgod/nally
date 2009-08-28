@@ -1048,21 +1048,12 @@ if (_cursorX <= _column - 1) { \
         } else if (db == 1) {
             firstByte = _grid[y][x].byte;
         } else if (db == 2 && firstByte) {
-            int index = (firstByte << 8) + _grid[y][x].byte;
+            int index = (firstByte << 8) + _grid[y][x].byte - 0x8000;
             YLEncoding encoding = [[[self connection] site] encoding];
 
             for (j = 0; j < spacebuf; j++)
                 textBuf[bufLength++] = ' ';
-
-            if (index >= 0x8000)
-            {
-                index -= 0x8000;
-                textBuf[bufLength++] = (encoding == YLBig5Encoding) ? B2U[index] : G2U[index];
-            }
-            // Special case for Euro sign in GB2312
-            else if (index == 0x0080 && encoding == YLGBKEncoding)
-                textBuf[bufLength++] = 0x20AC;
-
+            textBuf[bufLength++] = (encoding == YLBig5Encoding) ? B2U[index] : G2U[index];
             spacebuf = 0;
         }
     }

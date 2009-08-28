@@ -1038,17 +1038,8 @@ BOOL isSpecialSymbol(unichar ch)
 		} else if (db == 1) {
 			continue;
 		} else if (db == 2) {
-			unsigned short code = (((currRow + x - 1)->byte) << 8) + ((currRow + x)->byte);
-            unichar ch;
-
-            if (code >= 0x8000)
-            {
-                code -= 0x8000;
-                ch = (termEncoding == YLBig5Encoding ? B2U[code] : G2U[code]);
-            }
-            else if (code == 0x0080 && termEncoding == YLGBKEncoding) // Euro sign in GB2312
-                ch = 0x20AC;
-
+			unsigned short code = (((currRow + x - 1)->byte) << 8) + ((currRow + x)->byte) - 0x8000;
+			unichar ch = (termEncoding == YLBig5Encoding ? B2U[code] : G2U[code]);
 			if (isSpecialSymbol(ch)) {
 				[self drawSpecialSymbol: ch forRow: r column: (x - 1) leftAttribute: (currRow + x - 1)->attr rightAttribute: (currRow + x)->attr];
 			} else {
