@@ -697,11 +697,11 @@
     return NO;
 }
 
-- (BOOL) windowWillClose: (id)window
+- (void) windowWillClose: (NSNotification *) notification
 {
 //    [NSApp terminate: self];
 //    NSLog(@"WILL");
-    return NO;
+    // return NO;
 }
 
 - (void) windowDidBecomeKey: (NSNotification *)notification

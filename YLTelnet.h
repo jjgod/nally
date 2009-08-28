@@ -104,7 +104,7 @@
 ( (x) != IAC && \
   (telnet->opt_states[o_we_bin.index] == ACTIVE || (x) != CR))
 
-static char *telopt(int opt)
+static const char *telopt(int opt)
 {
 #define i(x) if (opt == TELOPT_ ## x) return #x;
     i(BINARY);

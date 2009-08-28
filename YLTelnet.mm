@@ -18,7 +18,7 @@
 #import <deque>
 
 #ifdef __DUMPPACKET__
-char *_commandName[] = { "SE", "NOP", "DM", "BRK", "IP", "AO", "AYT", "EC", "EL", "GA", "SB", "WILL", "WONT", "DO", "DONT", "IAC" };
+const char *_commandName[] = { "SE", "NOP", "DM", "BRK", "IP", "AO", "AYT", "EC", "EL", "GA", "SB", "WILL", "WONT", "DO", "DONT", "IAC" };
 
 void dump_packet(unsigned char *s, int length)
 {

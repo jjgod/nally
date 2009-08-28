@@ -415,7 +415,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "find $BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH -name Headers \\( -type d -or -type l \\) | xargs rm -rf\nibtool --strings-file MainMenu.zh_TW.strings --write $TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/zh_TW.lproj/MainMenu.nib $TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/English.lproj/MainMenu.nib\nibtool --strings-file MainMenu.zh_CN.strings --write $TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/zh_CN.lproj/MainMenu.nib $TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/English.lproj/MainMenu.nib";
+			shellScript = "find \"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH\" -name Headers \\( -type d -or -type l \\) | xargs rm -rf\nibtool --strings-file MainMenu.zh_TW.strings --write $TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/zh_TW.lproj/MainMenu.nib $TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/English.lproj/MainMenu.nib\nibtool --strings-file MainMenu.zh_CN.strings --write $TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/zh_CN.lproj/MainMenu.nib $TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/English.lproj/MainMenu.nib";
 		};
 /* End PBXShellScriptBuildPhase section */
 

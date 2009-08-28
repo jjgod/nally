@@ -58,7 +58,7 @@ enum {
         YLController *controller = [NSApp delegate];
         YLExifController *exifController = [controller exifController];
         
-        NSString *makeName = [tiffData objectForKey:(NSString *)kCGImagePropertyTIFFMake];
+        NSString *makeName = [tiffData objectForKey:(NSString *) kCGImagePropertyTIFFMake];
         NSString *modelName = [tiffData objectForKey: (NSString *) kCGImagePropertyTIFFModel];
         // NSLog(@"tiff = %@, modelName = %@", tiff, modelName);
 
