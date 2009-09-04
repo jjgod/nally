@@ -8,9 +8,9 @@
       <language>en</language>
         <item>
             <title>Version {{ version }}</title>
-            <description>
+            <description><![CDATA[
 {% include "Release.html" %}
-            </description>
+            ]]></description>
             <pubDate>{{ date }}</pubDate>
             <enclosure url="{{ url }}"
                 length="{{ length }}"

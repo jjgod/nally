@@ -8,7 +8,7 @@
       <language>en</language>
         <item>
             <title>Version 1.4.4</title>
-            <description>
+            <description><![CDATA[
 <h2>Nally 1.4.4</h2>
 2009/09/04
 
@@ -54,7 +54,7 @@
 <li>修正一些半透明背景绘制的问题。(fishy 报告)</li>
 <li>修正输入到窗口边沿光标判断的问题。(fayewong)</li>
 </ul>
-            </description>
+            ]]></description>
             <pubDate>Fri, 04 Sep 2009 16:53:30 +0900</pubDate>
             <enclosure url="http://nally.googlecode.com/files/Nally-1.4.4.zip"
                 length="3024064"
