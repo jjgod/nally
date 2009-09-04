@@ -126,17 +126,19 @@
     _pid = forkpty(&_fileDescriptor, slaveName, &term, &size);
     if (_pid == 0) { /* child */
         if (_loginAsBBS) {
-            execlp("/usr/bin/ssh", "-e",
+            execlp("/usr/bin/ssh", "ssh", "-e",
                    "none", // do not use EscapeChar
                    "-x", "-p",
                    [[NSString stringWithFormat: @"%d", port] UTF8String],
                    [addr UTF8String], NULL);
             fprintf(stderr, "fork error");
         } else {
-            execlp("/usr/bin/env", "TERM=vt102", // should be customizable in the future
-                   "/usr/bin/ssh", "-e", "none", // do not use EscapeChar
+            // should be customizable in the future
+            const char *envp[] = { "TERM=vt102", NULL };
+            execle("/usr/bin/ssh", "ssh",
+                   "-e", "none", // do not use EscapeChar
                    "-p", [[NSString stringWithFormat: @"%d", port] UTF8String],
-                   [addr UTF8String], NULL);
+                   [addr UTF8String], NULL, envp);
             fprintf(stderr, "fork error");
         }
     } else { /* parent */
