@@ -807,8 +807,6 @@ BOOL isSpecialSymbol(unichar ch)
 		[_backedImage compositeToPoint: rect.origin
 							  fromRect: rect
 							 operation: NSCompositeCopy];
-        // NSData *data = [_backedImage TIFFRepresentation];
-        // [data writeToFile: @"/Users/jjgod/Nally.tiff" atomically: NO];
 
         [self drawBlink];
         

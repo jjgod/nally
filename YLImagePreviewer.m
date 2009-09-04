@@ -11,6 +11,49 @@
 #import "YLImagePreviewer.h"
 #import "YLImageView.h"
 
+@interface NSHTTPURLResponse (Corrected)
+- (NSString *) correctedFileNameWithEncoding: (NSStringEncoding) encoding;
+@end
+
+@implementation NSHTTPURLResponse (Corrected)
+
+- (NSString *) correctedFileNameWithEncoding: (NSStringEncoding) encoding
+{
+    NSString *fileName = nil, *disposition;
+
+    disposition = [[self allHeaderFields] objectForKey: @"Content-Disposition"];
+
+    NSRange start = [disposition rangeOfString: @"filename="];
+    if (start.location != NSNotFound)
+        fileName = [disposition substringFromIndex: start.location + start.length];
+
+    if (fileName)
+    {
+        int i, max = [fileName length];
+        char *nbytes = (char *) malloc(max + 1);
+
+        for (i = 0; i < max; i++)
+        {
+            unichar ch = [fileName characterAtIndex: i];
+            nbytes[i] = (char) ch;
+        }
+
+        nbytes[i] = '\0';
+
+        NSStringEncoding enc = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
+        NSString *str = [NSString stringWithCString: nbytes
+                                           encoding: enc];
+        free(nbytes);
+
+        return str;
+    }
+
+    return nil;
+}
+
+@end
+
+
 @implementation YLImagePreviewer
 
 - (id) initWithURL: (NSURL *) url
@@ -176,27 +219,15 @@ NSStringEncoding encodingFromYLEncoding(YLEncoding ylenc)
 - (void) connection: (NSURLConnection *) connection 
  didReceiveResponse: (NSURLResponse *) response
 {
-    // this method is called when the server has determined that it
-    // has enough information to create the NSURLResponse
-    // NSLog(@"didReceiveResponse");
-    NSString *fileName = [response suggestedFilename];
+    /* FIXME: a hack to retrieve the correct file name, we need better
+     *        ways to determine whether we need this hack or not, and
+     *        which encoding to apply
+     */
+    NSString *fileName = [(NSHTTPURLResponse *) response correctedFileNameWithEncoding:
+                            encodingFromYLEncoding(YLGBKEncoding)];
 
-    // Decode incorrectly encoded NSString
-    int max = [fileName length];
-    char *nbytes = (char *) malloc(max + 1);
-    
-    int i;
-    for (i = 0; i < max; i++)
-    {
-        unichar ch = [fileName characterAtIndex: i];
-        nbytes[i] = (char) ch;
-    }
-    
-    nbytes[i] = '\0';
-    NSStringEncoding enc = encodingFromYLEncoding(YLGBKEncoding);
-    _currentFileDownloading = [[NSString alloc] initWithCString: nbytes
-                                                       encoding: enc];
-    free(nbytes);
+    if (fileName)
+        _currentFileDownloading = [fileName retain];
     
     _totalLength = [response expectedContentLength];
 
@@ -240,8 +271,7 @@ NSStringEncoding encodingFromYLEncoding(YLEncoding ylenc)
     CGImageSourceRef exifSource = CGImageSourceCreateWithData((CFDataRef) _receivedData, NULL);
     NSDictionary *metaData = (NSDictionary*) CGImageSourceCopyPropertiesAtIndex(exifSource, 0, nil);
     NSDictionary *tiffData = [metaData objectForKey: (NSString *) kCGImagePropertyTIFFDictionary];
-    NSLog(@"tiffData = %@", tiffData);
-    
+
     CFRelease(exifSource);
 
     NSImage *image = [[NSImage alloc] initWithData: _receivedData];
