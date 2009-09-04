@@ -22,6 +22,8 @@
     NSString *fileName = nil, *disposition;
 
     disposition = [[self allHeaderFields] objectForKey: @"Content-Disposition"];
+    if (! disposition)
+        return [self suggestedFilename];
 
     NSRange start = [disposition rangeOfString: @"filename="];
     if (start.location != NSNotFound)
