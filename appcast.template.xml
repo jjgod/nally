@@ -8,9 +8,9 @@
       <language>en</language>
         <item>
             <title>Version {{ version }}</title>
-            <sparkle:releaseNotesLink>
-                {{ relNotes }}
-            </sparkle:releaseNotesLink>
+            <description>
+{% include "Release.html" %}
+            </description>
             <pubDate>{{ date }}</pubDate>
             <enclosure url="{{ url }}"
                 length="{{ length }}"
@@ -21,3 +21,4 @@
      </channel>
 
 </rss>
+

@@ -7,22 +7,26 @@
       <description>Most recent changes with links to Nally updates.</description>
       <language>en</language>
         <item>
-            <title>Version 1.4.3</title>
-            <pubDate>Fri, 28 Aug 2009 19:54:44 +0900</pubDate>
-            <enclosure url="http://nally.googlecode.com/files/Nally-1.4.3.zip"
-                length="2816004"
-                type="application/octet-stream"
-                sparkle:version="1.4.3"
-                sparkle:dsaSignature="MCwCFFy37Kc/e8h/8C/6mMgVNBYyh2RFAhQyUWd8+rroT4Mxv2eyXf3rvoH9JQ==" />
-            <description><![CDATA[
-<h1>Nally 1.4.3</h1>
+            <title>Version 1.4.4</title>
+            <description>
+<h2>Nally 1.4.4</h2>
+2009/09/04
+
+<ul>
+<li>修正 ssh 无法连接的问题。(jjgod)</li>
+<li>修正 Tab 栏无法出现图标的问题。(jjgod)</li>
+<li>修正 newsmth 附件文件名解码问题。(jjgod)</li>
+<li>在 Leopard 下默认以 32-bit 模式执行。(jjgod)</li>
+</ul>
+
+<h2>Nally 1.4.3</h2>
 2009/08/28
 
 <ul>
 <li>支持 64-bit 和 Snow Leopard。(jjgod)</li>
 </ul>
 
-<h1>Nally 1.4.2</h1>
+<h2>Nally 1.4.2</h2>
 
 <ul>
 <li>SSH 到 BBS 時關閉 X11 Forwarding。(mjhsieh)</li>
@@ -31,7 +35,7 @@
 <li>其他終端相關的相容性改進。(mjhsieh)</li>
 </ul>
 
-<h1>Nally 1.4.1</h1>
+<h2>Nally 1.4.1</h2>
 
 <ul>
 <li>(新增) 加入对保存预览图片的试验性支持。</li>
@@ -41,7 +45,7 @@
 <li>修正预览图片时部分内容被窗口标题栏覆盖的问题。(fayewong 报告)</li>
 </ul>
 
-<h1>Nally 1.4.0</h1>
+<h2>Nally 1.4.0</h2>
 
 <ul>
 <li>修正 GBK 特定低字节处理问题。</li>
@@ -50,7 +54,13 @@
 <li>修正一些半透明背景绘制的问题。(fishy 报告)</li>
 <li>修正输入到窗口边沿光标判断的问题。(fayewong)</li>
 </ul>
-            ]]></description>
+            </description>
+            <pubDate>Fri, 04 Sep 2009 16:53:30 +0900</pubDate>
+            <enclosure url="http://nally.googlecode.com/files/Nally-1.4.4.zip"
+                length="3024064"
+                type="application/octet-stream"
+                sparkle:version="1.4.4"
+                sparkle:dsaSignature="MC0CFAxmVDFSS4e07M+5o3XOSJUK3udsAhUAwQr73j4m+ayQ58DAEaLmfoN5jHM=" />
          </item>
      </channel>
 
