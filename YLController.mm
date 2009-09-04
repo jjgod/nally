@@ -801,7 +801,7 @@
 //    [self refreshTabLabelNumber: _telnetView];
 }
 
-- (NSImage *) tabView: (NSTabView *)aTabView imageForTabViewItem: (NSTabViewItem *)tabViewItem offset: (NSSize *)offset styleMask: (unsigned int *)styleMask
+- (NSImage *) tabView: (NSTabView *)aTabView imageForTabViewItem: (NSTabViewItem *)tabViewItem offset: (NSSize *)offset styleMask: (NSUInteger *)styleMask
 {
     return nil;
 }

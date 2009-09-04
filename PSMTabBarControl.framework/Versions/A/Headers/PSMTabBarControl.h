@@ -12,6 +12,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#define PSMTabDragDidEndNotification @"PSMTabDragDidEndNotification"
+#define PSMTabDragDidBeginNotification @"PSMTabDragDidBeginNotification"
+
 #define kPSMTabBarControlHeight 22
 // internal cell border
 #define MARGIN_X        6
@@ -22,59 +25,91 @@
 #define kPSMMinimumTitleWidth 30
 #define kPSMTabBarIndicatorWidth 16.0
 #define kPSMTabBarIconWidth 16.0
-#define kPSMHideAnimationSteps 2.0
+#define kPSMHideAnimationSteps 3.0
 
-@class PSMOverflowPopUpButton;
-@class PSMRolloverButton;
-@class PSMTabBarCell;
+// Value used in _currentStep to indicate that resizing operation is not in progress
+#define kPSMIsNotBeingResized -1
+
+// Value used in _currentStep when a resizing operation has just been started
+#define kPSMStartResizeAnimation 0
+
+@class PSMOverflowPopUpButton, PSMRolloverButton, PSMTabBarCell, PSMTabBarController;
 @protocol PSMTabStyle;
+
+typedef enum {
+	PSMTabBarHorizontalOrientation,
+	PSMTabBarVerticalOrientation
+} PSMTabBarOrientation;
+
+typedef enum {
+	PSMTabBarTearOffAlphaWindow,
+	PSMTabBarTearOffMiniwindow
+} PSMTabBarTearOffStyle;
 
 enum {
     PSMTab_SelectedMask                 = 1 << 1,
-    PSMTab_LeftIsSelectedMask		= 1 << 2,
+    PSMTab_LeftIsSelectedMask       = 1 << 2,
     PSMTab_RightIsSelectedMask          = 1 << 3,
-    PSMTab_PositionLeftMask		= 1 << 4,
-    PSMTab_PositionMiddleMask		= 1 << 5,
-    PSMTab_PositionRightMask		= 1 << 6,
-    PSMTab_PositionSingleMask		= 1 << 7
+    PSMTab_PositionLeftMask     = 1 << 4,
+    PSMTab_PositionMiddleMask       = 1 << 5,
+    PSMTab_PositionRightMask        = 1 << 6,
+    PSMTab_PositionSingleMask       = 1 << 7
 };
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
-#define EXTRA_DELEGATE <NSTabViewDelegate>
-#else
-#define EXTRA_DELEGATE 
-#endif
-
-@interface PSMTabBarControl : NSControl EXTRA_DELEGATE {
+@interface PSMTabBarControl : NSControl {
     
     // control basics
     NSMutableArray              *_cells;                    // the cells that draw the tabs
     IBOutlet NSTabView          *tabView;                   // the tab view being navigated
     PSMOverflowPopUpButton      *_overflowPopUpButton;      // for too many tabs
     PSMRolloverButton           *_addTabButton;
-    
+    PSMTabBarController			*_controller;
+
+    // Spring-loading.
+    NSTimer						*_springTimer;
+    NSTabViewItem				*_tabViewItemWithSpring;
+	
     // drawing style
     id<PSMTabStyle>             style;
     BOOL                        _canCloseOnlyTab;
+	BOOL						_disableTabClose;
     BOOL                        _hideForSingleTab;
     BOOL                        _showAddTabButton;
     BOOL                        _sizeCellsToFit;
-    
+    BOOL                        _useOverflowMenu;
+	BOOL						_alwaysShowActiveTab;
+	BOOL						_allowsScrubbing;
+	NSInteger							_resizeAreaCompensation;
+	PSMTabBarOrientation		_orientation;
+	BOOL						_automaticallyAnimates;
+	NSTimer						*_animationTimer;
+	PSMTabBarTearOffStyle		_tearOffStyle;
+	
+	// behavior
+	BOOL						_allowsBackgroundTabClosing;
+	BOOL						_selectsTabsOnMouseDown;
+	
+	// vertical tab resizing
+	BOOL						_allowsResizing;
+	BOOL						_resizing;
+	
     // cell width
-    int                         _cellMinWidth;
-    int                         _cellMaxWidth;
-    int                         _cellOptimumWidth;
+    NSInteger                         _cellMinWidth;
+    NSInteger                         _cellMaxWidth;
+    NSInteger                         _cellOptimumWidth;
     
     // animation for hide/show
-    int                         _currentStep;
+    NSInteger                         _currentStep;
     BOOL                        _isHidden;
-    BOOL                        _hideIndicators;
     IBOutlet id                 partnerView;                // gets resized when hide/show
     BOOL                        _awakenedFromNib;
-    
+	NSInteger							_tabBarWidth;
+    NSTimer						*_showHideAnimationTimer;
+
     // drag and drop
-    NSEvent                     *_lastMouseDownEvent;      // keep this for dragging reference   
-    BOOL			_allowsDragBetweenWindows;
+    NSEvent                     *_lastMouseDownEvent;      // keep this for dragging reference
+	BOOL						_didDrag;
+	BOOL						_closeClicked;
     
     // MVC help
     IBOutlet id                 delegate;
@@ -82,26 +117,48 @@ enum {
 
 // control characteristics
 + (NSBundle *)bundle;
+- (CGFloat)availableCellWidth;
+- (NSRect)genericCellRect;
 
 // control configuration
+- (PSMTabBarOrientation)orientation;
+- (void)setOrientation:(PSMTabBarOrientation)value;
 - (BOOL)canCloseOnlyTab;
 - (void)setCanCloseOnlyTab:(BOOL)value;
+- (BOOL)disableTabClose;
+- (void)setDisableTabClose:(BOOL)value;
+- (id<PSMTabStyle>)style;
+- (void)setStyle:(id <PSMTabStyle>)newStyle;
 - (NSString *)styleName;
 - (void)setStyleNamed:(NSString *)name;
 - (BOOL)hideForSingleTab;
 - (void)setHideForSingleTab:(BOOL)value;
 - (BOOL)showAddTabButton;
 - (void)setShowAddTabButton:(BOOL)value;
-- (int)cellMinWidth;
-- (void)setCellMinWidth:(int)value;
-- (int)cellMaxWidth;
-- (void)setCellMaxWidth:(int)value;
-- (int)cellOptimumWidth;
-- (void)setCellOptimumWidth:(int)value;
+- (NSInteger)cellMinWidth;
+- (void)setCellMinWidth:(NSInteger)value;
+- (NSInteger)cellMaxWidth;
+- (void)setCellMaxWidth:(NSInteger)value;
+- (NSInteger)cellOptimumWidth;
+- (void)setCellOptimumWidth:(NSInteger)value;
 - (BOOL)sizeCellsToFit;
 - (void)setSizeCellsToFit:(BOOL)value;
-- (BOOL)allowsDragBetweenWindows;
-- (void)setAllowsDragBetweenWindows:(BOOL)flag;
+- (BOOL)useOverflowMenu;
+- (void)setUseOverflowMenu:(BOOL)value;
+- (BOOL)allowsBackgroundTabClosing;
+- (void)setAllowsBackgroundTabClosing:(BOOL)value;
+- (BOOL)allowsResizing;
+- (void)setAllowsResizing:(BOOL)value;
+- (BOOL)selectsTabsOnMouseDown;
+- (void)setSelectsTabsOnMouseDown:(BOOL)value;
+- (BOOL)automaticallyAnimates;
+- (void)setAutomaticallyAnimates:(BOOL)value;
+- (BOOL)alwaysShowActiveTab;
+- (void)setAlwaysShowActiveTab:(BOOL)value;
+- (BOOL)allowsScrubbing;
+- (void)setAllowsScrubbing:(BOOL)value;
+- (PSMTabBarTearOffStyle)tearOffStyle;
+- (void)setTearOffStyle:(PSMTabBarTearOffStyle)tearOffStyle;
 
 // accessors
 - (NSTabView *)tabView;
@@ -114,17 +171,65 @@ enum {
 // the buttons
 - (PSMRolloverButton *)addTabButton;
 - (PSMOverflowPopUpButton *)overflowPopUpButton;
+
+// tab information
 - (NSMutableArray *)representedTabViewItems;
+- (NSInteger)numberOfVisibleTabs;
+- (PSMTabBarCell *)lastVisibleTab;
 
 // special effects
 - (void)hideTabBar:(BOOL)hide animate:(BOOL)animate;
+- (BOOL)isTabBarHidden;
+- (BOOL)isAnimating;
+
+// internal bindings methods also used by the tab drag assistant
+- (void)bindPropertiesForCell:(PSMTabBarCell *)cell andTabViewItem:(NSTabViewItem *)item;
+- (void)removeTabForCell:(PSMTabBarCell *)cell;
 
 @end
 
 
 @interface NSObject (TabBarControlDelegateMethods)
+
+//Standard NSTabView methods
 - (BOOL)tabView:(NSTabView *)aTabView shouldCloseTabViewItem:(NSTabViewItem *)tabViewItem;
-- (void)tabView:(NSTabView *)aTabView willCloseTabViewItem:(NSTabViewItem *)tabViewItem;
 - (void)tabView:(NSTabView *)aTabView didCloseTabViewItem:(NSTabViewItem *)tabViewItem;
-- (void)tabView:(NSTabView *)aTabView didDragTabViewItem:(NSTabViewItem *)tabViewItem toIndex:(int)idx;
+
+//"Spring-loaded" tabs methods
+- (NSArray *)allowedDraggedTypesForTabView:(NSTabView *)aTabView;
+- (void)tabView:(NSTabView *)aTabView acceptedDraggingInfo:(id <NSDraggingInfo>)draggingInfo onTabViewItem:(NSTabViewItem *)tabViewItem;
+
+//Contextual menu method
+- (NSMenu *)tabView:(NSTabView *)aTabView menuForTabViewItem:(NSTabViewItem *)tabViewItem;
+
+//Drag and drop methods
+- (BOOL)tabView:(NSTabView *)aTabView shouldDragTabViewItem:(NSTabViewItem *)tabViewItem fromTabBar:(PSMTabBarControl *)tabBarControl;
+- (BOOL)tabView:(NSTabView *)aTabView shouldDropTabViewItem:(NSTabViewItem *)tabViewItem inTabBar:(PSMTabBarControl *)tabBarControl;
+- (BOOL)tabView:(NSTabView *)aTabView shouldAllowTabViewItem:(NSTabViewItem *)tabViewItem toLeaveTabBar:(PSMTabBarControl *)tabBarControl;
+- (void)tabView:(NSTabView*)aTabView didDropTabViewItem:(NSTabViewItem *)tabViewItem inTabBar:(PSMTabBarControl *)tabBarControl;
+
+
+//Tear-off tabs methods
+- (NSImage *)tabView:(NSTabView *)aTabView imageForTabViewItem:(NSTabViewItem *)tabViewItem offset:(NSSize *)offset styleMask:(NSUInteger *)styleMask;
+- (PSMTabBarControl *)tabView:(NSTabView *)aTabView newTabBarForDraggedTabViewItem:(NSTabViewItem *)tabViewItem atPoint:(NSPoint)point;
+- (void)tabView:(NSTabView *)aTabView closeWindowForLastTabViewItem:(NSTabViewItem *)tabViewItem;
+
+//Overflow menu validation
+- (BOOL)tabView:(NSTabView *)aTabView validateOverflowMenuItem:(NSMenuItem *)menuItem forTabViewItem:(NSTabViewItem *)tabViewItem;
+- (void)tabView:(NSTabView *)aTabView tabViewItem:(NSTabViewItem *)tabViewItem isInOverflowMenu:(BOOL)inOverflowMenu;
+
+//tab bar hiding methods
+- (void)tabView:(NSTabView *)aTabView tabBarDidHide:(PSMTabBarControl *)tabBarControl;
+- (void)tabView:(NSTabView *)aTabView tabBarDidUnhide:(PSMTabBarControl *)tabBarControl;
+- (CGFloat)desiredWidthForVerticalTabBar:(PSMTabBarControl *)tabBarControl;
+
+//closing
+- (BOOL)tabView:(NSTabView *)aTabView disableTabCloseForTabViewItem:(NSTabViewItem *)tabViewItem;
+
+//tooltips
+- (NSString *)tabView:(NSTabView *)aTabView toolTipForTabViewItem:(NSTabViewItem *)tabViewItem;
+
+//accessibility
+- (NSString *)accessibilityStringForTabView:(NSTabView *)aTabView objectCount:(NSInteger)objectCount;
+
 @end
