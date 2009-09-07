@@ -7,8 +7,15 @@
       <description>Most recent changes with links to Nally updates.</description>
       <language>en</language>
         <item>
-            <title>Version 1.4.4</title>
+            <title>Version 1.4.5</title>
             <description><![CDATA[
+<h2>Nally 1.4.5</h2>
+2009/09/07
+
+<ul>
+<li>修正预览图片时获取文件名的问题。(jjgod)</li>
+</ul>
+
 <h2>Nally 1.4.4</h2>
 2009/09/04
 
@@ -55,12 +62,12 @@
 <li>修正输入到窗口边沿光标判断的问题。(fayewong)</li>
 </ul>
             ]]></description>
-            <pubDate>Fri, 04 Sep 2009 16:53:30 +0900</pubDate>
-            <enclosure url="http://nally.googlecode.com/files/Nally-1.4.4.zip"
-                length="3024064"
+            <pubDate>Mon, 07 Sep 2009 09:41:01 +0900</pubDate>
+            <enclosure url="http://nally.googlecode.com/files/Nally-1.4.5.zip"
+                length="3024124"
                 type="application/octet-stream"
-                sparkle:version="1.4.4"
-                sparkle:dsaSignature="MC0CFAxmVDFSS4e07M+5o3XOSJUK3udsAhUAwQr73j4m+ayQ58DAEaLmfoN5jHM=" />
+                sparkle:version="1.4.5"
+                sparkle:dsaSignature="MCwCFE6LzKy/iXE6UlTDW3X04Rj4Kv10AhQgOvargvJVVXm0MyGO39GmprIc5Q==" />
          </item>
      </channel>
 
