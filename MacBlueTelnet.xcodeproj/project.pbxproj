@@ -344,6 +344,7 @@
 				8D1107290486CEB800E47090 /* Resources */,
 				8D11072C0486CEB800E47090 /* Sources */,
 				8D11072E0486CEB800E47090 /* Frameworks */,
+				71BFE93910550718005ACFF5 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -405,6 +406,22 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		71BFE93910550718005ACFF5 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/usr/bin/ibtool --strings-file MainMenu.zh_TW.strings --write ${BUILT_PRODUCTS_DIR}/Nally.app/Contents/Resources/zh_TW.lproj/MainMenu.nib English.lproj/MainMenu.nib; /usr/bin/ibtool --strings-file MainMenu.zh_CN.strings --write ${BUILT_PRODUCTS_DIR}/Nally.app/Contents/Resources/zh_CN.lproj/MainMenu.nib English.lproj/MainMenu.nib; /usr/bin/ibtool --strings-file Preferences.zh_TW.strings --write ${BUILT_PRODUCTS_DIR}/Nally.app/Contents/Resources/zh_TW.lproj/Preferences.nib English.lproj/Preferences.nib; /usr/bin/ibtool --strings-file Preferences.zh_CN.strings --write ${BUILT_PRODUCTS_DIR}/Nally.app/Contents/Resources/zh_CN.lproj/Preferences.nib English.lproj/Preferences.nib; /bin/rm -rf ${BUILT_PRODUCTS_DIR}/Nally.app/Contents/Resources/zh_CN.lproj/MainMenu.nib/.svn ${BUILT_PRODUCTS_DIR}/Nally.app/Contents/Resources/zh_CN.lproj/Preferences.nib/.svn ${BUILT_PRODUCTS_DIR}/Nally.app/Contents/Resources/zh_TW.lproj/MainMenu.nib/.svn ${BUILT_PRODUCTS_DIR}/Nally.app/Contents/Resources/zh_TW.lproj/Preferences.nib/.svn";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		8D11072C0486CEB800E47090 /* Sources */ = {
