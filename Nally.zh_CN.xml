@@ -1,18 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
-  <channel>
-    <title>Nally Appcast</title>
-    <link>http://yllan.org/mac/Nally</link>
-    <description>Nally updates</description>
-    <generator>Feeder 1.5.3(378) http://reinventedsoftware.com/feeder/</generator>
-    <docs>http://blogs.law.harvard.edu/tech/rss</docs>
-    <language>zh</language>
-    <pubDate>Mon, 21 Apr 2008 01:40:52 +0800</pubDate>
-    <lastBuildDate>Mon, 21 Apr 2008 01:40:52 +0800</lastBuildDate>
-    <item>
-      <title>Nally 1.4.2</title>
-      <link>http://yllan.org/mac/Nally</link>
-      <description><![CDATA[<h3>1.4.2 的修改</h3>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle"  xmlns:dc="http://purl.org/dc/elements/1.1/">
+
+    <channel>
+      <title>Nally Changelog</title>
+      <link>http://nally.googlecode.com/svn/trunk/Nally.xml</link>
+      <description>Most recent changes with links to Nally updates.</description>
+      <language>zh</language>
+        <item>
+            <title>Version 1.4.5</title>
+            <description><![CDATA[
+<h2>Nally 1.4.5</h2>
+2009/09/07
+
+<ul>
+<li>修正预览图片时获取文件名的问题。(jjgod)</li>
+</ul>
+
+<h2>Nally 1.4.4</h2>
+2009/09/04
+
+<ul>
+<li>修正 ssh 无法连接的问题。(jjgod)</li>
+<li>修正 Tab 栏无法出现图标的问题。(jjgod)</li>
+<li>修正 newsmth 附件文件名解码问题。(jjgod)</li>
+<li>在 Leopard 下默认以 32-bit 模式执行。(jjgod)</li>
+</ul>
+
+<h2>Nally 1.4.3</h2>
+2009/08/28
+
+<ul>
+<li>支持 64-bit 和 Snow Leopard。(jjgod)</li>
+</ul>
+
+<h3>1.4.2 的修改</h3>
 
 <ul>
 <li>SSH 到 BBS 时禁用 X11 Forwarding。(mjhsieh)</li>
@@ -39,10 +60,14 @@
 <li>修正背景色不能延伸到行末的问题。(Evan 报告)</li>
 <li>修正一些半透明背景绘制的问题。(fishy 报告)</li>
 <li>修正输入到窗口边沿光标判断的问题。(fayewong)</li>
-</ul>]]></description>
-      <pubDate>Mon, 21 Apr 2008 01:36:06 +0800</pubDate>
-      <enclosure url="http://jjgod.org/program/Nally-1.4.2.zip" length="1605876" type="application/zip" sparkle:version="1.4.2"/>
-      <guid isPermaLink="false">nally-142</guid>
-    </item>
-  </channel>
+</ul>
+            ]]></description>
+            <pubDate>Mon, 07 Sep 2009 09:41:01 +0900</pubDate>
+            <enclosure url="http://nally.googlecode.com/files/Nally-1.4.5.zip"
+                length="3024124"
+                type="application/octet-stream"
+                sparkle:version="1.4.5"
+                sparkle:dsaSignature="MCwCFE6LzKy/iXE6UlTDW3X04Rj4Kv10AhQgOvargvJVVXm0MyGO39GmprIc5Q==" />
+         </item>
+     </channel>
 </rss>
