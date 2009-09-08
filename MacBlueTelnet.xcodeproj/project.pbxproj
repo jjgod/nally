@@ -419,7 +419,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "for LANG in zh_TW zh_CN; do\n  for NIB in MainMenu Preferences; do\n    LPROJ_DIR=${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/${LANG}.lproj\n    ibtool --strings-file ${NIB}.${LANG}.strings --write ${LPROJ_DIR}/${NIB}.full.nib English.lproj/${NIB}.nib\n    ibtool --compile ${LPROJ_DIR}/${NIB}.nib ${LPROJ_DIR}/${NIB}.full.nib\n    rm -rf ${LPROJ_DIR}/${NIB}.full.nib\n  done\ndone\n\nfind ${BUILT_PRODUCTS_DIR}/Nally.app/Contents/Resources -d -name \".svn\" | xargs rm -rf\n";
+			shellScript = "for LANG in zh_TW zh_CN; do\n  for NIB in MainMenu Preferences; do\n    LPROJ_DIR=${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/${LANG}.lproj\n    ibtool --strings-file ${NIB}.${LANG}.strings --write ${LPROJ_DIR}/${NIB}.full.nib English.lproj/${NIB}.nib\n    ibtool --compile ${LPROJ_DIR}/${NIB}.nib ${LPROJ_DIR}/${NIB}.full.nib\n    rm -rf ${LPROJ_DIR}/${NIB}.full.nib\n  done\ndone\n\nfind ${BUILT_PRODUCTS_DIR}/Nally.app/Contents/Resources -type d -name \".svn\" | xargs rm -rf\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
