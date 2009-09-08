@@ -9,7 +9,7 @@
         <item>
             <title>Version {{ version }}</title>
             <description><![CDATA[
-{% include "Release.html" %}
+{{ relNotes }}
             ]]></description>
             <pubDate>{{ date }}</pubDate>
             <enclosure url="{{ url }}"
